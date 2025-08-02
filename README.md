@@ -1,0 +1,1 @@
+# minutehire-frontend
