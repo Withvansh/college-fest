@@ -233,6 +233,18 @@ export const mockProjects: Project[] = [
     status: 'in-progress',
     bids: [],
     createdDate: new Date('2024-01-10')
+  },
+  {
+    id: '3',
+    title: 'Mobile App Design',
+    description: 'Looking for UI/UX designer for mobile app',
+    budget: '₹2.5L - ₹4.2L',
+    duration: '1 month',
+    skills: ['Figma', 'Mobile Design', 'Prototyping'],
+    clientId: 'client2',
+    status: 'in-progress',
+    bids: [],
+    createdDate: new Date('2024-01-10')
   }
 ];
 
