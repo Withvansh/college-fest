@@ -7,18 +7,18 @@ const ClientLogin = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
+        {/* <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center text-gray-600 hover:text-gray-900 mb-6">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Home
           </Link>
-        </div>
+        </div> */}
         
         <LocalAuthForm
           userType="client"
           title="Client Portal"
           description="Post projects and hire freelancers"
-          icon={<Briefcase className="h-8 w-8 text-blue-600" />}
+          icon={<Briefcase className="h-8 w-8 " />}
         />
 
         <div className="mt-6 text-center space-y-2">

@@ -18,7 +18,7 @@ const RecruiterLogin = () => {
           userType="recruiter"
           title="Recruiter Portal"
           description="Find top talent for your company"
-          icon={<Briefcase className="h-8 w-8 text-green-600" />}
+          icon={<Briefcase className="h-8 w-8 0" />}
         />
 
         <div className="mt-6 text-center space-y-2">

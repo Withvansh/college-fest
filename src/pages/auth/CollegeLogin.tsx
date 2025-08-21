@@ -18,7 +18,7 @@ const CollegeLogin = () => {
           userType="college"
           title="College Portal"
           description="Manage campus drives and student placements"
-          icon={<School className="h-8 w-8 text-emerald-600" />}
+          icon={<School className="h-8 w-8 " />}
         />
 
         <div className="mt-6 text-center space-y-2">

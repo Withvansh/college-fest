@@ -164,44 +164,44 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-2xl border-0">
-        <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+    <div className="w-full max-w-md mx-auto p-4">
+      <Card className="shadow-2xl border-0 bg-white/90 backdrop-blur-sm">
+        <CardHeader className="text-center space-y-3 p-4">
+          <div className="mx-auto w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
             {icon}
           </div>
           <div>
-            <CardTitle className="text-2xl font-bold text-gray-900">{title}</CardTitle>
-            <p className="text-gray-600 mt-1">{description}</p>
+            <CardTitle className="text-xl font-bold text-gray-900">{title}</CardTitle>
+            <p className="text-sm text-gray-600">{description}</p>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-              <TabsTrigger value="otp">OTP</TabsTrigger>
-              <TabsTrigger value="forgot">Reset</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-4 mb-4">
+              <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+              <TabsTrigger value="otp" className="text-sm">OTP</TabsTrigger>
+              <TabsTrigger value="forgot" className="text-sm">Reset</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="login" className="space-y-4">
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
+            <TabsContent value="login" className="space-y-3">
+              <form onSubmit={handleLogin} className="space-y-3">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm">Email</Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-12"
+                    className="h-10"
                     required
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="password">Password</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm">Password</Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -209,7 +209,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                       placeholder="Enter your password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="h-12 pr-10"
+                      className="h-10 pr-10"
                       required
                     />
                     <button
@@ -222,12 +222,12 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full h-12" disabled={isLoading}>
+                <Button type="submit" className="w-full h-10" disabled={isLoading}>
                   {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
               </form>
 
-              <div className="relative">
+              <div className="relative my-4">
                 <div className="absolute inset-0 flex items-center">
                   <Separator />
                 </div>
@@ -236,13 +236,13 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleGoogleSignIn}
                   disabled={isLoading}
-                  className="h-12"
+                  className="h-10 text-sm"
                 >
                   <Chrome className="h-4 w-4 mr-2" />
                   Google
@@ -252,7 +252,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                   variant="outline"
                   onClick={handleLinkedInSignIn}
                   disabled={isLoading}
-                  className="h-12"
+                  className="h-10 text-sm"
                 >
                   <Linkedin className="h-4 w-4 mr-2" />
                   LinkedIn
@@ -390,8 +390,10 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
         </CardContent>
       </Card>
 
-      {/* Demo Credentials Component */}
-      <DemoCredentials userType={userType} onFillCredentials={handleFillCredentials} />
+      {/* Demo Credentials with reduced spacing */}
+      {/* <div className="mt-4">
+        <DemoCredentials userType={userType} onFillCredentials={handleFillCredentials} />
+      </div> */}
     </div>
   );
 };

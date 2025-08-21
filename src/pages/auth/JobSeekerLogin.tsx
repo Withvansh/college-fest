@@ -18,7 +18,7 @@ const JobSeekerLogin = () => {
           userType="jobseeker"
           title="Job Seeker Portal"
           description="Find your dream job today"
-          icon={<User className="h-8 w-8 text-blue-600" />}
+          icon={<User className="h-8 w-8 text-blue" />}
         />
 
         <div className="mt-6 text-center space-y-2">

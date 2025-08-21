@@ -18,7 +18,7 @@ const FreelancerLogin = () => {
           userType="freelancer"
           title="Freelancer Portal"
           description="Showcase your skills and find projects"
-          icon={<Code className="h-8 w-8 text-purple-600" />}
+          icon={<Code className="h-8 w-8" />}
         />
 
         <div className="mt-6 text-center space-y-2">

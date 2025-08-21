@@ -267,11 +267,11 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                 {isLoading ? 'Connecting...' : `Sign in with Google as ${userType}`}
               </Button>
               
-              {userType === 'recruiter' && (
+              {/* {userType === 'recruiter' && (
                 <div className="text-center text-sm text-gray-600">
                   <p>After Google sign-in, you'll be able to post jobs immediately!</p>
                 </div>
-              )}
+              )} */}
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
