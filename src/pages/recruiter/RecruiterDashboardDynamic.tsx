@@ -6,7 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Building2, Users, FileText, TestTube, BarChart3, Calendar, Plus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { recruiterDashboardsService, RecruiterDashboard } from "@/lib/api/recruiterDashboards";
+import { recruiterDashboardsApi } from "@/lib/api/recruiterDashboards";
+
+type RecruiterDashboard = {
+  id: string;
+  totalJobs: number;
+  activeJobs: number;
+  totalApplications: number;
+  pendingApplications: number;
+};
 import { toast } from "sonner";
 
 const RecruiterDashboardDynamic = () => {
@@ -54,7 +62,7 @@ const RecruiterDashboardDynamic = () => {
       console.log('🔄 Loading dashboard for user:', user.id, 'dashboardId:', dashboardId);
       
       // First get the user's dashboard to verify ownership
-      const userDashboard = await recruiterDashboardsService.getRecruiterDashboard(user.id);
+      const userDashboard = await recruiterDashboardsApi.getDashboard(user.id);
       console.log('📊 User dashboard fetched:', userDashboard);
       
       if (!userDashboard) {

@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 
 interface UserProfile {
@@ -43,65 +43,51 @@ const ManageUsers = () => {
 
   const loadUsers = async () => {
     try {
-      console.log('Loading users from profiles table...');
-      
-      // First, try to create some test users if none exist
-      const { data: existingUsers } = await supabase
-        .from('profiles')
-        .select('*')
-        .limit(1);
-
-      if (!existingUsers || existingUsers.length === 0) {
-        console.log('No users found, creating test data...');
-        // Create test users with proper role types
-        const testUsers = [
-          {
-            id: crypto.randomUUID(),
-            email: 'jobseeker@test.com',
-            full_name: 'John Doe',
-            role: 'jobseeker' as const,
-            phone: '+1234567890'
-          },
-          {
-            id: crypto.randomUUID(),
-            email: 'recruiter@test.com',
-            full_name: 'Jane Smith',
-            role: 'recruiter' as const,
-            phone: '+1234567891'
-          },
-          {
-            id: crypto.randomUUID(),
-            email: 'admin@test.com',
-            full_name: 'Admin User',
-            role: 'admin' as const,
-            phone: '+1234567892'
-          }
-        ];
-
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert(testUsers);
-
-        if (insertError) {
-          console.error('Error creating test users:', insertError);
-        } else {
-          console.log('Test users created successfully');
+      // Mock user data
+      const mockUsers: UserProfile[] = [
+        {
+          id: '1',
+          email: 'john.doe@example.com',
+          full_name: 'John Doe',
+          role: 'jobseeker',
+          phone: '+1-555-0123',
+          avatar_url: null,
+          created_at: '2024-01-15T10:00:00Z',
+          updated_at: '2024-01-15T10:00:00Z'
+        },
+        {
+          id: '2',
+          email: 'jane.smith@company.com',
+          full_name: 'Jane Smith',
+          role: 'recruiter',
+          phone: '+1-555-0124',
+          avatar_url: null,
+          created_at: '2024-01-10T09:00:00Z',
+          updated_at: '2024-01-10T09:00:00Z'
+        },
+        {
+          id: '3',
+          email: 'admin@minutehire.com',
+          full_name: 'Admin User',
+          role: 'admin',
+          phone: '+1-555-0125',
+          avatar_url: null,
+          created_at: '2024-01-01T08:00:00Z',
+          updated_at: '2024-01-01T08:00:00Z'
+        },
+        {
+          id: '4',
+          email: 'mike.wilson@freelance.com',
+          full_name: 'Mike Wilson',
+          role: 'freelancer',
+          phone: '+1-555-0126',
+          avatar_url: null,
+          created_at: '2024-01-20T11:00:00Z',
+          updated_at: '2024-01-20T11:00:00Z'
         }
-      }
-
-      // Now fetch all users
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Error loading users:', error);
-        toast.error('Failed to load users: ' + error.message);
-      } else {
-        console.log('Loaded users:', data);
-        setUsers(data || []);
-      }
+      ];
+      
+      setUsers(mockUsers);
     } catch (error) {
       console.error('Error loading users:', error);
       toast.error('Failed to load users');

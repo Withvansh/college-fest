@@ -1,5 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
+
 
 export interface DigitalOrder {
   id: string;
@@ -16,11 +17,7 @@ export interface DigitalOrder {
 
 export const ordersApi = {
   async createOrder(orderData: Omit<DigitalOrder, 'id' | 'purchase_date'>): Promise<DigitalOrder | null> {
-    const { data, error } = await supabase
-      .from('digital_orders')
-      .insert(orderData)
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
 
     if (error) {
       console.error('Error creating order:', error);
@@ -31,11 +28,7 @@ export const ordersApi = {
   },
 
   async getOrder(id: string): Promise<DigitalOrder | null> {
-    const { data, error } = await supabase
-      .from('digital_orders')
-      .select('*')
-      .eq('id', id)
-      .single();
+    const { data, error } = return { data: null, error: null };
 
     if (error) {
       console.error('Error fetching order:', error);
@@ -46,10 +39,7 @@ export const ordersApi = {
   },
 
   async getAllOrders(): Promise<DigitalOrder[]> {
-    const { data, error } = await supabase
-      .from('digital_orders')
-      .select('*')
-      .order('purchase_date', { ascending: false });
+    const { data, error } = return { data: null, error: null };
 
     if (error) {
       console.error('Error fetching orders:', error);

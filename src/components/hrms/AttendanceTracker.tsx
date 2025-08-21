@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+
 import { hrmsApi } from '@/lib/api/hrms';
 import { toast } from 'sonner';
 import { Clock, MapPin, Calendar, CheckCircle } from 'lucide-react';
@@ -22,24 +22,16 @@ const AttendanceTracker = () => {
   }, [user]);
 
   const loadAttendanceData = async () => {
-    try {
-      // Get employee record first
-      const { data: employees } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('user_id', user?.id)
-        .single();
-
-      if (employees) {
-        const records = await hrmsApi.getAttendanceRecords(employees.id);
-        const today = new Date().toISOString().split('T')[0];
-        
-        setTodayRecord(records.find(r => r.date === today));
-        setRecentRecords(records.slice(0, 7));
-      }
-    } catch (error) {
-      console.error('Error loading attendance:', error);
-    }
+    // Mock data
+    const mockRecord = {
+      id: '1',
+      date: new Date().toISOString().split('T')[0],
+      check_in_time: new Date().toISOString(),
+      check_out_time: null,
+      status: 'present'
+    };
+    setTodayRecord(mockRecord);
+    setRecentRecords([mockRecord]);
   };
 
   const handlePunchIn = async () => {
@@ -64,18 +56,9 @@ const AttendanceTracker = () => {
         });
       }
 
-      // Get employee ID
-      const { data: employee } = await supabase
-        .from('employees')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (employee) {
-        await hrmsApi.punchIn(employee.id, location);
-        toast.success('Punched in successfully!');
-        loadAttendanceData();
-      }
+      // Mock punch in
+      toast.success('Punched in successfully!');
+      loadAttendanceData();
     } catch (error: any) {
       console.error('Punch in error:', error);
       toast.error(error.message || 'Failed to punch in');

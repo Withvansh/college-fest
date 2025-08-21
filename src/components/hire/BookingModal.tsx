@@ -16,7 +16,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+// Supabase removed
+
 import { useAuth } from '@/contexts/AuthContext';
 
 const bookingSchema = z.object({
@@ -81,22 +82,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
     console.log('⏳ Sending request to Supabase...');
 
     try {
-      const { data, error } = await supabase
-        .from('hire_requests')
-        .insert([
-          {
-            hirer_user_id: user?.id || null,
-            hiree_profile_id: profile.id,
-            date_requested: values.date,
-            time_slot: values.time,
-            message: values.message,
-            hirer_name: values.name,
-            hirer_email: values.email,
-            hirer_phone: values.phone,
-            status: 'pending',
-          },
-        ])
-        .select();
+      const { data, error } = return { data: null, error: null };
 
       if (error) {
         console.error('❌ Supabase Error:', error);
@@ -284,7 +270,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
 // import { z } from 'zod';
 // import { toast } from 'sonner';
 // import { Loader2 } from 'lucide-react';
-// import { supabase } from '@/integrations/supabase/client';
+// // Supabase removed
+
 // import { useAuth } from '@/contexts/AuthContext';
 
 // const bookingSchema = z.object({
@@ -334,22 +321,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
 
 //     setIsLoading(true);
 //     try {
-//       const { data, error } = await supabase
-//         .from('hire_requests')
-//         .insert([
-//           {
-//             hirer_user_id: user.id,
-//             hiree_profile_id: profile.id,
-//             date_requested: values.date,
-//             time_slot: values.time,
-//             message: values.message,
-//             hirer_name: values.name,
-//             hirer_email: values.email,
-//             hirer_phone: values.phone,
-//             status: 'pending',
-//           },
-//         ])
-//         .select();
+//       const { data, error } = return { data: null, error: null };
 
 //       if (error) {
 //         console.error('Error creating booking:', error);

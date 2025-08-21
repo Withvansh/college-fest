@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+
 
 export interface BlogPost {
   id: string;
@@ -18,112 +18,73 @@ export interface BlogPost {
 export const blogApi = {
   async getAllPosts(): Promise<BlogPost[]> {
     console.log('Fetching all blog posts...');
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching blog posts:', error);
-      throw error;
-    }
-
-    console.log('Fetched blog posts:', data);
-    return data as BlogPost[];
+    // Mock data
+    const mockPosts: BlogPost[] = [
+      {
+        id: '1',
+        title: 'Getting Started with MinuteHire',
+        content: 'Learn how to use MinuteHire platform effectively...',
+        excerpt: 'A comprehensive guide to get started',
+        featured_image_url: null,
+        status: 'published',
+        tags: ['tutorial', 'getting-started'],
+        slug: 'getting-started-with-minutehire',
+        author_id: '1',
+        published_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+    ];
+    console.log('Fetched blog posts:', mockPosts);
+    return mockPosts;
   },
 
   async getPublishedPosts(): Promise<BlogPost[]> {
     console.log('Fetching published blog posts...');
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .select('*')
-      .eq('status', 'published')
-      .order('published_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching published posts:', error);
-      return [];
-    }
-
-    console.log('Fetched published posts:', data);
-    return (data || []) as BlogPost[];
+    const allPosts = await this.getAllPosts();
+    const publishedPosts = allPosts.filter(post => post.status === 'published');
+    console.log('Fetched published posts:', publishedPosts);
+    return publishedPosts;
   },
 
   async createPost(post: Omit<BlogPost, 'id' | 'created_at' | 'updated_at'>): Promise<BlogPost> {
     console.log('Creating blog post:', post);
-
-    const slug = post.slug || post.title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-
-    const postData = {
-      title: post.title,
-      content: post.content,
-      excerpt: post.excerpt,
-      featured_image_url: post.featured_image_url,
-      tags: post.tags,
-      status: post.status,
-      slug,
-      author_id: post.author_id,
-      published_at: post.status === 'published' ? new Date().toISOString() : null,
+    // Mock create functionality
+    const newPost: BlogPost = {
+      ...post,
+      id: Date.now().toString(),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     };
-
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .insert([postData])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error creating blog post:', error);
-      throw error;
-    }
-
-    console.log('Created blog post:', data);
-    return data as BlogPost;
+    console.log('Created blog post:', newPost);
+    return newPost;
   },
 
   async updatePost(id: string, updates: Partial<BlogPost>): Promise<BlogPost> {
     console.log('Updating blog post:', id, updates);
-
-    const updateData = {
-      ...updates,
+    // Mock update functionality
+    const updatedPost: BlogPost = {
+      id,
+      title: 'Updated Post',
+      content: 'Updated content',
+      excerpt: null,
+      featured_image_url: null,
+      status: 'published',
+      tags: null,
+      slug: null,
+      author_id: null,
+      published_at: null,
+      created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      ...updates
     };
-
-    if (updates.status === 'published' && !updates.published_at) {
-      updateData.published_at = new Date().toISOString();
-    }
-
-    const { data, error } = await supabase
-      .from('blog_posts')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating blog post:', error);
-      throw error;
-    }
-
-    console.log('Updated blog post:', data);
-    return data as BlogPost;
+    console.log('Updated blog post:', updatedPost);
+    return updatedPost;
   },
 
   async deletePost(id: string): Promise<void> {
     console.log('Deleting blog post:', id);
-    const { error } = await supabase
-      .from('blog_posts')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.error('Error deleting blog post:', error);
-      throw error;
-    }
-
+    // Mock delete functionality
     console.log('Deleted blog post:', id);
   }
 };

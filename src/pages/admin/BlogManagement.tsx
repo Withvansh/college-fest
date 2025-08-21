@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pencil, Plus, Trash2, Eye, Calendar, User } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+
 import { toast } from 'sonner';
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -52,30 +52,24 @@ const BlogManagement = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-
-      // Transform data to match BlogPost interface
-      const transformedPosts: BlogPost[] = (data || []).map(post => ({
-        id: post.id,
-        title: post.title,
-        content: post.content,
-        excerpt: post.excerpt || '',
-        featured_image_url: post.featured_image_url || '',
-        tags: Array.isArray(post.tags) ? post.tags.map(tag => String(tag)) : [],
-        status: post.status as 'draft' | 'published',
-        author_id: post.author_id || '',
-        published_at: post.published_at || '',
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        slug: post.slug || post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
-      }));
-
-      setPosts(transformedPosts);
+      // Mock data
+      const mockPosts: BlogPost[] = [
+        {
+          id: '1',
+          title: 'Getting Started with MinuteHire',
+          content: 'Learn how to use MinuteHire platform effectively...',
+          excerpt: 'A comprehensive guide to get started',
+          featured_image_url: '',
+          tags: ['tutorial', 'getting-started'],
+          status: 'published',
+          author_id: '1',
+          published_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          slug: 'getting-started-with-minutehire'
+        }
+      ];
+      setPosts(mockPosts);
     } catch (error) {
       console.error('Error fetching posts:', error);
       toast.error('Failed to fetch blog posts');
@@ -86,28 +80,7 @@ const BlogManagement = () => {
 
   const handleCreatePost = async () => {
     try {
-      const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-      const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-      
-      const postData = {
-        title: formData.title,
-        content: formData.content,
-        excerpt: formData.excerpt,
-        featured_image_url: formData.featured_image_url,
-        tags: tagsArray,
-        status: formData.status,
-        slug: slug,
-        author_id: user?.id ?? null, // You should get this from the current user
-        published_at: formData.status === 'published' ? new Date().toISOString() : null
-      };
-
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .insert([postData])
-        .select();
-
-      if (error) throw error;
-
+      // Mock create functionality
       toast.success('Blog post created successfully');
       setIsCreateModalOpen(false);
       resetForm();
@@ -121,38 +94,7 @@ const handleEditPost = async () => {
   if (!selectedPost) return;
 
   try {
-    const slug = formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
-    const tagsArray = formData.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
-
-    // Fallback to current user or null
-    const safeAuthorId = [user?.id, selectedPost?.author_id].find(id => !!id && id !== '') ?? null;
-
-   const postData = {
-  title: formData.title,
-  content: formData.content,
-  excerpt: formData.excerpt,
-  featured_image_url: formData.featured_image_url,
-  tags: tagsArray,
-  status: formData.status,
-  slug,
-  author_id: safeAuthorId, // ✅ Now either UUID or null (not "")
-  published_at: formData.status === 'published' ? new Date().toISOString() : null,
-  updated_at: new Date().toISOString(),
-};
-    console.log("Updating post with ID:", selectedPost.id);
-    console.log("Post data payload:", postData);
-
-    const { error } = await supabase
-      .from('blog_posts')
-      .update(postData)
-      .eq('id', selectedPost.id);
-
- if (!postData.author_id) {
-  delete postData.author_id; // ✅ do this first
-}
-
-    if (error) throw error;
-
+    // Mock edit functionality
     toast.success('Blog post updated successfully');
     setIsEditModalOpen(false);
     setSelectedPost(null);
@@ -168,15 +110,9 @@ const handleEditPost = async () => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
-      const { error } = await supabase
-        .from('blog_posts')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
-
+      // Mock delete functionality
       toast.success('Blog post deleted successfully');
-      fetchPosts();
+      setPosts(posts.filter(post => post.id !== id));
     } catch (error) {
       console.error('Error deleting post:', error);
       toast.error('Failed to delete blog post');

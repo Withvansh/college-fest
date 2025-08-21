@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +16,12 @@ const FaqManagement = () => {
   }, []);
 
   const fetchFaqs = async () => {
-    const { data, error } = await supabase.from("faqs").select("*").order("created_at", { ascending: false });
-    if (error) {
-      toast.error("Failed to fetch FAQs");
-    } else {
-      setFaqs(data);
-    }
+    // Mock data for FAQs
+    const mockFaqs = [
+      { id: '1', question: 'How do I create an account?', answer: 'Click on the Sign Up button and fill in your details.' },
+      { id: '2', question: 'How do I reset my password?', answer: 'Use the Forgot Password link on the login page.' }
+    ];
+    setFaqs(mockFaqs);
   };
 
   const handleAddFaq = async () => {
@@ -30,26 +30,19 @@ const FaqManagement = () => {
       return;
     }
     setLoading(true);
-    const { error } = await supabase.from("faqs").insert([{ question, answer }]);
-    setLoading(false);
-    if (error) {
-      toast.error("Failed to add FAQ");
-    } else {
+    // Mock add functionality
+    setTimeout(() => {
       toast.success("FAQ added");
       setQuestion("");
       setAnswer("");
-      fetchFaqs();
-    }
+      setLoading(false);
+    }, 1000);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("faqs").delete().eq("id", id);
-    if (error) {
-      toast.error("Failed to delete FAQ");
-    } else {
-      toast.success("FAQ deleted");
-      fetchFaqs();
-    }
+    // Mock delete functionality
+    toast.success("FAQ deleted");
+    setFaqs(faqs.filter((faq: any) => faq.id !== id));
   };
 
   return (

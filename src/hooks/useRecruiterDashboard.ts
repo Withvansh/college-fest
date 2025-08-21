@@ -1,7 +1,15 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { recruiterDashboardsService, RecruiterDashboard } from '@/lib/api/recruiterDashboards';
+import { recruiterDashboardsApi } from '@/lib/api/recruiterDashboards';
+
+type RecruiterDashboard = {
+  id: string;
+  totalJobs: number;
+  activeJobs: number;
+  totalApplications: number;
+  pendingApplications: number;
+};
 
 export const useRecruiterDashboard = () => {
   const { user } = useAuth();
@@ -45,16 +53,16 @@ export const useRecruiterDashboard = () => {
       
       console.log('🚀 Loading recruiter dashboard for user:', user.id);
       
-      let dashboardData = await recruiterDashboardsService.getRecruiterDashboard(user.id);
+      let dashboardData = await recruiterDashboardsApi.getDashboard(user.id);
       console.log('📊 Dashboard fetch result:', dashboardData);
       
       // If dashboard doesn't exist, create one
       if (!dashboardData) {
         console.log('🔨 Creating new recruiter dashboard for user:', user.id, 'name:', user.name || user.email);
-        dashboardData = await recruiterDashboardsService.createRecruiterDashboard(
-          user.id,
-          user.name || user.email || 'Recruiter'
-        );
+        dashboardData = await recruiterDashboardsApi.createDashboard({
+          userId: user.id,
+          name: user.name || user.email || 'Recruiter'
+        });
         
         if (!dashboardData) {
           throw new Error('Failed to create recruiter dashboard');

@@ -23,12 +23,12 @@ const navLinks = [
 
 const GuestButtons = () => (
   <div className="flex items-center space-x-4">
-    <NavLink to="/auth/jobseeker-login">
+    <NavLink to="/auth/jobseeker">
       <Button variant="outline" size="sm">
         Login
       </Button>
     </NavLink>
-    <NavLink to="/auth/jobseeker-login">
+    <NavLink to="/auth/jobseeker">
       <Button size="sm">Sign Up</Button>
     </NavLink>
   </div>

@@ -1,7 +1,5 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import * as bcrypt from 'bcryptjs';
 
 interface SuperAdmin {
   id: string;
@@ -46,51 +44,28 @@ export const SuperAdminAuthProvider: React.FC<{ children: React.ReactNode }> = (
     try {
       setLoading(true);
       
-      // Fetch admin user from database
-      const { data: adminUser, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('username', username)
-        .eq('is_active', true)
-        .single();
+      // Mock authentication - replace with your API call
+      const mockAdmins = [
+        {
+          id: '1',
+          username: 'superadmin',
+          email: 'admin@minutehire.com',
+          full_name: 'Super Admin',
+          role: 'super_admin',
+          password: 'admin123'
+        }
+      ];
 
-      if (error || !adminUser) {
-        console.error('Admin not found:', error);
-        return false;
+      const foundAdmin = mockAdmins.find(a => a.username === username && a.password === password);
+      
+      if (foundAdmin) {
+        const { password: _, ...adminData } = foundAdmin;
+        setAdmin(adminData);
+        localStorage.setItem('super_admin_session', JSON.stringify(adminData));
+        return true;
       }
-
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, adminUser.password_hash);
-      if (!isValidPassword) {
-        return false;
-      }
-
-      // Update last login
-      await supabase
-        .from('admin_users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', adminUser.id);
-
-      // Log admin login activity using admin_activity table
-      await supabase
-        .from('admin_activity')
-        .insert({
-          admin_id: adminUser.id,
-          action: 'login',
-          details: { username }
-        });
-
-      const adminData = {
-        id: adminUser.id,
-        username: adminUser.username,
-        email: adminUser.email,
-        full_name: adminUser.full_name,
-        role: adminUser.role
-      };
-
-      setAdmin(adminData);
-      localStorage.setItem('super_admin_session', JSON.stringify(adminData));
-      return true;
+      
+      return false;
     } catch (error) {
       console.error('Login error:', error);
       return false;
@@ -99,17 +74,7 @@ export const SuperAdminAuthProvider: React.FC<{ children: React.ReactNode }> = (
     }
   };
 
-  const logout = async () => {
-    if (admin) {
-      // Log logout activity using admin_activity table
-      await supabase
-        .from('admin_activity')
-        .insert({
-          admin_id: admin.id,
-          action: 'logout'
-        });
-    }
-    
+  const logout = () => {
     setAdmin(null);
     localStorage.removeItem('super_admin_session');
   };

@@ -24,7 +24,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { jobsService } from "@/services/jobsService"
-import { supabase } from "@/integrations/supabase/client"
+// Supabase integration removed
 
 interface JobListing {
   id: string
@@ -164,63 +164,25 @@ const LiveFeedsSection = () => {
       }
     }
 
-    // Fetch real freelance projects from database
+    // Mock freelance projects data
     const fetchFreelanceProjects = async () => {
-      try {
-        const { data: projectsData, error } = await supabase
-          .from("freelance_gigs")
-          .select(`
-            *,
-            profiles:client_id(full_name)
-          `)
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(6)
-
-        if (error) {
-          console.error("Error fetching freelance projects:", error)
-          throw error
-        }
-
-        // Transform the data to match our interface
-        const transformedProjects: FreelanceProject[] = (projectsData || []).map((project) => ({
-          id: project.id,
-          title: project.title,
-          budget: formatProjectBudget(project.budget_min, project.budget_max),
-          skills: project.skills_required || [],
-          postedTime: getTimeAgo(project.created_at || ""),
-          projectType: formatProjectType(project.project_type || "other"),
-          description: project.description,
-          requirements: project.description
-            ? [project.description.slice(0, 100) + "..."]
-            : ["No specific requirements listed"],
-          clientName: project.profiles?.full_name || "Anonymous Client",
-          clientRating: 4.5, // Default rating - could be fetched from a separate ratings table
-          duration: project.duration_days ? `${project.duration_days} days` : "Not specified",
-        }))
-
-        setFreelanceProjects(transformedProjects)
-      } catch (error) {
-        console.error("Error fetching freelance projects:", error)
-        // Fallback to mock data if there's an error
-        const mockProjects: FreelanceProject[] = [
-          {
-            id: "1",
-            title: "E-commerce Website Development",
-            budget: "₹2,000 - ₹5,000",
-            skills: ["React", "Node.js", "MongoDB"],
-            postedTime: "1 hour ago",
-            projectType: "Web Development",
-            description:
-              "Looking for a skilled developer to create a modern e-commerce website with payment integration.",
-            requirements: ["Experience with React and Node.js", "Payment gateway integration"],
-            clientName: "Digital Commerce Co.",
-            clientRating: 4.8,
-            duration: "6-8 weeks",
-          },
-        ]
-        setFreelanceProjects(mockProjects)
-      }
+      const mockProjects: FreelanceProject[] = [
+        {
+          id: "1",
+          title: "E-commerce Website Development",
+          budget: "₹2,000 - ₹5,000",
+          skills: ["React", "Node.js", "MongoDB"],
+          postedTime: "1 hour ago",
+          projectType: "Web Development",
+          description:
+            "Looking for a skilled developer to create a modern e-commerce website with payment integration.",
+          requirements: ["Experience with React and Node.js", "Payment gateway integration"],
+          clientName: "Digital Commerce Co.",
+          clientRating: 4.8,
+          duration: "6-8 weeks",
+        },
+      ]
+      setFreelanceProjects(mockProjects)
     }
 
     // Fetch freelance projects

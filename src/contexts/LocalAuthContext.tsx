@@ -1,7 +1,15 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { LocalAuthService, DemoUser } from '@/services/localAuthService';
+import { localAuthService } from '@/services/localAuthService';
+
+type DemoUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  redirect: string;
+};
 import { toast } from 'sonner';
 
 interface LocalAuthContextType {
@@ -21,14 +29,14 @@ export const LocalAuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Check for existing session on app load
-    const currentUser = LocalAuthService.getCurrentUser();
+    const currentUser = localAuthService.getCurrentUser();
     setUser(currentUser);
     setLoading(false);
   }, []);
 
   const login = async (email: string, password: string, role?: string): Promise<boolean> => {
     try {
-      const result = await LocalAuthService.login(email.trim(), password.trim());
+      const result = await localAuthService.login(email.trim(), password.trim());
       
       if (result.success && result.user) {
         // Check if role matches (if specified)
@@ -54,7 +62,7 @@ export const LocalAuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = () => {
-    LocalAuthService.logout();
+    localAuthService.logout();
     setUser(null);
     toast.success('Successfully logged out');
     navigate('/');

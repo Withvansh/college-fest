@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { enhancedJobsService } from "@/services/sampleDataService";
+import { sampleDataService } from "@/services/sampleDataService";
 import { Search, MapPin, DollarSign, Clock, Building2, BookOpen, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -22,7 +22,7 @@ const JobSeekerDashboard = () => {
   const loadJobs = async () => {
     try {
       setLoading(true);
-      const jobsData = await enhancedJobsService.getJobs();
+      const jobsData = await sampleDataService.getSampleData();
       setJobs(jobsData);
     } catch (error) {
       console.error('Error loading jobs:', error);

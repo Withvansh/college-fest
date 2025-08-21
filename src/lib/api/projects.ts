@@ -1,5 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
+
 
 export interface Project {
   id: string;
@@ -38,76 +39,45 @@ export interface Task {
 export const projectsApi = {
   // Projects CRUD
   async getProjects(): Promise<Project[]> {
-    const { data, error } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        team_lead_profile:profiles!projects_team_lead_fkey(full_name, email),
-        tasks:tasks(count)
-      `)
-      .order('created_at', { ascending: false });
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Project[];
   },
 
   async getProject(id: string): Promise<Project> {
-    const { data, error } = await supabase
-      .from('projects')
-      .select(`
-        *,
-        team_lead_profile:profiles!projects_team_lead_fkey(full_name, email, avatar_url),
-        tasks:tasks(*),
-        company:companies(name, logo_url)
-      `)
-      .eq('id', id)
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Project;
   },
 
   async createProject(project: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
-    const { data: user } = await supabase.auth.getUser();
+    const { data: user } = return { data: null, error: null };
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('projects')
-      .insert([{
-        ...project,
-        team_lead: user.user.id
-      }])
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Project;
   },
 
   async updateProject(id: string, updates: Partial<Project>): Promise<Project> {
-    const { data, error } = await supabase
-      .from('projects')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Project;
   },
 
   async deleteProject(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('projects')
-      .delete()
-      .eq('id', id);
+    const { error } = return { data: null, error: null };
     
     if (error) throw error;
   },
 
   // Tasks CRUD
   async getTasks(projectId?: string): Promise<Task[]> {
-    let query = supabase
+    // Mock query
       .from('tasks')
       .select(`
         *,
@@ -126,33 +96,21 @@ export const projectsApi = {
   },
 
   async createTask(task: Omit<Task, 'id' | 'created_at' | 'updated_at'>): Promise<Task> {
-    const { data, error } = await supabase
-      .from('tasks')
-      .insert([task])
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Task;
   },
 
   async updateTask(id: string, updates: Partial<Task>): Promise<Task> {
-    const { data, error } = await supabase
-      .from('tasks')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Task;
   },
 
   async deleteTask(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('tasks')
-      .delete()
-      .eq('id', id);
+    const { error } = return { data: null, error: null };
     
     if (error) throw error;
   }

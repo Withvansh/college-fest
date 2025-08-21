@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { CalendarIcon, Clock, Edit, MapPin, Search } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface AttendanceRecord {
   id: string;
@@ -56,22 +56,41 @@ const AttendanceManagement = () => {
 
   const loadAttendanceRecords = async () => {
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
+      // Mock attendance data
+      const mockData: AttendanceRecord[] = [
+        {
+          id: '1',
+          employee_id: 'EMP001',
+          date: format(selectedDate, 'yyyy-MM-dd'),
+          check_in_time: '2024-01-15T09:00:00',
+          check_out_time: '2024-01-15T17:30:00',
+          status: 'present',
+          total_hours: 8.5,
+          location: { office: true },
+          notes: null,
+          employees: {
+            employee_id: 'EMP001',
+            profiles: { full_name: 'John Doe' }
+          }
+        },
+        {
+          id: '2',
+          employee_id: 'EMP002',
+          date: format(selectedDate, 'yyyy-MM-dd'),
+          check_in_time: null,
+          check_out_time: null,
+          status: 'absent',
+          total_hours: 0,
+          location: null,
+          notes: 'Sick leave',
+          employees: {
+            employee_id: 'EMP002',
+            profiles: { full_name: 'Jane Smith' }
+          }
+        }
+      ];
       
-      const { data, error } = await supabase
-        .from('attendance_records')
-        .select(`
-          *,
-          employees!attendance_records_employee_id_fkey(
-            employee_id,
-            profiles!employees_user_id_fkey(full_name)
-          )
-        `)
-        .eq('date', dateStr)
-        .order('check_in_time', { ascending: true });
-
-      if (error) throw error;
-      setAttendanceRecords(data || []);
+      setAttendanceRecords(mockData);
     } catch (error: any) {
       console.error('Error loading attendance records:', error);
       toast.error('Failed to load attendance records');
@@ -130,16 +149,14 @@ const AttendanceManagement = () => {
         updateData.total_hours = Math.round((diffInMs / (1000 * 60 * 60)) * 100) / 100;
       }
 
-      const { error } = await supabase
-        .from('attendance_records')
-        .update(updateData)
-        .eq('id', editingRecord.id);
-
-      if (error) throw error;
+      // Mock update - in real app, call your API
+      const updatedRecords = attendanceRecords.map(record => 
+        record.id === editingRecord.id ? { ...record, ...updateData } : record
+      );
+      setAttendanceRecords(updatedRecords);
 
       toast.success('Attendance record updated successfully');
       setEditingRecord(null);
-      loadAttendanceRecords();
     } catch (error: any) {
       console.error('Error updating attendance:', error);
       toast.error('Failed to update attendance record');
@@ -148,22 +165,18 @@ const AttendanceManagement = () => {
 
   const handleMarkAttendance = async (employeeId: string, status: 'present' | 'absent') => {
     try {
-      const dateStr = format(selectedDate, 'yyyy-MM-dd');
-      
-      const { error } = await supabase
-        .from('attendance_records')
-        .upsert({
-          employee_id: employeeId,
-          date: dateStr,
-          status: status,
+      // Mock update - in real app, call your API
+      const updatedRecords = attendanceRecords.map(record => 
+        record.employee_id === employeeId ? {
+          ...record,
+          status,
           check_in_time: status === 'present' ? new Date().toISOString() : null,
           total_hours: status === 'present' ? 8 : 0
-        });
-
-      if (error) throw error;
+        } : record
+      );
+      setAttendanceRecords(updatedRecords);
 
       toast.success(`Employee marked as ${status}`);
-      loadAttendanceRecords();
     } catch (error: any) {
       console.error('Error marking attendance:', error);
       toast.error('Failed to mark attendance');

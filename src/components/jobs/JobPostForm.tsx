@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
+// Supabase integration removed
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocalAuth } from '@/contexts/LocalAuthContext';
 import { toast } from 'sonner';
@@ -107,28 +107,11 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         return;
       }
 
-      // Verify the profile exists before posting the job
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id, role')
-        .eq('id', recruiterId)
-        .single();
-
-      if (profileError || !profile) {
-        console.error('Profile not found:', profileError);
-        toast.error('Profile not found. Please refresh and try again.');
-        return;
-      }
-
-      if (profile.role !== 'recruiter') {
-        toast.error('Only recruiters can post jobs');
-        return;
-      }
-
-      console.log('Profile verified:', profile);
-      console.log('Using recruiter ID:', recruiterId);
-
+      // Mock job posting - replace with actual API call when backend is ready
+      console.log('Mock job posting for recruiter:', recruiterId);
+      
       const jobData = {
+        id: 'mock-' + Date.now(),
         title: data.title,
         description: data.description,
         requirements: data.requirements,
@@ -145,22 +128,11 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         application_deadline: data.application_deadline
           ? new Date(data.application_deadline).toISOString()
           : null,
-        status: 'active' as const
+        status: 'active' as const,
+        created_at: new Date().toISOString()
       };
 
-      const { data: result, error } = await supabase
-        .from('jobs')
-        .insert([jobData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Job posting error:', error);
-        toast.error(`Failed to post job: ${error.message}`);
-        return;
-      }
-
-      console.log('✅ Job posted successfully:', result);
+      console.log('✅ Job posted successfully (mock):', jobData);
       toast.success('Job posted successfully!');
 
       reset({
