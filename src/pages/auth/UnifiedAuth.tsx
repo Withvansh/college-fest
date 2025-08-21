@@ -9,14 +9,51 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocalAuth } from '@/contexts/LocalAuthContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, User, Briefcase, Code, Building2, GraduationCap, School } from 'lucide-react';
+import { signup, login as apiLogin } from '@/services/auth';
 
 const userTypes = [
-  { id: 'jobseeker', label: 'Job Seeker', icon: User, color: 'from-blue-500 to-purple-600', description: 'Find your dream job' },
-  { id: 'recruiter', label: 'Recruiter', icon: Briefcase, color: 'from-green-500 to-blue-600', description: 'Hire top talent' },
-  { id: 'freelancer', label: 'Freelancer', icon: Code, color: 'from-purple-500 to-pink-600', description: 'Showcase your skills' },
-  { id: 'client', label: 'Client', icon: Building2, color: 'from-blue-500 to-green-600', description: 'Hire freelancers' },
-  { id: 'student', label: 'Student', icon: GraduationCap, color: 'from-indigo-500 to-cyan-600', description: 'Campus opportunities' },
-  { id: 'college', label: 'College', icon: School, color: 'from-emerald-500 to-teal-600', description: 'Manage placements' }
+  {
+    id: 'jobseeker',
+    label: 'Job Seeker',
+    icon: User,
+    color: 'from-blue-500 to-purple-600',
+    description: 'Find your dream job',
+  },
+  {
+    id: 'recruiter',
+    label: 'Recruiter',
+    icon: Briefcase,
+    color: 'from-green-500 to-blue-600',
+    description: 'Hire top talent',
+  },
+  {
+    id: 'freelancer',
+    label: 'Freelancer',
+    icon: Code,
+    color: 'from-purple-500 to-pink-600',
+    description: 'Showcase your skills',
+  },
+  {
+    id: 'client',
+    label: 'Client',
+    icon: Building2,
+    color: 'from-blue-500 to-green-600',
+    description: 'Hire freelancers',
+  },
+  {
+    id: 'student',
+    label: 'Student',
+    icon: GraduationCap,
+    color: 'from-indigo-500 to-cyan-600',
+    description: 'Campus opportunities',
+  },
+  {
+    id: 'college',
+    label: 'College',
+    icon: School,
+    color: 'from-emerald-500 to-teal-600',
+    description: 'Manage placements',
+  },
 ];
 
 const UnifiedAuth = () => {
@@ -29,8 +66,7 @@ const UnifiedAuth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-
-  const { login, signup } = useAuth();
+  
   const { login: localLogin } = useLocalAuth();
 
   // Handle URL parameters and authentication redirect
@@ -40,8 +76,6 @@ const UnifiedAuth = () => {
       setSelectedUserType(typeFromUrl);
     }
   }, [searchParams]);
-
-
 
   const selectedType = userTypes.find(type => type.id === selectedUserType)!;
   const IconComponent = selectedType.icon;
@@ -58,7 +92,7 @@ const UnifiedAuth = () => {
       freelancer: { email: 'demo.freelancer@minutehire.com', password: '#Freelance123' },
       client: { email: 'demo.client@minutehire.com', password: '#Client123' },
       student: { email: 'demo.student@minutehire.com', password: '#Student123' },
-      college: { email: 'demo.college@minutehire.com', password: '#College123' }
+      college: { email: 'demo.college@minutehire.com', password: '#College123' },
     };
     return credentials[selectedUserType] || { email: '', password: '' };
   };
@@ -72,9 +106,13 @@ const UnifiedAuth = () => {
 
     setIsLoading(true);
     try {
-      await login(email.trim(), password.trim(), selectedUserType);
+      const success = await apiLogin(email.trim(), password.trim());
+      if (success) {
+        toast.success('Login successful!');
+        // Add redirect logic here
+      }
     } catch (error) {
-      toast.error('Login failed. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Login failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -90,9 +128,16 @@ const UnifiedAuth = () => {
     setIsLoading(true);
     try {
       const success = await signup(email.trim(), password.trim(), name.trim(), selectedUserType);
-      if (success) setActiveTab('login');
+      if (success) {
+        toast.success('Signup successful! Please login.');
+        setActiveTab('login');
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setName('');
+      }
     } catch (error) {
-      toast.error('Signup failed. Please try again.');
+      toast.error(error instanceof Error ? error.message : 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -109,13 +154,20 @@ const UnifiedAuth = () => {
       // Redirect after successful demo login
       const getRedirectPath = (userType: string): string => {
         switch (userType) {
-          case 'recruiter': return '/recruiter/dashboard';
-          case 'jobseeker': return '/jobseeker/dashboard';
-          case 'freelancer': return '/freelancer/dashboard';
-          case 'client': return '/client/dashboard';
-          case 'college': return '/college/dashboard';
-          case 'student': return '/student/dashboard';
-          default: return '/';
+          case 'recruiter':
+            return '/recruiter/dashboard';
+          case 'jobseeker':
+            return '/jobseeker/dashboard';
+          case 'freelancer':
+            return '/freelancer/dashboard';
+          case 'client':
+            return '/client/dashboard';
+          case 'college':
+            return '/college/dashboard';
+          case 'student':
+            return '/student/dashboard';
+          default:
+            return '/';
         }
       };
       setTimeout(() => navigate(getRedirectPath(selectedUserType)), 100);
@@ -126,8 +178,6 @@ const UnifiedAuth = () => {
     }
   };
 
-
-
   const fillDemoCredentials = () => {
     const demo = getDemoCredentials();
     setEmail(demo.email);
@@ -136,7 +186,10 @@ const UnifiedAuth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4 overflow-hidden" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 flex items-center justify-center p-4 overflow-hidden"
+      style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+    >
       <div className="w-full max-w-6xl">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* User Type Selection */}
@@ -145,9 +198,9 @@ const UnifiedAuth = () => {
               <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to MinuteHire</h1>
               <p className="text-gray-600">Choose your role to get started</p>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-3">
-              {userTypes.map((type) => {
+              {userTypes.map(type => {
                 const Icon = type.icon;
                 return (
                   <button
@@ -159,7 +212,9 @@ const UnifiedAuth = () => {
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50 hover:shadow-md'
                     }`}
                   >
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${type.color} flex items-center justify-center mb-2 mx-auto shadow-sm`}>
+                    <div
+                      className={`w-10 h-10 rounded-lg bg-gradient-to-r ${type.color} flex items-center justify-center mb-2 mx-auto shadow-sm`}
+                    >
                       <Icon className="h-5 w-5 text-white" />
                     </div>
                     <div className="text-sm font-medium text-gray-900">{type.label}</div>
@@ -173,11 +228,17 @@ const UnifiedAuth = () => {
           {/* Auth Form */}
           <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm animate-slide-in-right">
             <CardHeader className="text-center pb-4">
-              <div className={`mx-auto w-16 h-16 bg-gradient-to-r ${selectedType.color} rounded-full flex items-center justify-center shadow-lg mb-4 transition-all duration-300`}>
+              <div
+                className={`mx-auto w-16 h-16 bg-gradient-to-r ${selectedType.color} rounded-full flex items-center justify-center shadow-lg mb-4 transition-all duration-300`}
+              >
                 <IconComponent className="h-8 w-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 transition-all duration-300">{selectedType.label} Portal</h2>
-              <p className="text-gray-600 transition-all duration-300">{selectedType.description}</p>
+              <h2 className="text-2xl font-bold text-gray-900 transition-all duration-300">
+                {selectedType.label} Portal
+              </h2>
+              <p className="text-gray-600 transition-all duration-300">
+                {selectedType.description}
+              </p>
             </CardHeader>
 
             <CardContent className="space-y-6">
@@ -197,7 +258,7 @@ const UnifiedAuth = () => {
                         type="email"
                         placeholder="Enter your email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={e => setEmail(e.target.value)}
                         className="h-11"
                         required
                       />
@@ -210,7 +271,7 @@ const UnifiedAuth = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Enter your password"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={e => setPassword(e.target.value)}
                           className="h-11 pr-10"
                           required
                         />
@@ -219,7 +280,11 @@ const UnifiedAuth = () => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -227,8 +292,6 @@ const UnifiedAuth = () => {
                       {isLoading ? 'Logging in...' : 'Login'}
                     </Button>
                   </form>
-                  
-
 
                   <Button
                     type="button"
@@ -249,7 +312,7 @@ const UnifiedAuth = () => {
                         type="text"
                         placeholder="Enter your full name"
                         value={name}
-                        onChange={(e) => setName(e.target.value)}
+                        onChange={e => setName(e.target.value)}
                         className="h-11"
                         required
                       />
@@ -261,7 +324,7 @@ const UnifiedAuth = () => {
                         type="email"
                         placeholder="Enter your email"
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={e => setEmail(e.target.value)}
                         className="h-11"
                         required
                       />
@@ -274,7 +337,7 @@ const UnifiedAuth = () => {
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Create a password (min. 6 characters)"
                           value={password}
-                          onChange={(e) => setPassword(e.target.value)}
+                          onChange={e => setPassword(e.target.value)}
                           className="h-11 pr-10"
                           required
                           minLength={6}
@@ -284,7 +347,11 @@ const UnifiedAuth = () => {
                           onClick={() => setShowPassword(!showPassword)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          {showPassword ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
                         </button>
                       </div>
                     </div>
@@ -292,8 +359,6 @@ const UnifiedAuth = () => {
                       {isLoading ? 'Creating Account...' : 'Create Account'}
                     </Button>
                   </form>
-
-
                 </TabsContent>
 
                 <TabsContent value="demo" className="space-y-4 mt-6">

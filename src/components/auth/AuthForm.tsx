@@ -24,7 +24,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
+  const [full_name, setFull_Name] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
@@ -56,21 +56,25 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
 
    const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email.trim() || !password.trim() || !name.trim()||!role.trim()) {
+console.log('handleSignup called',email)
+    if (!email.trim() || !password.trim() || !full_name.trim() || !role?.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     setIsLoading(true);
     try {
-      const success = await signup(email.trim(), password.trim(), name.trim(), role.trim(),);
+      const success = await signup(email.trim(), password.trim(), full_name.trim(), role.trim());
       if (success) {
         toast.success("Signup successful! Please login.");
         setActiveTab("login");
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setFull_Name('');
       }
-    } catch (error: any) {
-      toast.error(error.message || "Signup failed. Please try again."); 
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Signup failed. Please try again."); 
     } finally {
       setIsLoading(false);
     }
@@ -151,8 +155,8 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                     id="signup-name"
                     type="text"
                     placeholder="Enter your full name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={full_name}
+                    onChange={(e) => setFull_Name(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -194,7 +198,10 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full h-12" disabled={isLoading}>
+                <Button type="submit" className="w-full h-12"   onClick={(e) => {
+    console.log('Button clicked');
+    // Don't prevent default here, let form handle it
+  }}>
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
