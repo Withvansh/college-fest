@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from '@/lib/utils/axios';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,45 +62,33 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
   });
 
   const onSubmit = async (values: BookingFormData) => {
-    console.log('📨 Form Values:', values);
-    console.log('👤 Profile Info:', profile);
-    console.log('🔐 Authenticated User:', user);
-    console.log('👤 Proceeding as Guest:', proceedAsGuest);
-
     if (!profile) {
-      console.warn('⚠️ Missing profile.');
       toast.error('Missing profile information.');
       return;
     }
-
     if (!user && !proceedAsGuest) {
-      console.log('🚫 User not logged in — showing guest prompt');
       setShowGuestPrompt(true);
       return;
     }
-
     setIsLoading(true);
-    console.log('⏳ Sending request to Supabase...');
-
     try {
-      const { data, error } = return { data: null, error: null };
-
-      if (error) {
-        console.error('❌ Supabase Error:', error);
-        toast.error('Failed to create booking. Please try again.');
-      } else {
-        console.log('✅ Booking Success:', data);
-        toast.success('Booking request sent successfully!');
-        onClose();
-        form.reset();
-        setProceedAsGuest(false);
-      }
-    } catch (err) {
-      console.error('💥 Unexpected Error:', err);
-      toast.error('An unexpected error occurred. Please try again.');
+      
+      await axios.post('/bookings', {
+        ...values,
+        providerId: profile.id,
+        providerName: profile.name,
+        jobCategory: profile.job_category,
+        userId: user?.id || null,
+        guest: !user,
+      });
+      toast.success('Booking request sent successfully!');
+      onClose();
+      form.reset();
+      setProceedAsGuest(false);
+    } catch (err: any) {
+      toast.error(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
-      console.log('✅ Done submitting');
     }
   };
 

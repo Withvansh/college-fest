@@ -177,24 +177,24 @@ const App = () => {
                     
                     {/* Protected Job Seeker Routes */}
                     <Route path="/jobseeker/dashboard" element={
-                      <LocalProtectedRoute requiredRole={['jobseeker']}>
+                      /*<LocalProtectedRoute requiredRole={['jobseeker']}>*/
                         <JobSeekerDashboard />
-                      </LocalProtectedRoute>
+                     /* </LocalProtectedRoute>*/
                     } />
                     <Route path="/jobseeker/applications" element={
-                      <LocalProtectedRoute requiredRole={['jobseeker']}>
+                      // <LocalProtectedRoute requiredRole={['jobseeker']}>
                         <JobSeekerApplications />
-                      </LocalProtectedRoute>
+                      /* </LocalProtectedRoute> */
                     } />
                     <Route path="/jobseeker/profile" element={
-                      <LocalProtectedRoute requiredRole={['jobseeker']}>
+                      // <LocalProtectedRoute requiredRole={['jobseeker']}>
                         <JobSeekerProfile />
-                      </LocalProtectedRoute>
+                      // </LocalProtectedRoute>
                     } />
                     <Route path="/jobseeker/job/:id" element={
-                      <LocalProtectedRoute requiredRole={['jobseeker']}>
+                      // <LocalProtectedRoute requiredRole={['jobseeker']}>
                         <JobDetails />
-                      </LocalProtectedRoute>
+                      // </LocalProtectedRoute>
                     } />
                     <Route path="/jobseeker/test/:id" element={
                       <LocalProtectedRoute requiredRole={['jobseeker']}>

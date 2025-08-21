@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import axios from '../../lib/utils/axios';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -70,69 +71,29 @@ const JobSeekerProfile = () => {
   }, []);
 
   const loadProfile = async () => {
+    // if (!user?.id) return;
     try {
       setLoading(true);
-      // Mock data - replace with real API call
-      const mockProfile: UserProfile = {
-        id: user?.id || '1',
-        name: user?.name || 'John Doe',
-        email: user?.email || 'john.doe@example.com',
-        phone: '+91 9876543210',
-        location: 'Bangalore, India',
-        bio: 'Experienced Frontend Developer with 5+ years of expertise in React, TypeScript, and modern web technologies. Passionate about creating intuitive user experiences and writing clean, maintainable code.',
-        skills: ['React', 'TypeScript', 'JavaScript', 'Node.js', 'CSS', 'HTML', 'Git', 'AWS'],
-        resumeUrl: '/resume-sample.pdf',
-        workExperience: [
-          {
-            id: '1',
-            company: 'Tech Solutions Inc.',
-            position: 'Senior Frontend Developer',
-            startDate: '2022-01',
-            description: 'Led development of customer-facing web applications using React and TypeScript. Mentored junior developers and improved code quality standards.',
-            current: true
-          },
-          {
-            id: '2',
-            company: 'StartupXYZ',
-            position: 'Frontend Developer',
-            startDate: '2020-06',
-            endDate: '2021-12',
-            description: 'Developed responsive web applications and collaborated with design team to implement UI/UX improvements.',
-            current: false
-          }
-        ],
-        education: [
-          {
-            id: '1',
-            institution: 'Indian Institute of Technology',
-            degree: 'Bachelor of Technology',
-            field: 'Computer Science Engineering',
-            startDate: '2016-07',
-            endDate: '2020-05',
-            gpa: '8.5'
-          }
-        ],
-        testScores: [
-          {
-            id: '1',
-            testName: 'JavaScript Fundamentals',
-            score: 85,
-            maxScore: 100,
-            percentage: 85,
-            completedAt: '2024-01-15'
-          },
-          {
-            id: '2',
-            testName: 'React Advanced',
-            score: 92,
-            maxScore: 100,
-            percentage: 92,
-            completedAt: '2024-01-10'
-          }
-        ],
-        publicProfile: true
-      };
-      setProfile(mockProfile);
+      
+      const res = await axios.get(`/user/68a725e74c1f8881eeb012ec`);
+      const data=res.data.user;
+      console.log(data.user)
+      // Map backend data to UserProfile shape if needed
+      setProfile({
+        id: data._id,
+        name: data.full_name,
+        email: data.email,
+        phone: data.phone || '',
+        location: data.location || '',
+        bio: data.bio || '',
+        skills: data.skills || [],
+        resumeUrl: data.resumeUrl || '',
+        avatarUrl: data.avatar_url || '',
+        workExperience: data.workExperience || [],
+        education: data.education || [],
+        testScores: data.testScores || [],
+        publicProfile: data.publicProfile ?? true,
+      });
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -142,12 +103,21 @@ const JobSeekerProfile = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!profile) return;
-    
+    // if (!profile || !user?.id) return;
     setSaving(true);
     try {
-      // Mock API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const payload = {
+        full_name: profile.name,
+        email: profile.email,
+        phone: profile.phone,
+        location: profile.location,
+        bio: profile.bio,
+        skills: profile.skills,
+        avatar_url: profile.avatarUrl,
+        publicProfile: profile.publicProfile,
+        // Add workExperience, education, testScores, resumeUrl if supported by backend
+      };
+      await axios.put(`/user/68a725e74c1f8881eeb012ec`, payload);
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {

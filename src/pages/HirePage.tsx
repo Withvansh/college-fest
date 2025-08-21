@@ -1,5 +1,5 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from '@/lib/utils/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -68,16 +68,61 @@ const jobCategories = [
   // { id: 'yoga-instructor', name: 'Yoga Instructor', icon: Heart, color: 'bg-cyan-500' },
 ];
 
+
 const HirePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showListYourselfModal, setShowListYourselfModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
+  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
 
+  // Fetch users for selected category
+  useEffect(() => {
+    if (!selectedCategory) {
+      setFilteredUsers([]);
+      return;
+    }
+    setUsersLoading(true);
+    setUsersError(null);
+    axios.get(`/user`)
+      .then((res) => {
+        setFilteredUsers(Array.isArray(res.data) ? res.data : []);
+      })
+      .catch((err) => {
+        setUsersError(err.message);
+        setFilteredUsers([]);
+      })
+      .finally(() => setUsersLoading(false));
+  }, [selectedCategory]);
+
+  // Example: Send booking request when a category is selected
   const handleCategoryClick = (categoryId: string) => {
     setSelectedCategory(categoryId);
     setShowCategoryModal(true);
   };
+
+  // Example: List yourself (open modal, then POST to API)
+  // const handleListYourself = async (profileData: any) => {
+  //   setLoading(true);
+  //   setApiError(null);
+  //   try {
+  //     const res = await fetch("/api/user", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(profileData),
+  //     });
+  //     if (!res.ok) throw new Error("Failed to list yourself");
+  //     // Optionally handle response
+  //   } catch (err: any) {
+  //     setApiError(err.message);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const filteredCategories = jobCategories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -133,7 +178,7 @@ const HirePage = () => {
         <Separator className="my-8" />
 
         {/* List Yourself Section */}
-        <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+        {/* <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
           <h2 className="text-3xl font-bold text-gray-900 mb-4">
             Want to Get Hired?
           </h2>
@@ -148,20 +193,52 @@ const HirePage = () => {
           >
             List Yourself to Get Hired
           </Button>
-        </div>
+        </div> */}
+
 
         {/* Category Modal */}
         <CategoryModal
           isOpen={showCategoryModal}
           onClose={() => setShowCategoryModal(false)}
+          onSelect={(category) => setSelectedCategory(category)}
           category={selectedCategory ? jobCategories.find(c => c.id === selectedCategory) : null}
         />
 
+        {/* Filtered Users Section */}
+        {selectedCategory && (
+          <div className="my-8">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Available {jobCategories.find(c => c.id === selectedCategory)?.name} Providers
+            </h2>
+            {usersLoading && <div className="text-gray-500 text-center">Loading users...</div>}
+            {usersError && <div className="text-red-500 text-center">{usersError}</div>}
+            {!usersLoading && !usersError && filteredUsers.length === 0 && (
+              <div className="text-gray-500 text-center">No providers found for this category.</div>
+            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredUsers.map((user) => (
+                <Card key={user._id} className="p-4">
+                  <CardHeader>
+                    <CardTitle>{user.full_name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-2 text-sm text-gray-600">{user.email}</div>
+                    <div className="mb-2 text-sm text-gray-600">{user.location}</div>
+                    <div className="mb-2 text-sm text-gray-600">Skills: {user.skills?.join(", ")}</div>
+                    <div className="mb-2 text-sm text-gray-600">Role: {user.role}</div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* List Yourself Modal */}
-        <ListYourselfModal
+        {/* <ListYourselfModal
           isOpen={showListYourselfModal}
           onClose={() => setShowListYourselfModal(false)}
-        />
+          onSubmit={handleListYourself}
+        /> */}
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ const LocalProtectedRoute = ({ children, requiredRole }: LocalProtectedRouteProp
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/auth/jobseeker" replace />;
+    return <Navigate to="/jobseeker/dashboard" replace />;
   }
 
   if (requiredRole && !requiredRole.includes(user?.role || '')) {
