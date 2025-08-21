@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocalAuth } from '@/contexts/LocalAuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Eye, EyeOff, Chrome } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LocalAuthFormProps {
   userType: string;
@@ -28,23 +28,10 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
   const [activeTab, setActiveTab] = useState('login');
   
   const { login: localLogin } = useLocalAuth();
-  const { login, signup, signInWithGoogle, user, isAuthenticated } = useAuth();
+  const { login, signup } = useAuth();
   const navigate = useNavigate();
 
-  useEffect(() => {
-  if (isAuthenticated && user) {
-    let path = '/';
 
-    if (user.role === 'recruiter' && user.dashboardId) {
-      path = `/recruiter/dashboard/${user.dashboardId}`;
-    } else {
-      path = getRedirectPath(user.role);
-    }
-
-    console.log('User authenticated, redirecting to:', path);
-    navigate(path);
-  }
-}, [isAuthenticated, user, navigate]);
 
 
   // Function to get redirect path based on user type
@@ -113,21 +100,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Initiating Google sign-in for role:', userType);
-      const success = await signInWithGoogle(userType);
-      if (!success) {
-        toast.error('Google sign-in failed. Please check your internet connection and try again.');
-      }
-    } catch (error) {
-      console.error('Google sign-in error:', error);
-      toast.error('Google sign-in failed. Please try email login instead.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+
 
   const handleDemoLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -247,31 +220,13 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                 </Button>
               </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                </div>
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-                className="w-full h-12"
-              >
-                <Chrome className="h-4 w-4 mr-2" />
-                {isLoading ? 'Connecting...' : `Sign in with Google as ${userType}`}
-              </Button>
               
-              {userType === 'recruiter' && (
+              {/* {userType === 'recruiter' && (
                 <div className="text-center text-sm text-gray-600">
                   <p>After Google sign-in, you'll be able to post jobs immediately!</p>
                 </div>
-              )}
+              )} */}
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
@@ -330,25 +285,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                 </Button>
               </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-white px-2 text-gray-500">Or continue with</span>
-                </div>
-              </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-                className="w-full h-12"
-              >
-                <Chrome className="h-4 w-4 mr-2" />
-                {isLoading ? 'Connecting...' : `Sign up with Google as ${userType}`}
-              </Button>
             </TabsContent>
 
             <TabsContent value="demo" className="space-y-4">

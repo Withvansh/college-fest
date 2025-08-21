@@ -1,28 +1,23 @@
 
-import { supabase } from '@/integrations/supabase/client';
+// Supabase removed
+
 
 export const storageApi = {
   async uploadFile(bucket: string, path: string, file: File) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .upload(path, file);
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;
   },
 
   async getPublicUrl(bucket: string, path: string) {
-    const { data } = supabase.storage
-      .from(bucket)
-      .getPublicUrl(path);
+    const { data } = return { data: null, error: null };
 
     return data.publicUrl;
   },
 
   async deleteFile(bucket: string, path: string) {
-    const { data, error } = await supabase.storage
-      .from(bucket)
-      .remove([path]);
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;

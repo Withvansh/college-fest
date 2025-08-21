@@ -30,8 +30,8 @@ import {
   BookOpen,   // 🔁 Use BookOpen for "Educational Tutor"
   Megaphone,  // 🔁 Use Megaphone for "Ads Manager"
 } from 'lucide-react';
-import { CategoryModal } from '@/components/hire/CategoryModal';
-import { ListYourselfModal } from '@/components/hire/ListYourselfModal';
+import CategoryModal from '@/components/hire/CategoryModal';
+import ListYourselfModal from '@/components/hire/ListYourselfModal';
 
 const jobCategories = [
   { id: 'web-developer', name: 'Website Developer', icon: Laptop, color: 'bg-blue-500' },

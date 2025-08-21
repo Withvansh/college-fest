@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { gigsService } from "@/services/sampleDataService";
+import { sampleDataService } from "@/services/sampleDataService";
 import { Search, DollarSign, Clock, Code, User, FileText, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -26,7 +26,7 @@ const FreelancerDashboard = () => {
   const loadGigs = async () => {
     try {
       setLoading(true);
-      const gigsData = await gigsService.getGigs();
+      const gigsData = await sampleDataService.getSampleData();
       setGigs(gigsData);
     } catch (error) {
       console.error('Error loading gigs:', error);

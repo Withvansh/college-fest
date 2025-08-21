@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
 import { Eye, Edit, RotateCcw, UserMinus, Search, Filter, Users, Phone, Mail, MapPin, Calendar, Building, User } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 
 interface Employee {
   id: string;
@@ -58,39 +58,62 @@ const EmployeeDirectory = () => {
 
   const loadEmployees = async () => {
     try {
-      console.log('Loading employees...');
-      const { data, error } = await supabase
-        .from('employees')
-        .select(`
-          *,
-          profiles!employees_user_id_fkey(full_name, email, phone, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
+      // Mock employee data
+      const mockEmployees: Employee[] = [
+        {
+          id: '1',
+          employee_id: 'EMP001',
+          full_name: 'John Doe',
+          email: 'john.doe@company.com',
+          phone: '+1-555-0123',
+          department: 'Engineering',
+          designation: 'Senior Developer',
+          employment_status: 'active',
+          joining_date: '2023-01-15',
+          work_location: 'Office',
+          profiles: {
+            full_name: 'John Doe',
+            email: 'john.doe@company.com',
+            phone: '+1-555-0123'
+          }
+        },
+        {
+          id: '2',
+          employee_id: 'EMP002',
+          full_name: 'Jane Smith',
+          email: 'jane.smith@company.com',
+          phone: '+1-555-0124',
+          department: 'Human Resources',
+          designation: 'HR Manager',
+          employment_status: 'active',
+          joining_date: '2022-08-20',
+          work_location: 'Office',
+          profiles: {
+            full_name: 'Jane Smith',
+            email: 'jane.smith@company.com',
+            phone: '+1-555-0124'
+          }
+        },
+        {
+          id: '3',
+          employee_id: 'EMP003',
+          full_name: 'Mike Johnson',
+          email: 'mike.johnson@company.com',
+          phone: '+1-555-0125',
+          department: 'Sales',
+          designation: 'Sales Executive',
+          employment_status: 'probation',
+          joining_date: '2024-01-10',
+          work_location: 'Remote',
+          profiles: {
+            full_name: 'Mike Johnson',
+            email: 'mike.johnson@company.com',
+            phone: '+1-555-0125'
+          }
+        }
+      ];
       
-      console.log('Raw employee data:', data);
-      
-      // Transform the data to match our Employee interface
-      const transformedEmployees: Employee[] = (data || []).map(emp => ({
-        id: emp.id,
-        employee_id: emp.employee_id || `EMP-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
-        full_name: emp.profiles?.full_name || 'N/A',
-        email: emp.profiles?.email || 'N/A',
-        phone: emp.profiles?.phone || 'N/A',
-        department: emp.department || 'Unassigned',
-        designation: emp.designation || 'N/A',
-        employment_status: emp.employment_status || 'probation',
-        joining_date: emp.joining_date || new Date().toISOString().split('T')[0],
-        work_location: emp.work_location || 'Office',
-        profiles: emp.profiles
-      }));
-      
-      console.log('Transformed employees:', transformedEmployees);
-      setEmployees(transformedEmployees);
+      setEmployees(mockEmployees);
     } catch (error: any) {
       console.error('Error loading employees:', error);
       toast.error('Failed to load employees: ' + error.message);
@@ -132,15 +155,13 @@ const EmployeeDirectory = () => {
 
   const handleTerminate = async (employeeId: string) => {
     try {
-      const { error } = await supabase
-        .from('employees')
-        .update({ employment_status: 'terminated' })
-        .eq('id', employeeId);
-
-      if (error) throw error;
+      // Mock update - in real app, call your API
+      const updatedEmployees = employees.map(emp => 
+        emp.id === employeeId ? { ...emp, employment_status: 'terminated' } : emp
+      );
+      setEmployees(updatedEmployees);
       
       toast.success('Employee terminated successfully');
-      loadEmployees();
     } catch (error) {
       toast.error('Failed to terminate employee');
     }

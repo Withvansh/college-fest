@@ -1,6 +1,7 @@
 
-import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
+// Supabase removed
+
+
 
 type FreelanceGig = Database['public']['Tables']['freelance_gigs']['Row'];
 type FreelanceGigInsert = Database['public']['Tables']['freelance_gigs']['Insert'];
@@ -14,7 +15,7 @@ export const freelanceApi = {
     budgetMin?: number;
     budgetMax?: number;
   } = {}) {
-    let query = supabase
+    // Mock query
       .from('freelance_gigs')
       .select(`
         *,
@@ -45,52 +46,28 @@ export const freelanceApi = {
   },
 
   async createGig(gig: FreelanceGigInsert) {
-    const { data, error } = await supabase
-      .from('freelance_gigs')
-      .insert(gig)
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;
   },
 
   async submitProposal(proposal: FreelanceProposalInsert) {
-    const { data, error } = await supabase
-      .from('freelance_proposals')
-      .insert(proposal)
-      .select(`
-        *,
-        freelance_gigs(title, budget_min, budget_max),
-        profiles!freelance_proposals_freelancer_id_fkey(full_name, email)
-      `)
-      .single();
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;
   },
 
   async getGigProposals(gigId: string) {
-    const { data, error } = await supabase
-      .from('freelance_proposals')
-      .select(`
-        *,
-        profiles!freelance_proposals_freelancer_id_fkey(full_name, email, avatar_url, skills)
-      `)
-      .eq('gig_id', gigId)
-      .order('submitted_at', { ascending: false });
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;
   },
 
   async updateProposalStatus(proposalId: string, status: string) {
-    const { data, error } = await supabase
-      .from('freelance_proposals')
-      .update({ status })
-      .eq('id', proposalId)
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
 
     if (error) throw error;
     return data;

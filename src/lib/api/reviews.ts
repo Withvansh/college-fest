@@ -1,4 +1,5 @@
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
+
 
 export interface Review {
   id: string;
@@ -13,7 +14,7 @@ export interface Review {
 
 export const reviewsApi = {
   async getReviews(userId?: string) {
-    let query = supabase
+    // Mock query
       .from('reviews')
       .select(`
         *,
@@ -33,46 +34,24 @@ export const reviewsApi = {
   },
 
   async getUserReviews(userId: string) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        reviewer:profiles!reviews_reviewer_id_fkey(full_name, avatar_url),
-        contract:freelance_contracts(contract_amount, gig:freelance_gigs(title))
-      `)
-      .eq('reviewee_id', userId)
-      .order('created_at', { ascending: false });
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data;
   },
 
   async createReview(review: Omit<Review, 'id' | 'created_at'>) {
-    const { data: user } = await supabase.auth.getUser();
+    const { data: user } = return { data: null, error: null };
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('reviews')
-      .insert([{
-        ...review,
-        reviewer_id: user.user.id
-      }])
-      .select(`
-        *,
-        reviewer:profiles!reviews_reviewer_id_fkey(full_name, avatar_url),
-        reviewee:profiles!reviews_reviewee_id_fkey(full_name, avatar_url)
-      `)
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data;
   },
 
   async getAverageRating(userId: string) {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select('rating')
-      .eq('reviewee_id', userId);
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     

@@ -31,12 +31,7 @@ import AIInterview from "./pages/AIInterview";
 import AITextInterview from "./pages/AITextInterview";
 import AIInterviewResults from "./pages/AIInterviewResults";
 import AIVideoInterview from "./pages/AIVideoInterview";
-import JobSeekerLogin from "./pages/auth/JobSeekerLogin";
-import RecruiterLogin from "./pages/auth/RecruiterLogin";
-import FreelancerLogin from "./pages/auth/FreelancerLogin";
-import ClientLogin from "./pages/auth/ClientLogin";
-import CollegeLogin from "./pages/auth/CollegeLogin";
-import StudentLogin from "./pages/auth/StudentLogin";
+import UnifiedAuth from "./pages/auth/UnifiedAuth";
 import AuthCallback from "./pages/auth/AuthCallback";
 import JobSeekerDashboard from "./pages/jobseeker/JobSeekerDashboard";
 import JobSeekerApplications from "./pages/jobseeker/JobSeekerApplications";
@@ -150,7 +145,7 @@ const App = () => {
                     <Route path="/book-campus-drive" element={<BookCampusDrive />} />
                     <Route path="/products" element={<DigitalProducts />} />
                     <Route path="/hire" element={<HirePage />} />
-                    <Route path="/auth/jobseeker-login" element={<JobSeekerLogin />} />
+                    <Route path="/auth" element={<UnifiedAuth />} />
                     <Route path="/blog/:slug" element={<BlogDetailPage />} />
                     <Route path="/faq" element={<FaqPage />} />
                     <Route path="/admin/faqs" element={<FaqManagement />} />
@@ -168,13 +163,17 @@ const App = () => {
                     <Route path="/ai-interview/results" element={<AIInterviewResults />} />
                     
                     {/* Auth Routes */}
-                    <Route path="/auth/jobseeker" element={<JobSeekerLogin />} />
-                    <Route path="/auth/recruiter" element={<RecruiterLogin />} />
+                    <Route path="/auth/jobseeker" element={<UnifiedAuth />} />
+                    <Route path="/auth/recruiter" element={<UnifiedAuth />} />
+                    <Route path="/auth/freelancer" element={<UnifiedAuth />} />
+                    <Route path="/auth/client" element={<UnifiedAuth />} />
+                    <Route path="/auth/college" element={<UnifiedAuth />} />
+                    <Route path="/auth/student" element={<UnifiedAuth />} />
                     <Route path="/auth/callback" element={<AuthCallback />} />
-                    <Route path="/freelancer-login" element={<FreelancerLogin />} />
-                    <Route path="/client-login" element={<ClientLogin />} />
-                    <Route path="/college-login" element={<CollegeLogin />} />
-                    <Route path="/student-login" element={<StudentLogin />} />
+                    <Route path="/freelancer-login" element={<UnifiedAuth />} />
+                    <Route path="/client-login" element={<UnifiedAuth />} />
+                    <Route path="/college-login" element={<UnifiedAuth />} />
+                    <Route path="/student-login" element={<UnifiedAuth />} />
                     
                     {/* Protected Job Seeker Routes */}
                     <Route path="/jobseeker/dashboard" element={

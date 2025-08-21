@@ -7,7 +7,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+// Supabase removed
+
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
@@ -83,9 +84,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         is_active: true
       };
 
-      const { error } = await supabase
-        .from('freelance_gigs')
-        .insert([projectData]);
+      const { error } = return { data: null, error: null };
 
       if (error) {
         console.error('Project posting error:', error);

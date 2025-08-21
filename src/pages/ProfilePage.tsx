@@ -11,7 +11,7 @@ import { profilesApi } from '@/lib/api/profiles';
 import { toast } from 'sonner';
 import { Upload, X, Plus, User, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { dashboardsService } from '@/lib/api/dashboards';
+import { dashboardsApi } from '@/lib/api/dashboards';
 
 const ProfilePage = () => {
  const { user, updateProfile, loading } = useAuth();
@@ -160,7 +160,15 @@ setFormLoading(true);
 
   const getDashboardPath = () => {
     if (!user) return '/';
-    return dashboardsService.getRoleBasedRedirect(user.role);
+    switch (user.role) {
+      case 'jobseeker': return '/jobseeker/dashboard';
+      case 'recruiter': return '/recruiter/dashboard';
+      case 'freelancer': return '/freelancer/dashboard';
+      case 'client': return '/client/dashboard';
+      case 'student': return '/student/dashboard';
+      case 'college': return '/college/dashboard';
+      default: return '/';
+    }
   };
 
   const renderRoleSpecificFields = () => {

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, User, ArrowRight } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+
 import { Link } from "react-router-dom";
 
 
@@ -32,32 +32,38 @@ const BlogSection = () => {
 
   const fetchPosts = async () => {
     try {
-      const { data, error } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('status', 'published')
-        .order('created_at', { ascending: false })
-        .limit(6);
-
-      if (error) throw error;
-      
-      // Transform data to match BlogPost interface
-      const transformedPosts: BlogPost[] = (data || []).map(post => ({
-        id: post.id,
-        title: post.title,
-        excerpt: post.excerpt || '',
-        content: post.content,
-        featured_image_url: post.featured_image_url || '',
-        tags: Array.isArray(post.tags) ? post.tags.map(tag => String(tag)) : [],
-        status: post.status,
-        author_id: post.author_id || '',
-        published_at: post.published_at || '',
-        created_at: post.created_at,
-        updated_at: post.updated_at,
-        slug: post.slug || post.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
-      }));
-      
-      setPosts(transformedPosts);
+      // Mock data
+      const mockPosts: BlogPost[] = [
+        {
+          id: '1',
+          title: 'Getting Started with MinuteHire',
+          excerpt: 'Learn how to use MinuteHire platform effectively for your hiring needs.',
+          content: 'Full content here...',
+          featured_image_url: '',
+          tags: ['tutorial', 'getting-started'],
+          status: 'published',
+          author_id: '1',
+          published_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          slug: 'getting-started-with-minutehire'
+        },
+        {
+          id: '2',
+          title: 'Best Practices for Remote Hiring',
+          excerpt: 'Discover effective strategies for hiring remote talent in today\'s market.',
+          content: 'Full content here...',
+          featured_image_url: '',
+          tags: ['remote-work', 'hiring'],
+          status: 'published',
+          author_id: '1',
+          published_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          slug: 'best-practices-remote-hiring'
+        }
+      ];
+      setPosts(mockPosts);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
     } finally {

@@ -1,5 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
+
 
 export interface Skill {
   id: string;
@@ -23,20 +24,14 @@ export interface UserSkill {
 
 export const skillsApi = {
   async getSkills(): Promise<Skill[]> {
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .order('name');
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Skill[];
   },
 
   async getSkillsByCategory(): Promise<Record<string, Skill[]>> {
-    const { data, error } = await supabase
-      .from('skills')
-      .select('*')
-      .order('category, name');
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     
@@ -54,75 +49,42 @@ export const skillsApi = {
   },
 
   async getUserSkills(userId?: string): Promise<UserSkill[]> {
-    const { data: user } = await supabase.auth.getUser();
+    const { data: user } = return { data: null, error: null };
     const targetUserId = userId || user.user?.id;
     
     if (!targetUserId) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('user_skills')
-      .select(`
-        *,
-        skill:skills(*)
-      `)
-      .eq('user_id', targetUserId)
-      .order('years_of_experience', { ascending: false });
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as UserSkill[];
   },
 
   async addUserSkill(skillData: Omit<UserSkill, 'id' | 'user_id' | 'created_at' | 'updated_at'>): Promise<UserSkill> {
-    const { data: user } = await supabase.auth.getUser();
+    const { data: user } = return { data: null, error: null };
     if (!user.user) throw new Error('User not authenticated');
 
-    const { data, error } = await supabase
-      .from('user_skills')
-      .insert([{
-        ...skillData,
-        user_id: user.user.id,
-        verified: skillData.verified || false
-      }])
-      .select(`
-        *,
-        skill:skills(*)
-      `)
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as UserSkill;
   },
 
   async updateUserSkill(id: string, updates: Partial<UserSkill>): Promise<UserSkill> {
-    const { data, error } = await supabase
-      .from('user_skills')
-      .update(updates)
-      .eq('id', id)
-      .select(`
-        *,
-        skill:skills(*)
-      `)
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as UserSkill;
   },
 
   async removeUserSkill(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('user_skills')
-      .delete()
-      .eq('id', id);
+    const { error } = return { data: null, error: null };
     
     if (error) throw error;
   },
 
   async createSkill(skill: Omit<Skill, 'id' | 'created_at'>): Promise<Skill> {
-    const { data, error } = await supabase
-      .from('skills')
-      .insert([skill])
-      .select()
-      .single();
+    const { data, error } = return { data: null, error: null };
     
     if (error) throw error;
     return data as Skill;

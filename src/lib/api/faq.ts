@@ -1,5 +1,6 @@
 
-import { supabase } from "@/integrations/supabase/client";
+// Supabase removed
+
 
 export type FaqItem = {
   id: string;

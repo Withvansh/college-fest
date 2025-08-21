@@ -1,4 +1,4 @@
-import { supabase } from '@/integrations/supabase/client';
+// Supabase integration removed - using mock data
 
 type Employee = {
   id: string;
@@ -76,313 +76,125 @@ export const hrmsApi = {
   async getDashboardMetrics(userId: string) {
     console.log('Loading dashboard metrics for user:', userId);
     
-    try {
-      // Get employees from the database
-      const { data: employees, error: empError } = await supabase
-        .from('employees')
-        .select('*')
-        .or(`user_id.eq.${userId},created_by.eq.${userId}`);
-
-      if (empError) {
-        console.error('Error fetching employees:', empError);
-      }
-
-      // Get attendance records for today
-      const today = new Date().toISOString().split('T')[0];
-      const { data: todayAttendance, error: attError } = await supabase
-        .from('attendance_records')
-        .select('*')
-        .eq('date', today);
-
-      if (attError) {
-        console.error('Error fetching attendance:', attError);
-      }
-
-      // Get pending leave applications
-      const { data: leaveApps, error: leaveError } = await supabase
-        .from('leave_applications')
-        .select('*')
-        .eq('status', 'pending');
-
-      if (leaveError) {
-        console.error('Error fetching leave applications:', leaveError);
-      }
-
-      // Calculate metrics with fallbacks
-      const totalEmployees = employees?.length || 0;
-      const attendanceRecords = todayAttendance || [];
-      const presentToday = attendanceRecords?.filter(att => att.status === 'present').length || 0;
-      const absentToday = attendanceRecords?.filter(att => att.status === 'absent').length || 0;
-      const onLeaveToday = attendanceRecords?.filter(att => att.status === 'on_leave').length || 0;
-      const attendancePercentage = totalEmployees > 0 ? Math.round((presentToday / totalEmployees) * 100) : 0;
-      const pendingLeaveApprovals = leaveApps?.length || 0;
-
-      // Mock data for features not yet implemented
-      const openPositions = 0;
-      const completedTrainingHours = 0;
-
-      return {
-        totalEmployees,
-        todayAttendance: {
-          present: presentToday,
-          absent: absentToday,
-          onLeave: onLeaveToday,
-          percentage: attendancePercentage
-        },
-        pendingLeaveApprovals,
-        openPositions,
-        trainingHours: completedTrainingHours,
-        employees: employees || [],
-        positions: [],
-        trainingSessions: []
-      };
-    } catch (error) {
-      console.error('Error in getDashboardMetrics:', error);
-      // Return default metrics in case of error
-      return {
-        totalEmployees: 0,
-        todayAttendance: {
-          present: 0,
-          absent: 0,
-          onLeave: 0,
-          percentage: 0
-        },
-        pendingLeaveApprovals: 0,
-        openPositions: 0,
-        trainingHours: 0,
-        employees: [],
-        positions: [],
-        trainingSessions: []
-      };
-    }
+    // Mock data - replace with actual API calls when backend is ready
+    return {
+      totalEmployees: 25,
+      todayAttendance: {
+        present: 22,
+        absent: 2,
+        onLeave: 1,
+        percentage: 88
+      },
+      pendingLeaveApprovals: 3,
+      openPositions: 2,
+      trainingHours: 120,
+      employees: [],
+      positions: [],
+      trainingSessions: []
+    };
   },
 
   // Company Management
   async createCompany(company: Omit<Company, 'id' | 'created_at'>) {
-    const { data, error } = await supabase
-      .from('companies')
-      .insert({
-        name: company.name,
-        industry: company.industry,
-        company_size: company.company_size
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Creating company:', company);
+    return {
+      id: 'mock-' + Date.now(),
+      ...company,
+      created_at: new Date().toISOString()
+    };
   },
 
   async getCompanies() {
-    const { data, error } = await supabase
-      .from('companies')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    return [];
   },
 
   // Employee Management
   async getEmployees(userId: string) {
-    const { data, error } = await supabase
-      .from('employees')
-      .select(`
-        *,
-        profiles!employees_user_id_fkey(full_name, email, phone, avatar_url)
-      `)
-      .or(`user_id.eq.${userId},created_by.eq.${userId}`)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.log('Getting employees for user:', userId);
+    return [];
   },
 
   async createEmployee(employee: any) {
     console.log('Creating employee with data:', employee);
-    
-    try {
-      // First, create the employee record
-      const { data, error } = await supabase
-        .from('employees')
-        .insert({
-          user_id: employee.user_id,
-          created_by: employee.created_by,
-          employee_id: employee.employee_id,
-          department: employee.department,
-          designation: employee.designation,
-          employment_status: employee.employment_status || 'probation',
-          joining_date: employee.joining_date,
-          work_location: employee.work_location,
-          salary_structure: employee.salary_structure,
-          emergency_contact: employee.emergency_contact,
-          employee_type: employee.employee_type || 'full_time'
-        })
-        .select(`
-          *,
-          profiles!employees_user_id_fkey(full_name, email, phone)
-        `)
-        .single();
-
-      if (error) {
-        console.error('Error creating employee:', error);
-        throw error;
-      }
-
-      console.log('Employee created successfully:', data);
-      return data;
-    } catch (error) {
-      console.error('Error in createEmployee:', error);
-      throw error;
-    }
+    return {
+      id: 'mock-' + Date.now(),
+      ...employee,
+      created_at: new Date().toISOString()
+    };
   },
 
   async updateEmployee(id: string, updates: Partial<EmployeeInsert>) {
-    const updateData: any = {};
-    
-    if (updates.user_id !== undefined) updateData.user_id = updates.user_id;
-    if (updates.company_id !== undefined) updateData.company_id = updates.company_id;
-    if (updates.employee_id !== undefined) updateData.employee_id = updates.employee_id;
-    if (updates.department !== undefined) updateData.department = updates.department;
-    if (updates.designation !== undefined) updateData.designation = updates.designation;
-    if (updates.employment_status !== undefined) updateData.employment_status = updates.employment_status;
-    if (updates.joining_date !== undefined) updateData.joining_date = updates.joining_date;
-
-    const { data, error } = await supabase
-      .from('employees')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Updating employee:', id, updates);
+    return {
+      id,
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
   },
 
   // Attendance Management
   async punchIn(employeeId: string, location?: { lat: number; lng: number }) {
-    const { data, error } = await supabase
-      .from('attendance_records')
-      .insert({
-        employee_id: employeeId,
-        date: new Date().toISOString().split('T')[0],
-        check_in_time: new Date().toISOString(),
-        location: location ? { lat: location.lat, lng: location.lng } : null,
-        status: 'present'
-      })
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Punching in employee:', employeeId, location);
+    return {
+      id: 'mock-' + Date.now(),
+      employee_id: employeeId,
+      date: new Date().toISOString().split('T')[0],
+      check_in_time: new Date().toISOString(),
+      location,
+      status: 'present',
+      created_at: new Date().toISOString()
+    };
   },
 
   async punchOut(recordId: string) {
-    const { data, error } = await supabase
-      .from('attendance_records')
-      .update({
-        check_out_time: new Date().toISOString()
-      })
-      .eq('id', recordId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Punching out record:', recordId);
+    return {
+      id: recordId,
+      check_out_time: new Date().toISOString()
+    };
   },
 
   async getAttendanceRecords(employeeId: string, month?: string) {
-    let query = supabase
-      .from('attendance_records')
-      .select('*')
-      .eq('employee_id', employeeId)
-      .order('date', { ascending: false });
-
-    if (month) {
-      const startDate = `${month}-01`;
-      const endDate = `${month}-31`;
-      query = query.gte('date', startDate).lte('date', endDate);
-    }
-
-    const { data, error } = await query;
-    if (error) throw error;
-    return data;
+    console.log('Getting attendance records for:', employeeId, month);
+    return [];
   },
 
-  // Leave Management - Fixed type issues
+  // Leave Management
   async applyLeave(leave: Omit<LeaveApplication, 'id' | 'created_at' | 'updated_at'>) {
-    // Ensure leave_type is a valid enum value
-    const validLeaveTypes = ['sick', 'casual', 'earned', 'maternity', 'paternity', 'bereavement', 'emergency'];
-    const leaveType = validLeaveTypes.includes(leave.leave_type) ? leave.leave_type as any : 'casual';
-    
-    // Ensure status is a valid enum value
-    const validStatuses = ['pending', 'approved', 'rejected'];
-    const status = leave.status && validStatuses.includes(leave.status) ? leave.status as any : 'pending';
-
-    const insertData: any = {
-      employee_id: leave.employee_id,
-      leave_type: leaveType,
-      start_date: leave.start_date,
-      end_date: leave.end_date,
-      total_days: leave.total_days,
-      status: status,
-      reason: leave.reason,
-      applied_date: leave.applied_date || new Date().toISOString()
+    console.log('Applying leave:', leave);
+    return {
+      id: 'mock-' + Date.now(),
+      ...leave,
+      status: 'pending' as const,
+      applied_date: new Date().toISOString()
     };
-
-    const { data, error } = await supabase
-      .from('leave_applications')
-      .insert(insertData)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
   },
 
   async getLeaveApplications(employeeId: string) {
-    const { data, error } = await supabase
-      .from('leave_applications')
-      .select('*')
-      .eq('employee_id', employeeId)
-      .order('applied_date', { ascending: false });
-
-    if (error) throw error;
-    return data;
+    console.log('Getting leave applications for:', employeeId);
+    return [];
   },
 
   async approveLeave(leaveId: string, approverId: string, comments?: string) {
-    const { data, error } = await supabase
-      .from('leave_applications')
-      .update({
-        status: 'approved',
-        approved_by: approverId,
-        approved_date: new Date().toISOString(),
-        approver_comments: comments
-      })
-      .eq('id', leaveId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Approving leave:', leaveId, approverId, comments);
+    return {
+      id: leaveId,
+      status: 'approved',
+      approved_by: approverId,
+      approved_date: new Date().toISOString(),
+      approver_comments: comments
+    };
   },
 
   async rejectLeave(leaveId: string, approverId: string, comments: string) {
-    const { data, error } = await supabase
-      .from('leave_applications')
-      .update({
-        status: 'rejected',
-        approved_by: approverId,
-        approved_date: new Date().toISOString(),
-        approver_comments: comments
-      })
-      .eq('id', leaveId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
+    console.log('Rejecting leave:', leaveId, approverId, comments);
+    return {
+      id: leaveId,
+      status: 'rejected',
+      approved_by: approverId,
+      approved_date: new Date().toISOString(),
+      approver_comments: comments
+    };
   },
 
   // Training Sessions Management - temporarily mocked

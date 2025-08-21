@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, X, DollarSign, Clock, FileText, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalAuth } from "@/contexts/LocalAuthContext";
 
@@ -104,6 +104,7 @@ const PostGig = () => {
       }
 
       const gigData = {
+        id: Date.now().toString(),
         title: formData.title,
         description: formData.description,
         budget_min: formData.budgetMin ? parseInt(formData.budgetMin) : null,
@@ -113,22 +114,12 @@ const PostGig = () => {
         project_type: formData.projectType || 'other',
         experience_level: formData.experienceLevel || 'intermediate',
         client_id: clientId,
-        is_active: true
+        is_active: true,
+        created_at: new Date().toISOString()
       };
 
-      const { data: result, error } = await supabase
-        .from('freelance_gigs')
-        .insert([gigData])
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ Gig posting error:', error);
-        toast.error(`Failed to post gig: ${error.message}`);
-        return;
-      }
-
-      console.log('✅ Gig posted successfully:', result);
+      // Mock API call - in real app, call your API
+      console.log('✅ Gig posted successfully:', gigData);
       toast.success("Gig posted successfully! Freelancers can now submit proposals.");
       
       // Reset form

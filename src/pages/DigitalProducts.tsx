@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { digitalProductsApi, DigitalProduct } from '@/lib/api/digitalProducts';
 import { toast } from 'sonner';
 import { ProductCheckoutModal } from '@/components/products/ProductCheckoutModal';
-import { supabase } from '@/integrations/supabase/client';
+
 
 console.log('DigitalProducts component mounted!');
 const DigitalProducts = () => {
@@ -34,23 +34,7 @@ useEffect(() => {
   filterProducts();
 }, [products, searchTerm, selectedCategory, sortBy, priceRange]);
 
-  // Sanity check: is user session connected properly?
-useEffect(() => {
-  supabase.auth.getSession().then(({ data }) => {
-    console.log("Supabase session user:", data.session?.user?.id);
-  });
-}, []);
 
-  useEffect(() => {
-  supabase
-    .from('digital_products')
-    .select('*')
-    .eq('is_active', true)
-    .then(({ data, error }) => {
-      console.log('Direct API Data from Supabase:', data);
-      console.log('Direct API Error:', error);
-    });
-}, []);
 
 
   
@@ -58,14 +42,7 @@ const loadProducts = async () => {
   try {
     console.log('Fetching products...');
 
-    // 🔍 Direct Supabase Fetch for Debugging (Add this block here)
-    const { data: debugData, error: debugError } = await supabase
-      .from('digital_products')
-      .select('*')
-      .eq('is_active', true);
 
-    console.log('🔥 Debug - Direct Supabase Query Data:', debugData);
-    console.log('🔥 Debug - Direct Supabase Query Error:', debugError);
 
     // ✅ Existing Code
     const data = await digitalProductsApi.getProducts();

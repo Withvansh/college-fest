@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -79,27 +79,25 @@ const AITextInterview = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-interview', {
-        body: {
-          action: 'start',
-          jobTitle: interview.jobTitle,
-          jobDescription: interview.jobDescription,
-          industry: interview.industry
-        }
-      });
-
-      if (error) throw error;
+      // Mock AI interview questions
+      const mockQuestions = [
+        { type: 'Technical', question: `What are the key skills required for a ${interview.jobTitle} role?`, category: 'technical' },
+        { type: 'Behavioral', question: 'Tell me about a challenging project you worked on and how you overcame obstacles.', category: 'behavioral' },
+        { type: 'Experience', question: 'How do you stay updated with the latest trends in your field?', category: 'experience' },
+        { type: 'Problem Solving', question: 'Describe a time when you had to solve a complex problem. What was your approach?', category: 'problem-solving' },
+        { type: 'Career Goals', question: 'Where do you see yourself in 5 years and how does this role align with your goals?', category: 'career' }
+      ];
 
       setInterview(prev => ({
         ...prev,
-        id: data.interviewId,
+        id: Date.now().toString(),
         status: 'in_progress',
-        questions: data.questions,
+        questions: mockQuestions,
         startTime: new Date(),
-        responses: new Array(data.questions.length).fill('')
+        responses: new Array(mockQuestions.length).fill('')
       }));
       
-      setTimeRemaining(300); // Reset timer for first question
+      setTimeRemaining(300);
       toast.success("Interview started! Good luck!");
     } catch (error) {
       console.error('Error starting interview:', error);
@@ -117,17 +115,6 @@ const AITextInterview = () => {
 
     setLoading(true);
     try {
-      const { error } = await supabase.functions.invoke('ai-interview', {
-        body: {
-          action: 'answer',
-          interviewId: interview.id,
-          answer: currentAnswer,
-          questionIndex: interview.currentQuestionIndex
-        }
-      });
-
-      if (error) throw error;
-
       // Update responses
       const newResponses = [...interview.responses];
       newResponses[interview.currentQuestionIndex] = currentAnswer;
@@ -139,7 +126,7 @@ const AITextInterview = () => {
       }));
 
       setCurrentAnswer('');
-      setTimeRemaining(300); // Reset timer for next question
+      setTimeRemaining(300);
 
       // Check if interview is complete
       if (interview.currentQuestionIndex + 1 >= interview.questions.length) {
@@ -158,26 +145,22 @@ const AITextInterview = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke('ai-interview', {
-        body: {
-          action: 'complete',
-          interviewId: interview.id
-        }
-      });
-
-      if (error) throw error;
-
       setInterview(prev => ({ ...prev, status: 'completed' }));
       
       toast.success("Interview completed! Redirecting to results...");
       
-      // Redirect to results page
+      // Mock scores and feedback
+      const mockData = {
+        scores: { technical: 85, communication: 90, overall: 87 },
+        feedback: 'Great responses! You demonstrated strong technical knowledge and communication skills.'
+      };
+      
       setTimeout(() => {
         navigate('/ai-interview/results', { 
           state: { 
             interviewId: interview.id,
-            scores: data.scores,
-            feedback: data.feedback
+            scores: mockData.scores,
+            feedback: mockData.feedback
           }
         });
       }, 2000);

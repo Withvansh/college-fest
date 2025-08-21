@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
 
@@ -45,32 +45,26 @@ const OrderManagement = () => {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('digital_orders')
-        .select(`
-          id,
-          buyer_name,
-          buyer_email,
-          buyer_phone,
-          purchase_date,
-          amount_paid,
-          payment_status,
-          order_status,
-          download_link,
-          digital_products!fk_product (
-            title,
-            category
-          )
-        `);
-
-      if (error) {
-        console.error('Supabase error:', error);
-        toast.error('Failed to load orders');
-        return;
-      }
-
-      setOrders(data || []);
-      setFilteredOrders(data || []);
+      // Mock data
+      const mockOrders: OrderWithProduct[] = [
+        {
+          id: '1',
+          buyer_name: 'John Doe',
+          buyer_email: 'john@example.com',
+          buyer_phone: '+91 9876543210',
+          purchase_date: new Date().toISOString(),
+          amount_paid: 299,
+          payment_status: 'completed',
+          order_status: 'confirmed',
+          download_link: null,
+          digital_products: {
+            title: 'Resume Template',
+            category: 'Templates'
+          }
+        }
+      ];
+      setOrders(mockOrders);
+      setFilteredOrders(mockOrders);
     } catch (error: any) {
       console.error('Unexpected error loading orders:', error);
       toast.error('Failed to load orders');
