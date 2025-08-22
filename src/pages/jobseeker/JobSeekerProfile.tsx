@@ -1,15 +1,28 @@
-
 import { useState, useEffect } from 'react';
 import axios from '../../lib/utils/axios';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { ArrowLeft, User, Mail, Phone, MapPin, Upload, Plus, X, Eye, Download, Award, BookOpen, Briefcase } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Upload,
+  Plus,
+  X,
+  Eye,
+  Download,
+  Award,
+  BookOpen,
+  Briefcase,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
@@ -65,19 +78,28 @@ const JobSeekerProfile = () => {
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadProfile();
+    const userId = localStorage.getItem('user_id');
+    if (userId) {
+      setUserId(userId);
+    }
   }, []);
+  useEffect(() => {
+    if (userId) {
+      loadProfile();
+    }
+  }, [userId]);
 
   const loadProfile = async () => {
     // if (!user?.id) return;
     try {
       setLoading(true);
-      
-      const res = await axios.get(`/user/68a725e74c1f8881eeb012ec`);
-      const data=res.data.user;
-      console.log(data.user)
+
+      const res = await axios.get(`/user/${userId}`);
+      const data = res.data.user;
+      console.log(data.user);
       // Map backend data to UserProfile shape if needed
       setProfile({
         id: data._id,
@@ -117,7 +139,7 @@ const JobSeekerProfile = () => {
         publicProfile: profile.publicProfile,
         // Add workExperience, education, testScores, resumeUrl if supported by backend
       };
-      await axios.put(`/user/68a725e74c1f8881eeb012ec`, payload);
+      await axios.put(`/user/${userId}`, payload);
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {
@@ -129,24 +151,32 @@ const JobSeekerProfile = () => {
 
   const handleAddSkill = () => {
     if (!newSkill.trim() || !profile) return;
-    
+
     if (profile.skills.includes(newSkill.trim())) {
       toast.error('Skill already exists');
       return;
     }
-    
-    setProfile(prev => prev ? {
-      ...prev,
-      skills: [...prev.skills, newSkill.trim()]
-    } : null);
+
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            skills: [...prev.skills, newSkill.trim()],
+          }
+        : null
+    );
     setNewSkill('');
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
-    setProfile(prev => prev ? {
-      ...prev,
-      skills: prev.skills.filter(skill => skill !== skillToRemove)
-    } : null);
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            skills: prev.skills.filter(skill => skill !== skillToRemove),
+          }
+        : null
+    );
   };
 
   const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,10 +184,14 @@ const JobSeekerProfile = () => {
     if (file) {
       // Mock file upload
       toast.success('Resume uploaded successfully!');
-      setProfile(prev => prev ? {
-        ...prev,
-        resumeUrl: URL.createObjectURL(file)
-      } : null);
+      setProfile(prev =>
+        prev
+          ? {
+              ...prev,
+              resumeUrl: URL.createObjectURL(file),
+            }
+          : null
+      );
     }
   };
 
@@ -181,7 +215,10 @@ const JobSeekerProfile = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/jobseeker/dashboard" className="inline-flex items-center text-gray-600 hover:text-gray-900 group">
+              <Link
+                to="/jobseeker/dashboard"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 group"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Dashboard
               </Link>
@@ -206,9 +243,7 @@ const JobSeekerProfile = () => {
                   </Button>
                 </div>
               ) : (
-                <Button onClick={() => setIsEditing(true)}>
-                  Edit Profile
-                </Button>
+                <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
               )}
             </div>
           </div>
@@ -226,7 +261,7 @@ const JobSeekerProfile = () => {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
                 <p className="text-gray-600 mb-4">{profile.email}</p>
-                
+
                 <div className="space-y-2 text-sm text-left">
                   <div className="flex items-center">
                     <Phone className="h-4 w-4 mr-2 text-gray-500" />
@@ -243,15 +278,13 @@ const JobSeekerProfile = () => {
                     <span className="text-sm font-medium">Public Profile</span>
                     <Switch
                       checked={profile.publicProfile}
-                      onCheckedChange={(checked) => 
-                        setProfile(prev => prev ? {...prev, publicProfile: checked} : null)
+                      onCheckedChange={checked =>
+                        setProfile(prev => (prev ? { ...prev, publicProfile: checked } : null))
                       }
                       disabled={!isEditing}
                     />
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Allow recruiters to find your profile
-                  </p>
+                  <p className="text-xs text-gray-500">Allow recruiters to find your profile</p>
                 </div>
               </CardContent>
             </Card>
@@ -278,7 +311,7 @@ const JobSeekerProfile = () => {
                 ) : (
                   <p className="text-gray-500 text-sm mb-3">No resume uploaded</p>
                 )}
-                
+
                 {isEditing && (
                   <div>
                     <Input
@@ -307,7 +340,9 @@ const JobSeekerProfile = () => {
                     <Input
                       id="name"
                       value={profile.name}
-                      onChange={(e) => setProfile(prev => prev ? {...prev, name: e.target.value} : null)}
+                      onChange={e =>
+                        setProfile(prev => (prev ? { ...prev, name: e.target.value } : null))
+                      }
                       disabled={!isEditing}
                     />
                   </div>
@@ -317,7 +352,9 @@ const JobSeekerProfile = () => {
                       id="email"
                       type="email"
                       value={profile.email}
-                      onChange={(e) => setProfile(prev => prev ? {...prev, email: e.target.value} : null)}
+                      onChange={e =>
+                        setProfile(prev => (prev ? { ...prev, email: e.target.value } : null))
+                      }
                       disabled={!isEditing}
                     />
                   </div>
@@ -328,7 +365,9 @@ const JobSeekerProfile = () => {
                     <Input
                       id="phone"
                       value={profile.phone}
-                      onChange={(e) => setProfile(prev => prev ? {...prev, phone: e.target.value} : null)}
+                      onChange={e =>
+                        setProfile(prev => (prev ? { ...prev, phone: e.target.value } : null))
+                      }
                       disabled={!isEditing}
                     />
                   </div>
@@ -337,7 +376,9 @@ const JobSeekerProfile = () => {
                     <Input
                       id="location"
                       value={profile.location}
-                      onChange={(e) => setProfile(prev => prev ? {...prev, location: e.target.value} : null)}
+                      onChange={e =>
+                        setProfile(prev => (prev ? { ...prev, location: e.target.value } : null))
+                      }
                       disabled={!isEditing}
                     />
                   </div>
@@ -347,7 +388,9 @@ const JobSeekerProfile = () => {
                   <Textarea
                     id="bio"
                     value={profile.bio}
-                    onChange={(e) => setProfile(prev => prev ? {...prev, bio: e.target.value} : null)}
+                    onChange={e =>
+                      setProfile(prev => (prev ? { ...prev, bio: e.target.value } : null))
+                    }
                     disabled={!isEditing}
                     rows={4}
                   />
@@ -362,8 +405,12 @@ const JobSeekerProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {profile.skills.map((skill) => (
-                    <Badge key={skill} variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                  {profile.skills.map(skill => (
+                    <Badge
+                      key={skill}
+                      variant="outline"
+                      className="bg-blue-50 text-blue-700 border-blue-200"
+                    >
                       {skill}
                       {isEditing && (
                         <button
@@ -376,14 +423,14 @@ const JobSeekerProfile = () => {
                     </Badge>
                   ))}
                 </div>
-                
+
                 {isEditing && (
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Add a skill"
                       value={newSkill}
-                      onChange={(e) => setNewSkill(e.target.value)}
-                      onKeyPress={(e) => e.key === 'Enter' && handleAddSkill()}
+                      onChange={e => setNewSkill(e.target.value)}
+                      onKeyPress={e => e.key === 'Enter' && handleAddSkill()}
                     />
                     <Button onClick={handleAddSkill}>
                       <Plus className="h-4 w-4" />
@@ -403,14 +450,14 @@ const JobSeekerProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {profile.workExperience.map((exp) => (
+                  {profile.workExperience.map(exp => (
                     <div key={exp.id} className="border-l-2 border-blue-200 pl-4">
                       <div className="flex justify-between items-start mb-2">
                         <div>
                           <h4 className="font-semibold text-gray-900">{exp.position}</h4>
                           <p className="text-blue-600 font-medium">{exp.company}</p>
                         </div>
-                        <Badge variant={exp.current ? "default" : "secondary"}>
+                        <Badge variant={exp.current ? 'default' : 'secondary'}>
                           {exp.current ? 'Current' : 'Past'}
                         </Badge>
                       </div>
@@ -434,7 +481,7 @@ const JobSeekerProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {profile.education.map((edu) => (
+                  {profile.education.map(edu => (
                     <div key={edu.id} className="border-l-2 border-green-200 pl-4">
                       <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
                       <p className="text-green-600 font-medium">{edu.institution}</p>
@@ -458,12 +505,14 @@ const JobSeekerProfile = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.testScores.map((test) => (
+                  {profile.testScores.map(test => (
                     <div key={test.id} className="p-4 bg-gray-50 rounded-lg">
                       <h4 className="font-semibold text-gray-900">{test.testName}</h4>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-2xl font-bold text-blue-600">{test.percentage}%</span>
-                        <span className="text-sm text-gray-600">{test.score}/{test.maxScore}</span>
+                        <span className="text-sm text-gray-600">
+                          {test.score}/{test.maxScore}
+                        </span>
                       </div>
                       <p className="text-xs text-gray-500 mt-1">
                         Completed: {new Date(test.completedAt).toLocaleDateString()}
