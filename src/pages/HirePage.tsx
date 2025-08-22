@@ -7,16 +7,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Laptop, 
-  Smartphone, 
-  Car, 
-  Home, 
-  ChefHat, 
-  Hammer, 
-  Scale, 
-  Calculator, 
-  Users, 
+import {
+  Laptop,
+  Smartphone,
+  Car,
+  Home,
+  ChefHat,
+  Hammer,
+  Scale,
+  Calculator,
+  Users,
   Paintbrush,
   Palette,
   Settings,
@@ -24,49 +24,38 @@ import {
   Scissors,
   Baby,
   Heart,
-  Shield,     // 🔁 Use Shield for "Security Guard"
-  Leaf,       // 🔁 Use Leaf for "Gardener"
-  Phone,      // 🔁 Use Phone for "Sales Dialer"
-  BookOpen,   // 🔁 Use BookOpen for "Educational Tutor"
-  Megaphone,  // 🔁 Use Megaphone for "Ads Manager"
+  Shield,
+  Leaf,
+  Phone,
+  BookOpen,
+  Megaphone,
 } from 'lucide-react';
 import CategoryModal from '@/components/hire/CategoryModal';
 import ListYourselfModal from '@/components/hire/ListYourselfModal';
 
-const jobCategories = [
-  { id: 'web-developer', name: 'Website Developer', icon: Laptop, color: 'bg-blue-500' },
-  { id: 'app-developer', name: 'App Developer', icon: Smartphone, color: 'bg-green-500' },
-  { id: 'driver', name: 'Driver', icon: Car, color: 'bg-yellow-500' },
-  { id: 'maid', name: 'Maid', icon: Home, color: 'bg-pink-500' },
-  { id: 'cook', name: 'Cook', icon: ChefHat, color: 'bg-orange-500' },
-  { id: 'carpenter', name: 'Carpenter', icon: Hammer, color: 'bg-amber-600' },
-  { id: 'lawyer', name: 'Lawyer', icon: Scale, color: 'bg-indigo-600' },
-  { id: 'Chartered-Accountant', name: 'CHartered Accountant', icon: Calculator, color: 'bg-purple-600' },
-  { id: 'labour', name: 'Labour', icon: Users, color: 'bg-gray-600' },
-  { id: 'painter', name: 'Painter', icon: Paintbrush, color: 'bg-teal-500' },
-  { id: 'makeup-artist', name: 'Makeup Artist', icon: Palette, color: 'bg-rose-500' },
-  { id: 'mechanic', name: 'Mechanic', icon: Settings, color: 'bg-slate-600' },
-  { id: 'electrician', name: 'Electrician', icon: Zap, color: 'bg-yellow-400' },
-  { id: 'hair-dresser', name: 'Hair Dresser', icon: Scissors, color: 'bg-fuchsia-500' },
-  { id: 'babysitter', name: 'Babysitter', icon: Baby, color: 'bg-emerald-500' },
-  { id: 'yoga-instructor', name: 'Yoga Instructor', icon: Heart, color: 'bg-cyan-500' },
-  { id: 'Security-Guard', name: 'Security Guard', icon: Shield, color: 'bg-blue-500' },
-  { id: 'Gardener', name: 'Gardener', icon: Leaf, color: 'bg-green-500' },
-  { id: 'Sales-Dialer', name: 'Sales Dialer', icon: Phone, color: 'bg-yellow-500' },
-  { id: 'Educational-Tutor', name: 'Educational Tutor', icon: BookOpen, color: 'bg-pink-500' },
-  { id: 'Ads-Manager', name: 'Ads Manager', icon: Megaphone, color: 'bg-orange-500' },
-  // { id: 'carpenter', name: 'Carpenter', icon: Hammer, color: 'bg-amber-600' },
-  // { id: 'lawyer', name: 'Lawyer', icon: Scale, color: 'bg-indigo-600' },
-  // { id: 'ca', name: 'CA', icon: Calculator, color: 'bg-purple-600' },
-  // { id: 'labour', name: 'Labour', icon: Users, color: 'bg-gray-600' },
-  // { id: 'painter', name: 'Painter', icon: Paintbrush, color: 'bg-teal-500' },
-  // { id: 'makeup-artist', name: 'Makeup Artist', icon: Palette, color: 'bg-rose-500' },
-  // { id: 'mechanic', name: 'Mechanic', icon: Settings, color: 'bg-slate-600' },
-  // { id: 'electrician', name: 'Electrician', icon: Zap, color: 'bg-yellow-400' },
-  // { id: 'hair-dresser', name: 'Hair Dresser', icon: Scissors, color: 'bg-fuchsia-500' },
-  // { id: 'babysitter', name: 'Babysitter', icon: Baby, color: 'bg-emerald-500' },
-  // { id: 'yoga-instructor', name: 'Yoga Instructor', icon: Heart, color: 'bg-cyan-500' },
-];
+const iconMap: Record<string, React.ComponentType<any>> = {
+  Laptop,
+  Smartphone,
+  Car,
+  Home,
+  ChefHat,
+  Hammer,
+  Scale,
+  Calculator,
+  Users,
+  Paintbrush,
+  Palette,
+  Settings,
+  Zap,
+  Scissors,
+  Baby,
+  Heart,
+  Shield,
+  Leaf,
+  Phone,
+  BookOpen,
+  Megaphone,
+};
 
 
 const HirePage = () => {
@@ -79,6 +68,23 @@ const HirePage = () => {
   const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [usersError, setUsersError] = useState<string | null>(null);
+  const [jobCategories, setJobCategories] = useState<any[]>([]);
+
+  // Fetch categories from backend
+  useEffect(() => {
+    axios.get('/categories')
+      .then((res) => {
+        const categories = Array.isArray(res.data) ? res.data : [];
+        const mapped = categories.map((c: any) => ({
+          id: c.id,
+          name: c.name,
+          icon: iconMap[c.icon] || Laptop,
+          color: c.color || 'bg-blue-500',
+        }));
+        setJobCategories(mapped);
+      })
+      .catch(() => setJobCategories([]));
+  }, []);
 
   // Fetch users for selected category
   useEffect(() => {
@@ -90,7 +96,10 @@ const HirePage = () => {
     setUsersError(null);
     axios.get(`/user`)
       .then((res) => {
-        setFilteredUsers(Array.isArray(res.data) ? res.data : []);
+        const payload = res.data;
+        const allUsers = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+        const filtered = allUsers.filter((u: any) => u.availableForRole === selectedCategory);
+        setFilteredUsers(filtered);
       })
       .catch((err) => {
         setUsersError(err.message);
@@ -205,7 +214,7 @@ const HirePage = () => {
         />
 
         {/* Filtered Users Section */}
-        {selectedCategory && (
+        {/* {selectedCategory && (
           <div className="my-8">
             <h2 className="text-2xl font-bold mb-4 text-center">
               Available {jobCategories.find(c => c.id === selectedCategory)?.name} Providers
@@ -231,7 +240,7 @@ const HirePage = () => {
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* List Yourself Modal */}
         {/* <ListYourselfModal

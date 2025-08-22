@@ -100,7 +100,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md h-[80vh] overflow-y-scroll">
           <DialogHeader>
             <DialogTitle className="text-center">Book {profile.name}</DialogTitle>
             <div className="text-center text-muted-foreground">
