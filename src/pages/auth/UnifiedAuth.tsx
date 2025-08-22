@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLocalAuth } from '@/contexts/LocalAuthContext';
 import { toast } from 'sonner';
 import { Eye, EyeOff, User, Briefcase, Code, Building2, GraduationCap, School } from 'lucide-react';
-import { signup, login as apiLogin } from '@/services/auth';
 
 const userTypes = [
   {
@@ -67,13 +66,28 @@ const UnifiedAuth = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
   
+  // Use AuthContext for main authentication and LocalAuth for demo
+  const { login: authLogin, signup: authSignup, getDashboardRoute, isAuthenticated } = useAuth();
   const { login: localLogin } = useLocalAuth();
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Handle URL parameters and authentication redirect
   useEffect(() => {
     const typeFromUrl = searchParams.get('type') || window.location.pathname.split('/').pop();
     if (typeFromUrl && userTypes.find(type => type.id === typeFromUrl)) {
       setSelectedUserType(typeFromUrl);
+    }
+    
+    // Handle tab parameter from URL
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && ['login', 'signup', 'demo'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
     }
   }, [searchParams]);
 
@@ -97,6 +111,7 @@ const UnifiedAuth = () => {
     return credentials[selectedUserType] || { email: '', password: '' };
   };
 
+  // Handle login with AuthContext integration
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -106,18 +121,22 @@ const UnifiedAuth = () => {
 
     setIsLoading(true);
     try {
-      const success = await apiLogin(email.trim(), password.trim());
+      const success = await authLogin(email.trim(), password.trim());
       if (success) {
-        toast.success('Login successful!');
-        // Add redirect logic here
+        // Get user role from localStorage and redirect to appropriate dashboard
+        const userRole = localStorage.getItem('user_role') as any;
+        const dashboardRoute = getDashboardRoute(userRole);
+        navigate(dashboardRoute, { replace: true });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed. Please try again.');
+      // Error handling is done in AuthContext
+      console.error('Login error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Handle signup with role selection
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim() || !name.trim()) {
@@ -127,17 +146,15 @@ const UnifiedAuth = () => {
 
     setIsLoading(true);
     try {
-      const success = await signup(email.trim(), password.trim(), name.trim(), selectedUserType);
+      const success = await authSignup(email.trim(), password.trim(), name.trim(), selectedUserType);
       if (success) {
-        toast.success('Signup successful! Please login.');
-        setActiveTab('login');
-        // Clear form
-        setEmail('');
-        setPassword('');
-        setName('');
+        // After successful signup, redirect to dashboard
+        const dashboardRoute = getDashboardRoute(selectedUserType as any);
+        navigate(dashboardRoute, { replace: true });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Signup failed. Please try again.');
+      // Error handling is done in AuthContext
+      console.error('Signup error:', error);
     } finally {
       setIsLoading(false);
     }
@@ -355,8 +372,21 @@ const UnifiedAuth = () => {
                         </button>
                       </div>
                     </div>
+                    
+                    {/* Role Selection Display */}
+                    <div className="p-3 bg-gray-50 rounded-lg border">
+                      <Label className="text-sm font-medium text-gray-700">Selected Role</Label>
+                      <div className="flex items-center mt-1">
+                        <div className={`w-6 h-6 rounded bg-gradient-to-r ${selectedType.color} flex items-center justify-center mr-2`}>
+                          <IconComponent className="h-3 w-3 text-white" />
+                        </div>
+                        <span className="text-sm font-medium">{selectedType.label}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Change role using the selection above</p>
+                    </div>
+                    
                     <Button type="submit" className="w-full h-11" disabled={isLoading}>
-                      {isLoading ? 'Creating Account...' : 'Create Account'}
+                      {isLoading ? 'Creating Account...' : `Create ${selectedType.label} Account`}
                     </Button>
                   </form>
                 </TabsContent>
