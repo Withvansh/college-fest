@@ -76,6 +76,7 @@ const HirePage = () => {
       .then((res) => {
         const categories = Array.isArray(res.data) ? res.data : [];
         const mapped = categories.map((c: any) => ({
+          _id: c._id,
           id: c.id,
           name: c.name,
           icon: iconMap[c.icon] || Laptop,

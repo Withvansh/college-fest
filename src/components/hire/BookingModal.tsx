@@ -40,6 +40,9 @@ interface BookingModalProps {
     name: string;
     job_category: string;
     rating: number;
+    service_id?: string;
+    customer_id?: string;
+    provider_id?: string;
   } | null;
 }
 
@@ -72,14 +75,28 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
     }
     setIsLoading(true);
     try {
-      
+      const bookingDateIso = new Date(`${values.date}T${values.time}:00`).toISOString();
+      const customerId = profile.customer_id || localStorage.getItem('user_id');
+      const providerId = profile.provider_id || profile.id;
+      const serviceId = profile.service_id;
+
+      if (!customerId || !providerId || !serviceId) {
+        toast.error('Missing booking identifiers. Please try again.');
+        return;
+      }
+
       await axios.post('/bookings', {
-        ...values,
-        providerId: profile.id,
-        providerName: profile.name,
-        jobCategory: profile.job_category,
-        userId: user?.id || null,
-        guest: !user,
+        customer_id: customerId,
+        provider_id: providerId,
+        service_id: serviceId,
+        booking_date: bookingDateIso,
+        special_instructions: values.message || undefined,
+        customer_notes: undefined,
+        contact: {
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+        },
       });
       toast.success('Booking request sent successfully!');
       onClose();

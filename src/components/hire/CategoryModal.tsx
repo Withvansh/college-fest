@@ -132,17 +132,18 @@ const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalPro
                             <Button
                               className="w-full"
                               onClick={() => {
-                                const authRaw = localStorage.getItem('auth_session');
-                                const token = localStorage.getItem('token');
-                                if (!authRaw || !token) {
+                                const user_id = localStorage.getItem('user_id');
+                                const token = localStorage.getItem('auth_token');
+                                console.log(user_id)
+                                if (!user_id || !token) {
                                   toast.error('Please login to book.');
                                   onClose();
-                                  window.location.href = '/login';
+                                  // window.location.href = '/auth?tab=login';
                                   return;
                                 }
-                                const auth = JSON.parse(authRaw || '{}');
-                                const customerId: string = auth?.id || '';
-                                const serviceId: string = (category?.id || category?.name || groupKey).toString();
+                                
+                                const customerId: string = user_id || '';
+                                const serviceId: string = (category?._id || category?.id || category?.name || groupKey).toString();
                                 setBookingProfile({
                                   id: user._id,
                                   name: user.full_name,
