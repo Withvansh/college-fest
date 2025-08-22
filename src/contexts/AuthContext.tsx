@@ -1,13 +1,26 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { login as authLogin, signup as authSignup, AuthResponse } from '@/services/auth';
+import { toast } from 'sonner';
+import { saveSession, loadSession, clearSession } from '@/lib/utils/storage';
+import { dashboardRoutes } from '@/config/routes';
+import { handleError } from '@/lib/utils/errorHandler';
 
+export type UserRole =
+  | 'jobseeker'
+  | 'recruiter'
+  | 'freelancer'
+  | 'client'
+  | 'college'
+  | 'student'
+  | 'admin'
+  | 'hr_admin';
 
-export type UserRole = 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student' | 'admin' | 'hr_admin';
-
-interface AuthUser {
-  id: string;
+ export interface AuthUser {
+  _id: string;
   email: string;
-  name: string;
+  full_name: string;
   role: UserRole;
+  token: string; // Authentication token for API calls
   profile_complete?: boolean;
   phone?: string;
   location?: string;
@@ -39,20 +52,19 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, userType?: string) => Promise<boolean>;
-  signup: (email: string, password: string, name: string, userType?: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (email: string, password: string, name: string, role: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  updateProfile: (data: any) => Promise<void>;
+  updateProfile: (data: Partial<AuthUser>) => Promise<void>;
+  getDashboardRoute: (role: UserRole) => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error('useAuth must be used within an AuthProvider');
+  return ctx;
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -60,72 +72,96 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem('auth_session');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const session = loadSession();
+    if (session) setUser(session);
     setLoading(false);
   }, []);
 
+  const getDashboardRoute = (role: UserRole): string => dashboardRoutes[role] || '/';
 
-
-  const login = async (email: string, password: string, userType?: string): Promise<boolean> => {
-    // Mock authentication - replace with your API call
-    const mockUsers = [
-      {
-        id: '1',
-        email: 'user@example.com',
-        name: 'Test User',
-        role: 'jobseeker' as UserRole,
-        profile_complete: true
+  const login = async (email: string, password: string): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const response: AuthResponse = await authLogin(email, password);
+      console.log('Login response:', response);
+      if (response.success && response.user) {
+        const userData = {
+          ...response.user,
+          role: response.user.role as UserRole,
+          profile_complete: false,
+        };
+        setUser(userData);
+        saveSession(userData);
+        toast.success(`Welcome back, ${response.user.full_name}!`);
+        return true;
       }
-    ];
-
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      localStorage.setItem('auth_session', JSON.stringify(foundUser));
-      return true;
+      toast.error('Login failed. Please check your credentials.');
+      return false;
+    } catch (error: unknown) {
+      handleError(error, 'Login failed');
+      return false;
+    } finally {
+      setLoading(false);
     }
-    return false;
   };
 
-  const signup = async (email: string, password: string, name: string, userType?: string): Promise<boolean> => {
-    // Mock signup - replace with your API call
-    const newUser = {
-      id: Date.now().toString(),
-      email,
-      name,
-      role: (userType as UserRole) || 'jobseeker',
-      profile_complete: false
-    };
-    
-    setUser(newUser);
-    localStorage.setItem('auth_session', JSON.stringify(newUser));
-    return true;
+  const signup = async (
+    email: string,
+    password: string,
+    name: string,
+    role: string
+  ): Promise<boolean> => {
+    try {
+      setLoading(true);
+      const response: AuthResponse = await authSignup(email, password, name, role);
+      if (response.success && response.user) {
+        const userData = {
+          ...response.user,
+          role: response.user.role as UserRole,
+          profile_complete: false,
+        };
+        setUser(userData);
+        saveSession(userData);
+        toast.success(`Account created successfully! Welcome, ${response.user.full_name}!`);
+        return true;
+      }
+      toast.error('Signup failed. Please try again.');
+      return false;
+    } catch (error: unknown) {
+      handleError(error, 'Signup failed');
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = async () => {
     setUser(null);
-    localStorage.removeItem('auth_session');
+    clearSession();
+    toast.success('Successfully logged out');
   };
 
-  const updateProfile = async (data: any) => {
+  const updateProfile = async (data: Partial<AuthUser>) => {
     if (!user) return;
     const updatedUser = { ...user, ...data };
     setUser(updatedUser);
-    localStorage.setItem('auth_session', JSON.stringify(updatedUser));
+    saveSession(updatedUser);
   };
 
-  const value = {
-    user,
-    loading,
-    isAuthenticated: !!user,
-    login,
-    signup,
-    logout,
-    updateProfile,
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider
+      value={{
+        user,
+        loading,
+        isAuthenticated: !!user,
+        login,
+        signup,
+        logout,
+        updateProfile,
+        getDashboardRoute,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
 };

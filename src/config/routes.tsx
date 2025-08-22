@@ -108,6 +108,23 @@ const Employees = lazy(() => import('@/pages/admin/Employees'));
 const Onboarding = lazy(() => import('@/pages/admin/Onboarding'));
 const SuperAdminLogin = lazy(() => import('@/pages/admin/SuperAdminLogin'));
 
+import { UserRole } from '@/contexts/AuthContext';
+
+export const dashboardRoutes: Record<UserRole, string> = {
+  jobseeker: '/jobseeker/dashboard',
+  recruiter: '/recruiter/dashboard',
+  freelancer: '/freelancer/dashboard',
+  client: '/client/dashboard',
+  college: '/college/dashboard',
+  student: '/student/dashboard',
+  admin: '/admin/dashboard',
+  hr_admin: '/admin/dashboard',
+};
+
+
+
+
+
 export const routes: RouteObject[] = [
   {
     path: '/',
