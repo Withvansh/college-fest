@@ -352,6 +352,7 @@ const RecruiterDashboardDynamic = () => {
                   <span>Recent Job Posts</span>
                   <Link to="/recruiter/post-job">
                     <Button size="sm">
+                      
                       <Plus className="h-4 w-4 mr-2" />
                       Post Job
                     </Button>
