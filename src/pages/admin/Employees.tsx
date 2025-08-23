@@ -1,66 +1,100 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Users, Filter, Download, Eye, Archive } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { hrmsApi } from '@/lib/api/hrms';
 
 const Employees = () => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [employees, setEmployees] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<
+    Array<{
+      id: string;
+      employee_id: string;
+      name: string;
+      email: string;
+      department: string;
+      position: string;
+      designation?: string;
+      status: string;
+      employment_status?: string;
+      joinDate: string;
+      joining_date?: string;
+      work_location?: string;
+      salary?: number;
+      profiles?: {
+        full_name?: string;
+        email?: string;
+      };
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [filterDepartment, setFilterDepartment] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    loadEmployees();
-  }, [user]);
-
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      const data = await hrmsApi.getEmployees(user.id);
+      const data = await hrmsApi.getEmployees(user._id);
       setEmployees(data || []);
     } catch (error) {
       console.error('Error loading employees:', error);
       toast({
-        title: "Error",
-        description: "Failed to load employees data.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load employees data.',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, toast]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, [loadEmployees]);
 
   const handleExportData = () => {
     // Create CSV data
     const csvData = employees.map(emp => ({
       'Employee ID': emp.employee_id,
-      'Name': emp.profiles?.full_name || 'N/A',
-      'Email': emp.profiles?.email || 'N/A',
-      'Department': emp.department || 'N/A',
-      'Designation': emp.designation || 'N/A',
-      'Status': emp.employment_status || 'N/A',
+      Name: emp.profiles?.full_name || 'N/A',
+      Email: emp.profiles?.email || 'N/A',
+      Department: emp.department || 'N/A',
+      Designation: emp.designation || 'N/A',
+      Status: emp.employment_status || 'N/A',
       'Joining Date': emp.joining_date || 'N/A',
-      'Location': emp.work_location || 'N/A'
+      Location: emp.work_location || 'N/A',
     }));
 
     // Convert to CSV string
     const headers = Object.keys(csvData[0] || {});
     const csvContent = [
       headers.join(','),
-      ...csvData.map(row => headers.map(header => `"${row[header as keyof typeof row]}"`).join(','))
+      ...csvData.map(row =>
+        headers.map(header => `"${row[header as keyof typeof row]}"`).join(',')
+      ),
     ].join('\n');
 
     // Download CSV
@@ -73,33 +107,38 @@ const Employees = () => {
     window.URL.revokeObjectURL(url);
 
     toast({
-      title: "Export Started",
-      description: "Employee data has been exported to CSV.",
+      title: 'Export Started',
+      description: 'Employee data has been exported to CSV.',
     });
   };
 
   const handleArchiveEmployee = (id: string) => {
     toast({
-      title: "Employee Archived",
-      description: "Employee has been moved to archived status.",
+      title: 'Employee Archived',
+      description: 'Employee has been moved to archived status.',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'default';
-      case 'probation': return 'secondary';
-      case 'inactive': return 'destructive';
-      default: return 'outline';
+      case 'active':
+        return 'default';
+      case 'probation':
+        return 'secondary';
+      case 'inactive':
+        return 'destructive';
+      default:
+        return 'outline';
     }
   };
 
   const filteredEmployees = employees.filter(emp => {
     const deptMatch = filterDepartment === 'all' || emp.department === filterDepartment;
     const statusMatch = filterStatus === 'all' || emp.employment_status === filterStatus;
-    const searchMatch = searchTerm === '' || 
-      (emp.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (emp.employee_id?.toLowerCase().includes(searchTerm.toLowerCase()));
+    const searchMatch =
+      searchTerm === '' ||
+      emp.profiles?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      emp.employee_id?.toLowerCase().includes(searchTerm.toLowerCase());
     return deptMatch && statusMatch && searchMatch;
   });
 
@@ -150,7 +189,9 @@ const Employees = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active</p>
-                <p className="text-2xl font-bold">{employees.filter(e => e.employment_status === 'active').length}</p>
+                <p className="text-2xl font-bold">
+                  {employees.filter(e => e.employment_status === 'active').length}
+                </p>
               </div>
               <div className="h-3 w-3 bg-green-500 rounded-full"></div>
             </div>
@@ -161,7 +202,9 @@ const Employees = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">On Probation</p>
-                <p className="text-2xl font-bold">{employees.filter(e => e.employment_status === 'probation').length}</p>
+                <p className="text-2xl font-bold">
+                  {employees.filter(e => e.employment_status === 'probation').length}
+                </p>
               </div>
               <div className="h-3 w-3 bg-yellow-500 rounded-full"></div>
             </div>
@@ -172,7 +215,9 @@ const Employees = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Inactive</p>
-                <p className="text-2xl font-bold">{employees.filter(e => e.employment_status === 'inactive').length}</p>
+                <p className="text-2xl font-bold">
+                  {employees.filter(e => e.employment_status === 'inactive').length}
+                </p>
               </div>
               <div className="h-3 w-3 bg-red-500 rounded-full"></div>
             </div>
@@ -217,17 +262,20 @@ const Employees = () => {
               </SelectContent>
             </Select>
 
-            <Input 
-              placeholder="Search by name..." 
+            <Input
+              placeholder="Search by name..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
             />
-            
-            <Button variant="outline" onClick={() => {
-              setFilterDepartment('all');
-              setFilterStatus('all');
-              setSearchTerm('');
-            }}>
+
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFilterDepartment('all');
+                setFilterStatus('all');
+                setSearchTerm('');
+              }}
+            >
               Clear Filters
             </Button>
           </div>
@@ -247,10 +295,9 @@ const Employees = () => {
                 {employees.length === 0 ? 'No employees yet' : 'No employees match your filters'}
               </h3>
               <p className="text-gray-500 mb-4">
-                {employees.length === 0 
+                {employees.length === 0
                   ? 'Start by onboarding your first employee to see them here.'
-                  : 'Try adjusting your search criteria or filters.'
-                }
+                  : 'Try adjusting your search criteria or filters.'}
               </p>
               {employees.length === 0 && (
                 <Button asChild>
@@ -273,7 +320,7 @@ const Employees = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEmployees.map((employee) => (
+                {filteredEmployees.map(employee => (
                   <TableRow key={employee.id}>
                     <TableCell>
                       <div>

@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
 // Supabase removed
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const bookingSchema = z.object({
   date: z.string().min(1, 'Date is required'),
@@ -75,6 +75,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
     }
     setIsLoading(true);
     try {
+
       const bookingDateIso = new Date(`${values.date}T${values.time}:00`).toISOString();
       const customerId = profile.customer_id || localStorage.getItem('user_id');
       const providerId = profile.provider_id || profile.id;
@@ -102,8 +103,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
       onClose();
       form.reset();
       setProceedAsGuest(false);
-    } catch (err: any) {
-      toast.error(err.message || 'An unexpected error occurred. Please try again.');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -206,7 +209,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
                 )}
               />
               <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={onClose} className="flex-1" disabled={isLoading}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="flex-1"
+                  disabled={isLoading}
+                >
                   Cancel
                 </Button>
                 <Button type="submit" className="flex-1" disabled={isLoading}>
@@ -231,7 +240,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
           <DialogHeader>
             <DialogTitle>Continue as Guest?</DialogTitle>
           </DialogHeader>
-          <p>You’re not logged in. You can log in for a better experience, or continue as a guest.</p>
+          <p>
+            You’re not logged in. You can log in for a better experience, or continue as a guest.
+          </p>
           <div className="flex gap-3 justify-center">
             <Button
               variant="outline"
@@ -262,9 +273,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
   );
 };
 
-
-
-
 // import React, { useState } from 'react';
 // import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 // import { Button } from '@/components/ui/button';
@@ -277,8 +285,6 @@ export const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, pro
 // import { toast } from 'sonner';
 // import { Loader2 } from 'lucide-react';
 // // Supabase removed
-
-// import { useAuth } from '@/contexts/AuthContext';
 
 // const bookingSchema = z.object({
 //   date: z.string().min(1, 'Date is required'),

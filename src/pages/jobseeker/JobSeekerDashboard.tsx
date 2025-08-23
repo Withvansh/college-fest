@@ -1,17 +1,33 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { sampleDataService } from "@/services/sampleDataService";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { sampleDataService } from '@/services/sampleDataService';
 import { Search, MapPin, DollarSign, Clock, Building2, BookOpen, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const JobSeekerDashboard = () => {
-  const { user, logout } = useLocalAuth();
-  const [jobs, setJobs] = useState<any[]>([]);
+  const { user, logout } = useAuth();
+  const [jobs, setJobs] = useState<
+    Array<{
+      id: string;
+      title: string;
+      company: string;
+      company_name?: string;
+      location: string;
+      salary_range?: string;
+      salary_min?: number;
+      salary_max?: number;
+      description: string;
+      requirements?: string[];
+      skills_required?: string[];
+      job_type?: string;
+      posted_date?: string;
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -32,10 +48,11 @@ const JobSeekerDashboard = () => {
     }
   };
 
-  const filteredJobs = jobs.filter(job => 
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.location.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredJobs = jobs.filter(
+    job =>
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleApplyToJob = (jobId: string) => {
@@ -60,7 +77,9 @@ const JobSeekerDashboard = () => {
                   Profile
                 </Link>
               </Button>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -78,7 +97,7 @@ const JobSeekerDashboard = () => {
               <div className="text-2xl font-bold">{jobs.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Applications</CardTitle>
@@ -88,7 +107,7 @@ const JobSeekerDashboard = () => {
               <div className="text-2xl font-bold">3</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Tests Taken</CardTitle>
@@ -98,7 +117,7 @@ const JobSeekerDashboard = () => {
               <div className="text-2xl font-bold">2</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Interviews</CardTitle>
@@ -124,7 +143,7 @@ const JobSeekerDashboard = () => {
                 <Input
                   placeholder="Search jobs by title, company, or location..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="h-12"
                 />
               </div>
@@ -147,12 +166,14 @@ const JobSeekerDashboard = () => {
                     <p className="text-gray-600">No jobs found matching your criteria.</p>
                   </div>
                 ) : (
-                  filteredJobs.map((job) => (
+                  filteredJobs.map(job => (
                     <Card key={job.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">{job.title}</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                              {job.title}
+                            </h3>
                             <div className="flex items-center text-gray-600 mb-2">
                               <Building2 className="h-4 w-4 mr-1" />
                               <span className="mr-4">{job.company_name}</span>
@@ -161,7 +182,10 @@ const JobSeekerDashboard = () => {
                             </div>
                             <div className="flex items-center text-gray-600 mb-3">
                               <DollarSign className="h-4 w-4 mr-1" />
-                              <span>${job.salary_min?.toLocaleString()} - ${job.salary_max?.toLocaleString()}</span>
+                              <span>
+                                ${job.salary_min?.toLocaleString()} - $
+                                {job.salary_max?.toLocaleString()}
+                              </span>
                               <Badge variant="secondary" className="ml-4">
                                 {job.job_type?.replace('_', ' ')}
                               </Badge>
@@ -169,11 +193,13 @@ const JobSeekerDashboard = () => {
                             <p className="text-gray-600 mb-3 line-clamp-2">{job.description}</p>
                             {job.skills_required && (
                               <div className="flex flex-wrap gap-2 mb-3">
-                                {job.skills_required.slice(0, 4).map((skill: string, index: number) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {skill}
-                                  </Badge>
-                                ))}
+                                {job.skills_required
+                                  .slice(0, 4)
+                                  .map((skill: string, index: number) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {skill}
+                                    </Badge>
+                                  ))}
                                 {job.skills_required.length > 4 && (
                                   <Badge variant="outline" className="text-xs">
                                     +{job.skills_required.length - 4} more
@@ -183,7 +209,7 @@ const JobSeekerDashboard = () => {
                             )}
                           </div>
                           <div className="ml-6 flex flex-col gap-2">
-                            <Button 
+                            <Button
                               onClick={() => handleApplyToJob(job.id)}
                               className="whitespace-nowrap"
                             >

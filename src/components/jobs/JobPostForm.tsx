@@ -5,28 +5,32 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 // Supabase integration removed
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { X, Loader2 } from 'lucide-react';
 import { jobFormSchema, type JobFormData } from '@/lib/validation/jobValidation';
 
 const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
-  const { user: authUser } = useAuth();
-  const { user: localUser } = useLocalAuth();
-  const user = authUser || localUser;
-  
+  const { user } = useAuth();
+
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentBenefit, setCurrentBenefit] = useState('');
-  
-  const defaultCompanyName = (localUser?.name === 'Demo HR Manager' || authUser?.role === 'recruiter') ? 'TechCorp Inc.' : '';
-  
+
+  const defaultCompanyName =
+    user?.full_name === 'Demo HR Manager' || user?.role === 'recruiter' ? 'TechCorp Inc.' : '';
+
   const {
     register,
     handleSubmit,
@@ -34,7 +38,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     formState: { errors, isSubmitting },
     setValue,
     watch,
-    reset
+    reset,
   } = useForm<JobFormData>({
     resolver: zodResolver(jobFormSchema),
     defaultValues: {
@@ -51,7 +55,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       benefits: [],
       remote_allowed: false,
       application_deadline: '',
-    }
+    },
   });
 
   const watchedSkills = watch('skills_required') || [];
@@ -65,7 +69,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   };
 
   const removeSkill = (skill: string) => {
-    setValue('skills_required', watchedSkills.filter(s => s !== skill));
+    setValue(
+      'skills_required',
+      watchedSkills.filter(s => s !== skill)
+    );
   };
 
   const addBenefit = () => {
@@ -76,7 +83,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   };
 
   const removeBenefit = (benefit: string) => {
-    setValue('benefits', watchedBenefits.filter(b => b !== benefit));
+    setValue(
+      'benefits',
+      watchedBenefits.filter(b => b !== benefit)
+    );
   };
 
   const onSubmit = async (data: JobFormData) => {
@@ -86,30 +96,22 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     }
 
     console.log('Current user:', user);
-    console.log('Auth user:', authUser);
-    console.log('Local user:', localUser);
 
     try {
       let recruiterId;
-      
-      // For authenticated users (Supabase auth), use their user ID which matches their profile ID
-      if (authUser) {
-        recruiterId = authUser.id;
-        console.log('Using Supabase auth user ID as recruiter_id:', recruiterId);
-      } 
-      // For local demo users, use predefined IDs
-      else if (localUser) {
-        recruiterId = localUser.id === 'demo-hr-1' ? '00000000-0000-4000-8000-000000000001' : localUser.id;
-        console.log('Using local user ID as recruiter_id:', recruiterId);
-      } 
-      else {
+
+      // Use the current user's ID as recruiter ID
+      if (user) {
+        recruiterId = user._id;
+        console.log('Using user ID as recruiter_id:', recruiterId);
+      } else {
         toast.error('You must be logged in to post a job');
         return;
       }
 
       // Mock job posting - replace with actual API call when backend is ready
       console.log('Mock job posting for recruiter:', recruiterId);
-      
+
       const jobData = {
         id: 'mock-' + Date.now(),
         title: data.title,
@@ -129,7 +131,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           ? new Date(data.application_deadline).toISOString()
           : null,
         status: 'active' as const,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
       };
 
       console.log('✅ Job posted successfully (mock):', jobData);
@@ -168,29 +170,25 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {Object.keys(errors).length > 0 && (
             <Alert variant="destructive">
-              <AlertDescription>
-                Please fix the errors below before submitting.
-              </AlertDescription>
+              <AlertDescription>Please fix the errors below before submitting.</AlertDescription>
             </Alert>
           )}
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Job Title *</Label>
-              <Input 
-                id="title" 
+              <Input
+                id="title"
                 {...register('title')}
                 className={errors.title ? 'border-destructive' : ''}
               />
-              {errors.title && (
-                <p className="text-sm text-destructive">{errors.title.message}</p>
-              )}
+              {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="company_name">Company Name *</Label>
-              <Input 
-                id="company_name" 
+              <Input
+                id="company_name"
                 {...register('company_name')}
                 className={errors.company_name ? 'border-destructive' : ''}
               />
@@ -201,8 +199,8 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="location">Location *</Label>
-              <Input 
-                id="location" 
+              <Input
+                id="location"
                 {...register('location')}
                 className={errors.location ? 'border-destructive' : ''}
               />
@@ -218,7 +216,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="full_time">Full Time</SelectItem>
                       <SelectItem value="part_time">Part Time</SelectItem>
@@ -236,9 +236,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="salary_min">Minimum Salary</Label>
-              <Input 
-                id="salary_min" 
-                type="number" 
+              <Input
+                id="salary_min"
+                type="number"
                 {...register('salary_min', { valueAsNumber: true })}
                 className={errors.salary_min ? 'border-destructive' : ''}
               />
@@ -249,9 +249,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="salary_max">Maximum Salary</Label>
-              <Input 
-                id="salary_max" 
-                type="number" 
+              <Input
+                id="salary_max"
+                type="number"
                 {...register('salary_max', { valueAsNumber: true })}
                 className={errors.salary_max ? 'border-destructive' : ''}
               />
@@ -262,9 +262,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="experience_required">Years of Experience Required</Label>
-              <Input 
-                id="experience_required" 
-                type="number" 
+              <Input
+                id="experience_required"
+                type="number"
                 {...register('experience_required', { valueAsNumber: true })}
                 className={errors.experience_required ? 'border-destructive' : ''}
               />
@@ -275,9 +275,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="application_deadline">Application Deadline</Label>
-              <Input 
-                id="application_deadline" 
-                type="date" 
+              <Input
+                id="application_deadline"
+                type="date"
                 {...register('application_deadline')}
                 className={errors.application_deadline ? 'border-destructive' : ''}
               />
@@ -289,8 +289,8 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
           <div className="space-y-2">
             <Label htmlFor="description">Job Description *</Label>
-            <Textarea 
-              id="description" 
+            <Textarea
+              id="description"
               {...register('description')}
               className={errors.description ? 'border-destructive' : ''}
               rows={4}
@@ -302,8 +302,8 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
           <div className="space-y-2">
             <Label htmlFor="requirements">Requirements *</Label>
-            <Textarea 
-              id="requirements" 
+            <Textarea
+              id="requirements"
               {...register('requirements')}
               className={errors.requirements ? 'border-destructive' : ''}
               rows={4}
@@ -316,16 +316,18 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <div className="space-y-2">
             <Label>Required Skills</Label>
             <div className="flex gap-2">
-              <Input 
-                value={currentSkill} 
-                onChange={(e) => setCurrentSkill(e.target.value)} 
-                placeholder="Add a skill" 
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())} 
+              <Input
+                value={currentSkill}
+                onChange={e => setCurrentSkill(e.target.value)}
+                placeholder="Add a skill"
+                onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               />
-              <Button type="button" onClick={addSkill} variant="outline">Add</Button>
+              <Button type="button" onClick={addSkill} variant="outline">
+                Add
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {watchedSkills.map((skill) => (
+              {watchedSkills.map(skill => (
                 <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                   {skill}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
@@ -340,16 +342,18 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <div className="space-y-2">
             <Label>Benefits</Label>
             <div className="flex gap-2">
-              <Input 
-                value={currentBenefit} 
-                onChange={(e) => setCurrentBenefit(e.target.value)} 
-                placeholder="Add a benefit" 
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addBenefit())} 
+              <Input
+                value={currentBenefit}
+                onChange={e => setCurrentBenefit(e.target.value)}
+                placeholder="Add a benefit"
+                onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addBenefit())}
               />
-              <Button type="button" onClick={addBenefit} variant="outline">Add</Button>
+              <Button type="button" onClick={addBenefit} variant="outline">
+                Add
+              </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {watchedBenefits.map((benefit) => (
+              {watchedBenefits.map(benefit => (
                 <Badge key={benefit} variant="secondary" className="flex items-center gap-1">
                   {benefit}
                   <X className="h-3 w-3 cursor-pointer" onClick={() => removeBenefit(benefit)} />
@@ -366,10 +370,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               name="remote_allowed"
               control={control}
               render={({ field }) => (
-                <Switch 
-                  id="remote_allowed" 
-                  checked={field.value} 
-                  onCheckedChange={field.onChange} 
+                <Switch
+                  id="remote_allowed"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
                 />
               )}
             />

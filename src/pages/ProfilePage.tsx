@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { profilesApi } from '@/lib/api/profiles';
 import { toast } from 'sonner';
 import { Upload, X, Plus, User, ArrowLeft } from 'lucide-react';
@@ -14,34 +14,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { dashboardsApi } from '@/lib/api/dashboards';
 
 const ProfilePage = () => {
- const { user, updateProfile, loading } = useAuth();
-const navigate = useNavigate(); // ✅ moved before any usage
+  const { user, updateProfile, loading } = useAuth();
+  const navigate = useNavigate(); // ✅ moved before any usage
 
-if (loading) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gray-500">Loading your profile...</p>
-    </div>
-  );
-}
-
-if (!user) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-600">Please log in to access your profile.</p>
-        <Button className="mt-4" onClick={() => navigate('/')}>
-          Go to Login
-        </Button>
-      </div>
-    </div>
-  );
-}
+  // All hooks must be called before any early returns
   const [formLoading, setFormLoading] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [newSkill, setNewSkill] = useState('');
-  
+
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -65,7 +46,7 @@ if (!user) {
     contact_info: '',
     website: '',
     project_description: '',
-    budget_range: ''
+    budget_range: '',
   });
 
   useEffect(() => {
@@ -93,12 +74,12 @@ if (!user) {
         contact_info: user.contact_info || '',
         website: user.website || '',
         project_description: user.project_description || '',
-        budget_range: user.budget_range || ''
+        budget_range: user.budget_range || '',
       });
     }
   }, [user]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -106,7 +87,7 @@ if (!user) {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
       setFormData(prev => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkill.trim()],
       }));
       setNewSkill('');
     }
@@ -115,7 +96,7 @@ if (!user) {
   const removeSkill = (skill: string) => {
     setFormData(prev => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter(s => s !== skill),
     }));
   };
 
@@ -123,51 +104,58 @@ if (!user) {
     e.preventDefault();
     if (!user) return;
 
-setFormLoading(true);
+    setFormLoading(true);
     try {
       // Upload avatar if provided
       if (avatarFile) {
-        await profilesApi.uploadAvatar(user.id, avatarFile);
+        await profilesApi.uploadAvatar(user._id, avatarFile);
       }
 
       // Upload resume if provided
       if (resumeFile) {
-        await profilesApi.uploadResume(user.id, resumeFile);
+        await profilesApi.uploadResume(user._id, resumeFile);
       }
 
       // Update profile
-      await profilesApi.updateProfile(user.id, {
+      await profilesApi.updateProfile(user._id, {
         ...formData,
-        profile_complete: true
+        profile_complete: true,
       });
 
       await updateProfile({
         ...formData,
         name: formData.full_name,
-        profileComplete: true
+        profile_complete: true,
       });
-      
+
       toast.success('Profile updated successfully!');
       setAvatarFile(null);
       setResumeFile(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
-    setFormLoading(false);
+      setFormLoading(false);
     }
   };
 
   const getDashboardPath = () => {
     if (!user) return '/';
     switch (user.role) {
-      case 'jobseeker': return '/jobseeker/dashboard';
-      case 'recruiter': return '/recruiter/dashboard';
-      case 'freelancer': return '/freelancer/dashboard';
-      case 'client': return '/client/dashboard';
-      case 'student': return '/student/dashboard';
-      case 'college': return '/college/dashboard';
-      default: return '/';
+      case 'jobseeker':
+        return '/jobseeker/dashboard';
+      case 'recruiter':
+        return '/recruiter/dashboard';
+      case 'freelancer':
+        return '/freelancer/dashboard';
+      case 'client':
+        return '/client/dashboard';
+      case 'student':
+        return '/student/dashboard';
+      case 'college':
+        return '/college/dashboard';
+      default:
+        return '/';
     }
   };
 
@@ -184,7 +172,7 @@ setFormLoading(true);
                 <Input
                   id="company_name"
                   value={formData.company_name}
-                  onChange={(e) => handleInputChange('company_name', e.target.value)}
+                  onChange={e => handleInputChange('company_name', e.target.value)}
                   placeholder="Your company name"
                   required
                 />
@@ -194,7 +182,7 @@ setFormLoading(true);
                 <Input
                   id="company_size"
                   value={formData.company_size}
-                  onChange={(e) => handleInputChange('company_size', e.target.value)}
+                  onChange={e => handleInputChange('company_size', e.target.value)}
                   placeholder="e.g., 50-100 employees"
                 />
               </div>
@@ -205,7 +193,7 @@ setFormLoading(true);
                 <Textarea
                   id="hiring_needs"
                   value={formData.hiring_needs}
-                  onChange={(e) => handleInputChange('hiring_needs', e.target.value)}
+                  onChange={e => handleInputChange('hiring_needs', e.target.value)}
                   placeholder="What positions are you looking to fill?"
                   rows={3}
                 />
@@ -215,14 +203,14 @@ setFormLoading(true);
                 <Input
                   id="website"
                   value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  onChange={e => handleInputChange('website', e.target.value)}
                   placeholder="https://yourcompany.com"
                 />
               </div>
             </div>
           </>
         );
-      
+
       case 'client':
         return (
           <>
@@ -232,7 +220,7 @@ setFormLoading(true);
                 <Input
                   id="company_name"
                   value={formData.company_name}
-                  onChange={(e) => handleInputChange('company_name', e.target.value)}
+                  onChange={e => handleInputChange('company_name', e.target.value)}
                   placeholder="Your company or brand name"
                 />
               </div>
@@ -241,7 +229,7 @@ setFormLoading(true);
                 <Input
                   id="budget_range"
                   value={formData.budget_range}
-                  onChange={(e) => handleInputChange('budget_range', e.target.value)}
+                  onChange={e => handleInputChange('budget_range', e.target.value)}
                   placeholder="e.g., ₹5,000 - ₹15,000"
                 />
               </div>
@@ -251,14 +239,14 @@ setFormLoading(true);
               <Textarea
                 id="project_description"
                 value={formData.project_description}
-                onChange={(e) => handleInputChange('project_description', e.target.value)}
+                onChange={e => handleInputChange('project_description', e.target.value)}
                 placeholder="What types of projects do you typically work on?"
                 rows={3}
               />
             </div>
           </>
         );
-      
+
       case 'student':
         return (
           <>
@@ -268,7 +256,7 @@ setFormLoading(true);
                 <Input
                   id="college_name"
                   value={formData.college_name}
-                  onChange={(e) => handleInputChange('college_name', e.target.value)}
+                  onChange={e => handleInputChange('college_name', e.target.value)}
                   placeholder="Your college/university name"
                   required
                 />
@@ -278,7 +266,7 @@ setFormLoading(true);
                 <Input
                   id="student_id"
                   value={formData.student_id}
-                  onChange={(e) => handleInputChange('student_id', e.target.value)}
+                  onChange={e => handleInputChange('student_id', e.target.value)}
                   placeholder="Your student ID number"
                 />
               </div>
@@ -288,13 +276,13 @@ setFormLoading(true);
               <Input
                 id="degree"
                 value={formData.degree}
-                onChange={(e) => handleInputChange('degree', e.target.value)}
+                onChange={e => handleInputChange('degree', e.target.value)}
                 placeholder="e.g., B.Tech Computer Science, MBA, etc."
               />
             </div>
           </>
         );
-      
+
       case 'college':
         return (
           <>
@@ -304,7 +292,7 @@ setFormLoading(true);
                 <Input
                   id="institution_name"
                   value={formData.institution_name}
-                  onChange={(e) => handleInputChange('institution_name', e.target.value)}
+                  onChange={e => handleInputChange('institution_name', e.target.value)}
                   placeholder="Your institution name"
                   required
                 />
@@ -314,7 +302,7 @@ setFormLoading(true);
                 <Input
                   id="placement_officer_contact"
                   value={formData.placement_officer_contact}
-                  onChange={(e) => handleInputChange('placement_officer_contact', e.target.value)}
+                  onChange={e => handleInputChange('placement_officer_contact', e.target.value)}
                   placeholder="Contact details for placement officer"
                 />
               </div>
@@ -325,14 +313,16 @@ setFormLoading(true);
                 id="final_year_students"
                 type="number"
                 value={formData.final_year_students}
-                onChange={(e) => handleInputChange('final_year_students', parseInt(e.target.value) || 0)}
+                onChange={e =>
+                  handleInputChange('final_year_students', parseInt(e.target.value) || 0)
+                }
                 min="0"
                 placeholder="0"
               />
             </div>
           </>
         );
-      
+
       case 'jobseeker':
       case 'freelancer':
         return (
@@ -343,7 +333,7 @@ setFormLoading(true);
                 <Input
                   id="portfolio_url"
                   value={formData.portfolio_url}
-                  onChange={(e) => handleInputChange('portfolio_url', e.target.value)}
+                  onChange={e => handleInputChange('portfolio_url', e.target.value)}
                   placeholder="https://yourportfolio.com"
                 />
               </div>
@@ -352,7 +342,7 @@ setFormLoading(true);
                 <Input
                   id="github_url"
                   value={formData.github_url}
-                  onChange={(e) => handleInputChange('github_url', e.target.value)}
+                  onChange={e => handleInputChange('github_url', e.target.value)}
                   placeholder="https://github.com/yourusername"
                 />
               </div>
@@ -364,7 +354,9 @@ setFormLoading(true);
                   id="experience_years"
                   type="number"
                   value={formData.experience_years}
-                  onChange={(e) => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
+                  onChange={e =>
+                    handleInputChange('experience_years', parseInt(e.target.value) || 0)
+                  }
                   min="0"
                   placeholder="0"
                 />
@@ -374,14 +366,14 @@ setFormLoading(true);
                 <Input
                   id="education"
                   value={formData.education}
-                  onChange={(e) => handleInputChange('education', e.target.value)}
+                  onChange={e => handleInputChange('education', e.target.value)}
                   placeholder="Your highest qualification"
                 />
               </div>
             </div>
           </>
         );
-      
+
       default:
         return null;
     }
@@ -404,7 +396,7 @@ setFormLoading(true);
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
         <div className="mb-6">
-          <Link 
+          <Link
             to={getDashboardPath()}
             className="inline-flex items-center text-blue-600 hover:text-blue-800 mb-4"
           >
@@ -432,7 +424,11 @@ setFormLoading(true);
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={user?.avatar || ''} />
                   <AvatarFallback>
-                    {formData.full_name.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
+                    {formData.full_name
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div>
@@ -441,7 +437,7 @@ setFormLoading(true);
                     id="avatar"
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    onChange={e => setAvatarFile(e.target.files?.[0] || null)}
                     className="mt-1"
                   />
                   <p className="text-xs text-gray-500 mt-1">Upload a profile picture (optional)</p>
@@ -455,7 +451,7 @@ setFormLoading(true);
                   <Input
                     id="full_name"
                     value={formData.full_name}
-                    onChange={(e) => handleInputChange('full_name', e.target.value)}
+                    onChange={e => handleInputChange('full_name', e.target.value)}
                     placeholder="Your full name"
                     required
                   />
@@ -465,7 +461,7 @@ setFormLoading(true);
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={e => handleInputChange('phone', e.target.value)}
                     placeholder="+91 98765 43210"
                   />
                 </div>
@@ -476,7 +472,7 @@ setFormLoading(true);
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
+                  onChange={e => handleInputChange('location', e.target.value)}
                   placeholder="City, State, Country"
                 />
               </div>
@@ -486,7 +482,7 @@ setFormLoading(true);
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => handleInputChange('bio', e.target.value)}
+                  onChange={e => handleInputChange('bio', e.target.value)}
                   placeholder="Tell us about yourself, your experience, and what you're looking for..."
                   rows={4}
                 />
@@ -498,22 +494,19 @@ setFormLoading(true);
                 <div className="flex gap-2 mt-2">
                   <Input
                     value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
+                    onChange={e => setNewSkill(e.target.value)}
                     placeholder="Add a skill"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                    onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
                   />
                   <Button type="button" onClick={addSkill} variant="outline">
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {formData.skills.map((skill) => (
+                  {formData.skills.map(skill => (
                     <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                       {skill}
-                      <X
-                        className="h-3 w-3 cursor-pointer"
-                        onClick={() => removeSkill(skill)}
-                      />
+                      <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
                     </Badge>
                   ))}
                 </div>
@@ -524,7 +517,7 @@ setFormLoading(true);
                 <Input
                   id="linkedin_url"
                   value={formData.linkedin_url}
-                  onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                  onChange={e => handleInputChange('linkedin_url', e.target.value)}
                   placeholder="https://linkedin.com/in/yourusername"
                 />
               </div>
@@ -533,23 +526,25 @@ setFormLoading(true);
               {renderRoleSpecificFields()}
 
               {/* Resume Upload for relevant roles */}
-              {(['jobseeker', 'freelancer', 'student'].includes(user?.role || '')) && (
+              {['jobseeker', 'freelancer', 'student'].includes(user?.role || '') && (
                 <div>
                   <Label htmlFor="resume">Upload Resume</Label>
                   <Input
                     id="resume"
                     type="file"
                     accept=".pdf,.doc,.docx"
-                    onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                    onChange={e => setResumeFile(e.target.files?.[0] || null)}
                     className="mt-1"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Upload your latest resume (PDF, DOC, or DOCX)</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Upload your latest resume (PDF, DOC, or DOCX)
+                  </p>
                 </div>
               )}
 
-             <Button type="submit" disabled={formLoading} className="w-full">
-  {formLoading ? 'Updating Profile...' : 'Save Profile'}
-</Button>
+              <Button type="submit" disabled={formLoading} className="w-full">
+                {formLoading ? 'Updating Profile...' : 'Save Profile'}
+              </Button>
             </form>
           </CardContent>
         </Card>

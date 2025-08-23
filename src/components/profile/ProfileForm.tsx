@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { profilesApi } from '@/lib/api/profiles';
 import { toast } from 'sonner';
 import { Upload, X, Plus, User, MapPin, Phone, Mail, Briefcase } from 'lucide-react';
@@ -18,7 +17,7 @@ const ProfileForm = () => {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [newSkill, setNewSkill] = useState('');
-  
+
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -33,7 +32,7 @@ const ProfileForm = () => {
     company_name: '',
     company_size: '',
     college_name: '',
-    student_id: ''
+    student_id: '',
   });
 
   useEffect(() => {
@@ -52,12 +51,12 @@ const ProfileForm = () => {
         company_name: user.company_name || '',
         company_size: '',
         college_name: user.college_name || '',
-        student_id: ''
+        student_id: '',
       });
     }
   }, [user]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -65,7 +64,7 @@ const ProfileForm = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
       setFormData(prev => ({
         ...prev,
-        skills: [...prev.skills, newSkill.trim()]
+        skills: [...prev.skills, newSkill.trim()],
       }));
       setNewSkill('');
     }
@@ -74,7 +73,7 @@ const ProfileForm = () => {
   const removeSkill = (skill: string) => {
     setFormData(prev => ({
       ...prev,
-      skills: prev.skills.filter(s => s !== skill)
+      skills: prev.skills.filter(s => s !== skill),
     }));
   };
 
@@ -86,32 +85,32 @@ const ProfileForm = () => {
     try {
       // Upload avatar if provided
       if (avatarFile) {
-        await profilesApi.uploadAvatar(user.id, avatarFile);
+        await profilesApi.uploadAvatar(user._id, avatarFile);
       }
 
       // Upload resume if provided
       if (resumeFile) {
-        await profilesApi.uploadResume(user.id, resumeFile);
+        await profilesApi.uploadResume(user._id, resumeFile);
       }
 
       // Update profile
-      await profilesApi.updateProfile(user.id, {
+      await profilesApi.updateProfile(user._id, {
         ...formData,
-        profile_complete: true
+        profile_complete: true,
       });
 
       await updateProfile({
         ...formData,
         name: formData.full_name,
-        profileComplete: true
+        profile_complete: true,
       });
-      
+
       toast.success('Profile updated successfully!');
       setAvatarFile(null);
       setResumeFile(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setLoading(false);
     }
@@ -130,7 +129,7 @@ const ProfileForm = () => {
                 <Input
                   id="company_name"
                   value={formData.company_name}
-                  onChange={(e) => handleInputChange('company_name', e.target.value)}
+                  onChange={e => handleInputChange('company_name', e.target.value)}
                   placeholder="Your company name"
                 />
               </div>
@@ -139,14 +138,14 @@ const ProfileForm = () => {
                 <Input
                   id="company_size"
                   value={formData.company_size}
-                  onChange={(e) => handleInputChange('company_size', e.target.value)}
+                  onChange={e => handleInputChange('company_size', e.target.value)}
                   placeholder="e.g., 50-100 employees"
                 />
               </div>
             </div>
           </>
         );
-      
+
       case 'student':
         return (
           <>
@@ -156,7 +155,7 @@ const ProfileForm = () => {
                 <Input
                   id="college_name"
                   value={formData.college_name}
-                  onChange={(e) => handleInputChange('college_name', e.target.value)}
+                  onChange={e => handleInputChange('college_name', e.target.value)}
                   placeholder="Your college/university name"
                 />
               </div>
@@ -165,14 +164,14 @@ const ProfileForm = () => {
                 <Input
                   id="student_id"
                   value={formData.student_id}
-                  onChange={(e) => handleInputChange('student_id', e.target.value)}
+                  onChange={e => handleInputChange('student_id', e.target.value)}
                   placeholder="Your student ID number"
                 />
               </div>
             </div>
           </>
         );
-      
+
       case 'jobseeker':
       case 'freelancer':
         return (
@@ -183,7 +182,7 @@ const ProfileForm = () => {
                 <Input
                   id="portfolio_url"
                   value={formData.portfolio_url}
-                  onChange={(e) => handleInputChange('portfolio_url', e.target.value)}
+                  onChange={e => handleInputChange('portfolio_url', e.target.value)}
                   placeholder="https://yourportfolio.com"
                 />
               </div>
@@ -192,7 +191,7 @@ const ProfileForm = () => {
                 <Input
                   id="github_url"
                   value={formData.github_url}
-                  onChange={(e) => handleInputChange('github_url', e.target.value)}
+                  onChange={e => handleInputChange('github_url', e.target.value)}
                   placeholder="https://github.com/yourusername"
                 />
               </div>
@@ -203,14 +202,14 @@ const ProfileForm = () => {
                 id="experience_years"
                 type="number"
                 value={formData.experience_years}
-                onChange={(e) => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
+                onChange={e => handleInputChange('experience_years', parseInt(e.target.value) || 0)}
                 min="0"
                 placeholder="0"
               />
             </div>
           </>
         );
-      
+
       default:
         return null;
     }
@@ -231,7 +230,11 @@ const ProfileForm = () => {
             <Avatar className="h-20 w-20">
               <AvatarImage src={user?.avatar || ''} />
               <AvatarFallback>
-                {formData.full_name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                {formData.full_name
+                  .split(' ')
+                  .map(n => n[0])
+                  .join('')
+                  .toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div>
@@ -240,7 +243,7 @@ const ProfileForm = () => {
                 id="avatar"
                 type="file"
                 accept="image/*"
-                onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                onChange={e => setAvatarFile(e.target.files?.[0] || null)}
                 className="mt-1"
               />
             </div>
@@ -253,7 +256,7 @@ const ProfileForm = () => {
               <Input
                 id="full_name"
                 value={formData.full_name}
-                onChange={(e) => handleInputChange('full_name', e.target.value)}
+                onChange={e => handleInputChange('full_name', e.target.value)}
                 placeholder="Your full name"
                 required
               />
@@ -263,7 +266,7 @@ const ProfileForm = () => {
               <Input
                 id="phone"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={e => handleInputChange('phone', e.target.value)}
                 placeholder="+1 (555) 123-4567"
               />
             </div>
@@ -274,7 +277,7 @@ const ProfileForm = () => {
             <Input
               id="location"
               value={formData.location}
-              onChange={(e) => handleInputChange('location', e.target.value)}
+              onChange={e => handleInputChange('location', e.target.value)}
               placeholder="City, Country"
             />
           </div>
@@ -284,7 +287,7 @@ const ProfileForm = () => {
             <Textarea
               id="bio"
               value={formData.bio}
-              onChange={(e) => handleInputChange('bio', e.target.value)}
+              onChange={e => handleInputChange('bio', e.target.value)}
               placeholder="Tell us about yourself, your experience, and what you're looking for..."
               rows={4}
             />
@@ -296,22 +299,19 @@ const ProfileForm = () => {
             <div className="flex gap-2 mt-2">
               <Input
                 value={newSkill}
-                onChange={(e) => setNewSkill(e.target.value)}
+                onChange={e => setNewSkill(e.target.value)}
                 placeholder="Add a skill"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               />
               <Button type="button" onClick={addSkill} variant="outline">
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.skills.map((skill) => (
+              {formData.skills.map(skill => (
                 <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                   {skill}
-                  <X
-                    className="h-3 w-3 cursor-pointer"
-                    onClick={() => removeSkill(skill)}
-                  />
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
                 </Badge>
               ))}
             </div>
@@ -323,7 +323,7 @@ const ProfileForm = () => {
             <Textarea
               id="education"
               value={formData.education}
-              onChange={(e) => handleInputChange('education', e.target.value)}
+              onChange={e => handleInputChange('education', e.target.value)}
               placeholder="Your educational background..."
               rows={3}
             />
@@ -334,7 +334,7 @@ const ProfileForm = () => {
             <Input
               id="linkedin_url"
               value={formData.linkedin_url}
-              onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+              onChange={e => handleInputChange('linkedin_url', e.target.value)}
               placeholder="https://linkedin.com/in/yourusername"
             />
           </div>
@@ -349,7 +349,7 @@ const ProfileForm = () => {
               id="resume"
               type="file"
               accept=".pdf,.doc,.docx"
-              onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+              onChange={e => setResumeFile(e.target.files?.[0] || null)}
               className="mt-1"
             />
           </div>

@@ -4,11 +4,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { signup } from '@/services/auth';
 
 interface AuthFormProps {
   userType: string;
@@ -19,8 +18,8 @@ interface AuthFormProps {
 
 const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
   const params = useParams();
-  const [searchParams] = useSearchParams(); 
-  const role = params.role || searchParams.get("type")
+  const [searchParams] = useSearchParams();
+  const role = params.role || searchParams.get('type');
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -29,10 +28,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
 
-
-  const { login } = useAuth();
-
-
+  const { login, signup } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +39,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
 
     setIsLoading(true);
     try {
-      const success = await login(email.trim(), password.trim(), userType);
+      const success = await login(email.trim(), password.trim());
       if (!success) {
         // Error is handled in the login function
       }
@@ -54,33 +50,36 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
     }
   };
 
-   const handleSignup = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-console.log('handleSignup called',email)
+    console.log('handleSignup called', email);
     if (!email.trim() || !password.trim() || !full_name.trim() || !role?.trim()) {
-      toast.error("Please fill in all required fields");
+      toast.error('Please fill in all required fields');
       return;
     }
 
     setIsLoading(true);
     try {
-      const success = await signup(email.trim(), password.trim(), full_name.trim(), role.trim());
+      const success = await signup(
+        email.trim(),
+        password.trim(),
+        full_name.trim(),
+        role.trim() as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student'
+      );
       if (success) {
-        toast.success("Signup successful! Please login.");
-        setActiveTab("login");
+        toast.success('Signup successful! Please login.');
+        setActiveTab('login');
         // Clear form
         setEmail('');
         setPassword('');
         setFull_Name('');
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Signup failed. Please try again."); 
+      toast.error(error instanceof Error ? error.message : 'Signup failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
-
 
   return (
     <div className="w-full max-w-md mx-auto p-4">
@@ -98,34 +97,42 @@ console.log('handleSignup called',email)
         <CardContent className="p-4">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login" className="text-sm">Login</TabsTrigger>
-              <TabsTrigger value="signup" className="text-sm">Sign Up</TabsTrigger>
+              <TabsTrigger value="login" className="text-sm">
+                Login
+              </TabsTrigger>
+              <TabsTrigger value="signup" className="text-sm">
+                Sign Up
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="space-y-3">
               <form onSubmit={handleLogin} className="space-y-3">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm">Email</Label>
+                  <Label htmlFor="email" className="text-sm">
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="h-10"
                     required
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm">Password</Label>
+                  <Label htmlFor="password" className="text-sm">
+                    Password
+                  </Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       className="h-10 pr-10"
                       required
                     />
@@ -143,8 +150,6 @@ console.log('handleSignup called',email)
                   {isLoading ? 'Logging in...' : 'Login'}
                 </Button>
               </form>
-
-
             </TabsContent>
 
             <TabsContent value="signup" className="space-y-4">
@@ -156,7 +161,7 @@ console.log('handleSignup called',email)
                     type="text"
                     placeholder="Enter your full name"
                     value={full_name}
-                    onChange={(e) => setFull_Name(e.target.value)}
+                    onChange={e => setFull_Name(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -169,7 +174,7 @@ console.log('handleSignup called',email)
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -183,7 +188,7 @@ console.log('handleSignup called',email)
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a password (min. 6 characters)"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       className="h-12 pr-10"
                       required
                       minLength={6}
@@ -198,16 +203,18 @@ console.log('handleSignup called',email)
                   </div>
                 </div>
 
-                <Button type="submit" className="w-full h-12"   onClick={(e) => {
-    console.log('Button clicked');
-    // Don't prevent default here, let form handle it
-  }}>
+                <Button
+                  type="submit"
+                  className="w-full h-12"
+                  onClick={e => {
+                    console.log('Button clicked');
+                    // Don't prevent default here, let form handle it
+                  }}
+                >
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
             </TabsContent>
-
-
           </Tabs>
         </CardContent>
       </Card>
