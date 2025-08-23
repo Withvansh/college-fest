@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Menu, X, User, LogOut, Settings, ShoppingBag } from 'lucide-react';
 import { Button } from './ui/button';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from './ui/dropdown-menu';
 
 const navLinks = [
   { name: 'Home', href: '/' },
@@ -36,7 +36,7 @@ const GuestButtons = () => (
 
 const NavbarLinks = ({ onClick }: { onClick?: () => void }) => (
   <>
-    {navLinks.map((link) => (
+    {navLinks.map(link => (
       <NavLink
         key={link.name}
         to={link.href}

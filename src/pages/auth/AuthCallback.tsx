@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const AuthCallback = () => {
   const { user, loading } = useAuth();
@@ -29,7 +29,9 @@ const AuthCallback = () => {
     switch (user.role) {
       case 'recruiter':
         if (user.dashboardId) {
-          console.log(`📊 Redirecting recruiter to dashboard: /recruiter/dashboard/${user.dashboardId}`);
+          console.log(
+            `📊 Redirecting recruiter to dashboard: /recruiter/dashboard/${user.dashboardId}`
+          );
           navigate(`/recruiter/dashboard/${user.dashboardId}`);
         } else {
           console.warn('⚠️ Recruiter has no dashboardId. Redirecting to fallback /recruiter/hrms');
@@ -72,7 +74,6 @@ const AuthCallback = () => {
 };
 
 export default AuthCallback;
-
 
 // import { useNavigate, useSearchParams } from 'react-router-dom';
 // import { supabase } from '@/integrations/supabase/client';

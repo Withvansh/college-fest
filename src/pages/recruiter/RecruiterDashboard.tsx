@@ -1,8 +1,7 @@
-
-import { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { useRecruiterDashboard } from "@/hooks/useRecruiterDashboard";
+import { useEffect } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useRecruiterDashboard } from '@/hooks/useRecruiterDashboard';
 
 const RecruiterDashboard = () => {
   const { user, loading: authLoading } = useAuth();
@@ -16,7 +15,7 @@ const RecruiterDashboard = () => {
     dashboardLoading,
     dashboard: !!dashboard,
     dashboardId: dashboard?.id,
-    error
+    error,
   });
 
   useEffect(() => {
@@ -58,8 +57,8 @@ const RecruiterDashboard = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
           <p className="text-red-600 text-lg">Error loading dashboard: {error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
             Retry

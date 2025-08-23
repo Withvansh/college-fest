@@ -1,17 +1,22 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAuth } from '@/hooks/useAuth';
 import { FileText, Calendar, DollarSign, Eye, X, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const FreelancerProposals = () => {
-  const { user, logout } = useLocalAuth();
+  const { user, logout } = useAuth();
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -23,8 +28,9 @@ const FreelancerProposals = () => {
       proposedAmount: 2500,
       status: 'pending',
       submittedDate: '2024-01-15',
-      proposalText: 'I have extensive experience in building e-commerce platforms using React and Node.js...',
-      deliveryDays: 21
+      proposalText:
+        'I have extensive experience in building e-commerce platforms using React and Node.js...',
+      deliveryDays: 21,
     },
     {
       id: 2,
@@ -34,7 +40,7 @@ const FreelancerProposals = () => {
       status: 'accepted',
       submittedDate: '2024-01-10',
       proposalText: 'Your project aligns perfectly with my design expertise...',
-      deliveryDays: 14
+      deliveryDays: 14,
     },
     {
       id: 3,
@@ -44,23 +50,28 @@ const FreelancerProposals = () => {
       status: 'rejected',
       submittedDate: '2024-01-08',
       proposalText: 'I can help you integrate multiple APIs seamlessly...',
-      deliveryDays: 7
-    }
+      deliveryDays: 7,
+    },
   ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'accepted': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'accepted':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const filteredProposals = proposals.filter(proposal => {
     const matchesStatus = statusFilter === 'all' || proposal.status === statusFilter;
-    const matchesSearch = proposal.gigTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         proposal.clientName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      proposal.gigTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      proposal.clientName.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesStatus && matchesSearch;
   });
 
@@ -83,7 +94,9 @@ const FreelancerProposals = () => {
               <Button variant="outline" asChild>
                 <Link to="/freelancer/dashboard">Back to Dashboard</Link>
               </Button>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -98,7 +111,7 @@ const FreelancerProposals = () => {
                 <Input
                   placeholder="Search by project title or client name..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="h-10"
                 />
               </div>
@@ -128,7 +141,7 @@ const FreelancerProposals = () => {
               </CardContent>
             </Card>
           ) : (
-            filteredProposals.map((proposal) => (
+            filteredProposals.map(proposal => (
               <Card key={proposal.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
@@ -143,8 +156,8 @@ const FreelancerProposals = () => {
                           Submitted: {new Date(proposal.submittedDate).toLocaleDateString()}
                         </span>
                         <span className="flex items-center">
-                          <DollarSign className="h-4 w-4 mr-1" />
-                          ${proposal.proposedAmount.toLocaleString()}
+                          <DollarSign className="h-4 w-4 mr-1" />$
+                          {proposal.proposedAmount.toLocaleString()}
                         </span>
                         <span>{proposal.deliveryDays} days delivery</span>
                       </div>
@@ -155,11 +168,11 @@ const FreelancerProposals = () => {
                       </Badge>
                     </div>
                   </div>
-                  
+
                   <div className="mb-4">
                     <p className="text-gray-700 line-clamp-2">{proposal.proposalText}</p>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <Button variant="outline" size="sm">
                       <Eye className="h-4 w-4 mr-2" />
@@ -168,14 +181,12 @@ const FreelancerProposals = () => {
                     <div className="flex space-x-2">
                       {proposal.status === 'accepted' && (
                         <Button size="sm" asChild>
-                          <Link to={`/freelancer/projects/${proposal.id}`}>
-                            View Project
-                          </Link>
+                          <Link to={`/freelancer/projects/${proposal.id}`}>View Project</Link>
                         </Button>
                       )}
                       {proposal.status === 'pending' && (
-                        <Button 
-                          variant="outline" 
+                        <Button
+                          variant="outline"
                           size="sm"
                           onClick={() => handleWithdraw(proposal.id)}
                           className="text-red-600 hover:text-red-700"

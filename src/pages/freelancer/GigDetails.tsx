@@ -1,25 +1,30 @@
-
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
+import { useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { useAuth } from '@/hooks/useAuth';
 import { ArrowLeft, DollarSign, Clock, User, Calendar, Send, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const GigDetails = () => {
   const { id } = useParams();
-  const { user, logout } = useLocalAuth();
+  const { user, logout } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [proposalData, setProposalData] = useState({
     coverLetter: '',
     proposedAmount: '',
-    deliveryDays: ''
+    deliveryDays: '',
   });
 
   // Mock gig data - in real app, this would be fetched based on ID
@@ -55,13 +60,22 @@ This is a great opportunity to work on a comprehensive project that will showcas
       name: 'TechCorp Solutions',
       rating: 4.8,
       projectsCompleted: 23,
-      memberSince: '2022'
+      memberSince: '2022',
     },
-    skills_required: ['React', 'Node.js', 'MongoDB', 'Express', 'Stripe', 'JavaScript', 'CSS', 'HTML'],
+    skills_required: [
+      'React',
+      'Node.js',
+      'MongoDB',
+      'Express',
+      'Stripe',
+      'JavaScript',
+      'CSS',
+      'HTML',
+    ],
     posted_date: '2024-01-20',
     proposals_count: 12,
     project_type: 'web-development',
-    status: 'open'
+    status: 'open',
   };
 
   const relatedGigs = [
@@ -71,7 +85,7 @@ This is a great opportunity to work on a comprehensive project that will showcas
       budget_min: 800,
       budget_max: 1500,
       duration_days: 21,
-      skills_required: ['React', 'TypeScript', 'Chart.js']
+      skills_required: ['React', 'TypeScript', 'Chart.js'],
     },
     {
       id: 3,
@@ -79,8 +93,8 @@ This is a great opportunity to work on a comprehensive project that will showcas
       budget_min: 500,
       budget_max: 1000,
       duration_days: 14,
-      skills_required: ['Node.js', 'REST API', 'MongoDB']
-    }
+      skills_required: ['Node.js', 'REST API', 'MongoDB'],
+    },
   ];
 
   const handleSubmitProposal = async () => {
@@ -96,7 +110,7 @@ This is a great opportunity to work on a comprehensive project that will showcas
     }
 
     setIsSubmitting(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       toast.success('Proposal submitted successfully!');
@@ -124,7 +138,9 @@ This is a great opportunity to work on a comprehensive project that will showcas
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -141,8 +157,8 @@ This is a great opportunity to work on a comprehensive project that will showcas
                     <CardTitle className="text-2xl mb-2">{gig.title}</CardTitle>
                     <div className="flex items-center space-x-4 text-gray-600">
                       <span className="flex items-center">
-                        <DollarSign className="h-4 w-4 mr-1" />
-                        ${gig.budget_min.toLocaleString()} - ${gig.budget_max.toLocaleString()}
+                        <DollarSign className="h-4 w-4 mr-1" />${gig.budget_min.toLocaleString()} -
+                        ${gig.budget_max.toLocaleString()}
                       </span>
                       <span className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
@@ -193,13 +209,15 @@ This is a great opportunity to work on a comprehensive project that will showcas
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {relatedGigs.map((relatedGig) => (
+                  {relatedGigs.map(relatedGig => (
                     <div key={relatedGig.id} className="p-4 border rounded-lg hover:bg-gray-50">
                       <div className="flex justify-between items-start">
                         <div>
                           <h4 className="font-medium mb-2">{relatedGig.title}</h4>
                           <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                            <span>${relatedGig.budget_min} - ${relatedGig.budget_max}</span>
+                            <span>
+                              ${relatedGig.budget_min} - ${relatedGig.budget_max}
+                            </span>
                             <span>{relatedGig.duration_days} days</span>
                           </div>
                           <div className="flex flex-wrap gap-1">
@@ -237,7 +255,9 @@ This is a great opportunity to work on a comprehensive project that will showcas
                     <h4 className="font-medium">{gig.client.name}</h4>
                     <div className="flex items-center mt-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-current mr-1" />
-                      <span className="text-sm">{gig.client.rating} ({gig.client.projectsCompleted} projects)</span>
+                      <span className="text-sm">
+                        {gig.client.rating} ({gig.client.projectsCompleted} projects)
+                      </span>
                     </div>
                     <p className="text-sm text-gray-600">Member since {gig.client.memberSince}</p>
                   </div>
@@ -258,7 +278,9 @@ This is a great opportunity to work on a comprehensive project that will showcas
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Budget</span>
-                    <span className="font-medium">${gig.budget_min.toLocaleString()} - ${gig.budget_max.toLocaleString()}</span>
+                    <span className="font-medium">
+                      ${gig.budget_min.toLocaleString()} - ${gig.budget_max.toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Duration</span>
@@ -294,39 +316,50 @@ This is a great opportunity to work on a comprehensive project that will showcas
                         <label className="block text-sm font-medium mb-2">Cover Letter *</label>
                         <Textarea
                           value={proposalData.coverLetter}
-                          onChange={(e) => setProposalData({...proposalData, coverLetter: e.target.value})}
+                          onChange={e =>
+                            setProposalData({ ...proposalData, coverLetter: e.target.value })
+                          }
                           placeholder="Explain why you're the best fit for this project..."
                           rows={6}
                         />
                       </div>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-2">Proposed Amount ($) *</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Proposed Amount ($) *
+                          </label>
                           <Input
                             type="number"
                             value={proposalData.proposedAmount}
-                            onChange={(e) => setProposalData({...proposalData, proposedAmount: e.target.value})}
+                            onChange={e =>
+                              setProposalData({ ...proposalData, proposedAmount: e.target.value })
+                            }
                             placeholder={`${gig.budget_min} - ${gig.budget_max}`}
                             min={gig.budget_min}
                             max={gig.budget_max}
                           />
                           <p className="text-xs text-gray-500 mt-1">
-                            Budget range: ${gig.budget_min.toLocaleString()} - ${gig.budget_max.toLocaleString()}
+                            Budget range: ${gig.budget_min.toLocaleString()} - $
+                            {gig.budget_max.toLocaleString()}
                           </p>
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-2">Delivery Time (days) *</label>
+                          <label className="block text-sm font-medium mb-2">
+                            Delivery Time (days) *
+                          </label>
                           <Input
                             type="number"
                             value={proposalData.deliveryDays}
-                            onChange={(e) => setProposalData({...proposalData, deliveryDays: e.target.value})}
+                            onChange={e =>
+                              setProposalData({ ...proposalData, deliveryDays: e.target.value })
+                            }
                             placeholder={`Max ${gig.duration_days} days`}
                             max={gig.duration_days}
                           />
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-end space-x-2">
                         <DialogTrigger asChild>
                           <Button variant="outline">Cancel</Button>

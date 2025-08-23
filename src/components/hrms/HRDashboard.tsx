@@ -1,12 +1,11 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Users, 
-  Clock, 
-  CreditCard, 
-  FileText, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Users,
+  Clock,
+  CreditCard,
+  FileText,
   MessageSquare,
   Plus,
   Upload,
@@ -14,13 +13,13 @@ import {
   AlertTriangle,
   TrendingUp,
   Calendar,
-  BookOpen
-} from "lucide-react";
-import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { hrmsApi } from "@/lib/api/hrms";
-import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
+  BookOpen,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
+import { hrmsApi } from '@/lib/api/hrms';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface DashboardMetrics {
   totalEmployees: number;
@@ -33,9 +32,31 @@ interface DashboardMetrics {
   pendingLeaveApprovals: number;
   openPositions: number;
   trainingHours: number;
-  employees: any[];
-  positions: any[];
-  trainingSessions: any[];
+  employees: Array<{
+    id: string;
+    name: string;
+    department: string;
+    position: string;
+    status: string;
+    profiles?: {
+      full_name?: string;
+    };
+    created_at?: string;
+  }>;
+  positions: Array<{
+    id: string;
+    title: string;
+    department: string;
+    applicants: number;
+  }>;
+  trainingSessions: Array<{
+    id: string;
+    title: string;
+    date: string;
+    participants: number;
+    status?: string;
+    created_at?: string;
+  }>;
 }
 
 const HRDashboard = () => {
@@ -48,21 +69,17 @@ const HRDashboard = () => {
     trainingHours: 0,
     employees: [],
     positions: [],
-    trainingSessions: []
+    trainingSessions: [],
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [user]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user) return;
-    
+
     try {
       setLoading(true);
-      console.log('Loading dashboard data for user:', user.id);
-      const data = await hrmsApi.getDashboardMetrics(user.id);
+      console.log('Loading dashboard data for user:', user._id);
+      const data = await hrmsApi.getDashboardMetrics(user._id);
       setMetrics(data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -70,69 +87,73 @@ const HRDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const quickActions = [
     {
-      label: "Onboard Employee",
+      label: 'Onboard Employee',
       icon: Plus,
-      href: "/recruiter/hrms/onboard",
-      variant: "default" as const
+      href: '/recruiter/hrms/onboard',
+      variant: 'default' as const,
     },
     {
-      label: "Upload Payslip",
+      label: 'Upload Payslip',
       icon: Upload,
-      href: "/recruiter/hrms/payroll/upload",
-      variant: "outline" as const
+      href: '/recruiter/hrms/payroll/upload',
+      variant: 'outline' as const,
     },
     {
-      label: "Approve Leaves",
+      label: 'Approve Leaves',
       icon: CheckCircle,
-      href: "/recruiter/hrms/leave/manager",
-      variant: "outline" as const
+      href: '/recruiter/hrms/leave/manager',
+      variant: 'outline' as const,
     },
     {
-      label: "View Feedback",
+      label: 'View Feedback',
       icon: MessageSquare,
-      href: "/recruiter/hrms/performance/feedback",
-      variant: "outline" as const
-    }
+      href: '/recruiter/hrms/performance/feedback',
+      variant: 'outline' as const,
+    },
   ];
 
   const recentActivities = [
-    ...(metrics.employees.slice(0, 2).map(emp => ({
+    ...metrics.employees.slice(0, 2).map(emp => ({
       action: `New employee ${emp.profiles?.full_name || 'Unknown'} onboarded`,
       time: new Date(emp.created_at).toLocaleDateString(),
-      type: "onboard"
-    }))),
-    ...(metrics.trainingSessions.slice(0, 2).map(session => ({
+      type: 'onboard',
+    })),
+    ...metrics.trainingSessions.slice(0, 2).map(session => ({
       action: `Training session "${session.title}" ${session.status}`,
       time: new Date(session.created_at).toLocaleDateString(),
-      type: "training"
-    })))
+      type: 'training',
+    })),
   ];
 
   const upcomingTasks = [
     {
-      task: "Employee performance reviews",
+      task: 'Employee performance reviews',
       count: Math.floor(metrics.totalEmployees * 0.3),
-      priority: "high" as const
+      priority: 'high' as const,
     },
     {
-      task: "Training sessions to schedule",
+      task: 'Training sessions to schedule',
       count: metrics.trainingSessions.filter(s => s.status === 'scheduled').length,
-      priority: "medium" as const
+      priority: 'medium' as const,
     },
     {
-      task: "Open positions to fill",
+      task: 'Open positions to fill',
       count: metrics.openPositions,
-      priority: "medium" as const
+      priority: 'medium' as const,
     },
     {
-      task: "Leave approvals pending",
+      task: 'Leave approvals pending',
       count: metrics.pendingLeaveApprovals,
-      priority: metrics.pendingLeaveApprovals > 5 ? "high" : "low" as const
-    }
+      priority: metrics.pendingLeaveApprovals > 5 ? 'high' : ('low' as const),
+    },
   ];
 
   if (loading) {
@@ -158,11 +179,10 @@ const HRDashboard = () => {
     <div className="p-4 md:p-6 space-y-6">
       {/* Welcome Message */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Welcome back! 👋
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Welcome back! 👋</h2>
         <p className="text-gray-600">
-          Here's what's happening with your team today. You have {metrics.totalEmployees} employees and {metrics.openPositions} open positions.
+          Here's what's happening with your team today. You have {metrics.totalEmployees} employees
+          and {metrics.openPositions} open positions.
         </p>
       </div>
 
@@ -207,9 +227,7 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.totalEmployees}</div>
-            <p className="text-xs text-muted-foreground">
-              Active workforce
-            </p>
+            <p className="text-xs text-muted-foreground">Active workforce</p>
           </CardContent>
         </Card>
 
@@ -235,9 +253,7 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.openPositions}</div>
-            <p className="text-xs text-muted-foreground">
-              Hiring opportunities
-            </p>
+            <p className="text-xs text-muted-foreground">Hiring opportunities</p>
           </CardContent>
         </Card>
 
@@ -248,9 +264,7 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.pendingLeaveApprovals}</div>
-            <p className="text-xs text-muted-foreground">
-              Leave requests
-            </p>
+            <p className="text-xs text-muted-foreground">Leave requests</p>
           </CardContent>
         </Card>
 
@@ -261,9 +275,7 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.trainingHours}</div>
-            <p className="text-xs text-muted-foreground">
-              Completed this month
-            </p>
+            <p className="text-xs text-muted-foreground">Completed this month</p>
           </CardContent>
         </Card>
       </div>
@@ -277,8 +289,8 @@ const HRDashboard = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {quickActions.map((action, index) => (
               <Link key={index} to={action.href}>
-                <Button 
-                  variant={action.variant} 
+                <Button
+                  variant={action.variant}
                   className="w-full h-auto py-3 px-4 flex flex-col items-center space-y-2"
                 >
                   <action.icon className="h-5 w-5" />
@@ -298,20 +310,30 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentActivities.length > 0 ? recentActivities.map((activity, index) => (
-                <div key={index} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50">
-                  <div className={`w-2 h-2 rounded-full ${
-                    activity.type === 'attendance' ? 'bg-green-500' :
-                    activity.type === 'leave' ? 'bg-blue-500' :
-                    activity.type === 'training' ? 'bg-purple-500' :
-                    'bg-orange-500'
-                  }`} />
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50"
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        activity.type === 'attendance'
+                          ? 'bg-green-500'
+                          : activity.type === 'leave'
+                            ? 'bg-blue-500'
+                            : activity.type === 'training'
+                              ? 'bg-purple-500'
+                              : 'bg-orange-500'
+                      }`}
+                    />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{activity.action}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
                   </div>
-                </div>
-              )) : (
+                ))
+              ) : (
                 <p className="text-sm text-gray-500 text-center py-4">
                   No recent activity. Start by onboarding employees!
                 </p>
@@ -326,25 +348,31 @@ const HRDashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {upcomingTasks.filter(task => task.count > 0).map((task, index) => (
-                <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50">
-                  <div>
-                    <p className="text-sm font-medium">{task.task}</p>
-                    <Badge 
-                      variant={
-                        task.priority === 'high' ? 'destructive' :
-                        task.priority === 'medium' ? 'default' : 'secondary'
-                      }
-                      className="text-xs"
-                    >
-                      {task.priority}
-                    </Badge>
+              {upcomingTasks
+                .filter(task => task.count > 0)
+                .map((task, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{task.task}</p>
+                      <Badge
+                        variant={
+                          task.priority === 'high'
+                            ? 'destructive'
+                            : task.priority === 'medium'
+                              ? 'default'
+                              : 'secondary'
+                        }
+                        className="text-xs"
+                      >
+                        {task.priority}
+                      </Badge>
+                    </div>
+                    <Badge variant="outline">{task.count}</Badge>
                   </div>
-                  <Badge variant="outline">
-                    {task.count}
-                  </Badge>
-                </div>
-              ))}
+                ))}
               {upcomingTasks.every(task => task.count === 0) && (
                 <p className="text-sm text-gray-500 text-center py-4">
                   Great! No urgent tasks pending.

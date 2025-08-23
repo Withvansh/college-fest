@@ -1,44 +1,62 @@
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { jobsApi } from '@/lib/api/jobs';
 import { applicationsApi } from '@/lib/api/applications';
 import JobApplicationForm from '@/components/jobs/JobApplicationForm';
 import { toast } from 'sonner';
-import { 
-  ArrowLeft, 
-  MapPin, 
-  Clock, 
-  DollarSign, 
-  Building2, 
-  Users, 
+import {
+  ArrowLeft,
+  MapPin,
+  Clock,
+  DollarSign,
+  Building2,
+  Users,
   Calendar,
   Briefcase,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
 
 const JobDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [job, setJob] = useState<any>(null);
+  const [job, setJob] = useState<{
+    id: string;
+    title: string;
+    company_name?: string;
+    description: string;
+    requirements?: string[];
+    location?: string;
+    salary_min?: number;
+    salary_max?: number;
+    min_salary?: number;
+    max_salary?: number;
+    job_type?: string;
+    experience_level?: string;
+    experience_required?: number;
+    skills_required?: string[];
+    posted_date?: string;
+    deadline?: string;
+    created_at?: string;
+    application_deadline?: string;
+    benefits?: string[];
+    remote_allowed?: boolean;
+    profiles?: {
+      avatar_url?: string;
+      full_name?: string;
+    };
+    job_applications?: Array<{ count: number }>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasApplied, setHasApplied] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      loadJobDetails();
-      checkApplicationStatus();
-    }
-  }, [id, user]);
-
-  const loadJobDetails = async () => {
+  const loadJobDetails = useCallback(async () => {
     try {
       const jobData = await jobsApi.getJobById(id!);
       setJob(jobData);
@@ -48,19 +66,26 @@ const JobDetailsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const checkApplicationStatus = async () => {
+  const checkApplicationStatus = useCallback(async () => {
     if (!user || !id) return;
-    
+
     try {
-      const applications = await applicationsApi.getUserApplications(user.id);
+      const applications = await applicationsApi.getApplications(user._id);
       const hasAppliedToJob = applications.some(app => app.job_id === id);
       setHasApplied(hasAppliedToJob);
     } catch (error) {
       console.error('Error checking application status:', error);
     }
-  };
+  }, [user, id]);
+
+  useEffect(() => {
+    if (id) {
+      loadJobDetails();
+      checkApplicationStatus();
+    }
+  }, [id, loadJobDetails, checkApplicationStatus]);
 
   const handleApplicationSuccess = () => {
     setHasApplied(true);
@@ -145,9 +170,9 @@ const JobDetailsPage = () => {
                   <h3 className="font-semibold mb-2">About the Role</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">{job.description}</p>
                 </div>
-                
+
                 <Separator />
-                
+
                 <div>
                   <h3 className="font-semibold mb-2">Requirements</h3>
                   <p className="text-gray-700 whitespace-pre-wrap">{job.requirements}</p>
@@ -176,7 +201,9 @@ const JobDetailsPage = () => {
                       <h3 className="font-semibold mb-2">Benefits</h3>
                       <ul className="list-disc list-inside space-y-1">
                         {job.benefits.map((benefit: string, index: number) => (
-                          <li key={index} className="text-gray-700">{benefit}</li>
+                          <li key={index} className="text-gray-700">
+                            {benefit}
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -209,10 +236,9 @@ const JobDetailsPage = () => {
                     <span className="text-sm font-medium">Salary</span>
                   </div>
                   <span className="text-sm">
-                    {job.min_salary && job.max_salary 
-    ? `₹${job.min_salary.toLocaleString('en-IN')} - ₹${job.max_salary.toLocaleString('en-IN')}`
-                      : 'Competitive'
-                    }
+                    {job.min_salary && job.max_salary
+                      ? `₹${job.min_salary.toLocaleString('en-IN')} - ₹${job.max_salary.toLocaleString('en-IN')}`
+                      : 'Competitive'}
                   </span>
                 </div>
 
@@ -221,9 +247,7 @@ const JobDetailsPage = () => {
                     <Briefcase className="h-4 w-4 text-blue-600" />
                     <span className="text-sm font-medium">Job Type</span>
                   </div>
-                  <Badge variant="outline">
-                    {job.job_type.replace('_', ' ').toUpperCase()}
-                  </Badge>
+                  <Badge variant="outline">{job.job_type.replace('_', ' ').toUpperCase()}</Badge>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -277,8 +301,8 @@ const JobDetailsPage = () => {
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      <Button 
-                        className="w-full" 
+                      <Button
+                        className="w-full"
                         onClick={() => setShowApplicationForm(true)}
                         disabled={showApplicationForm}
                       >

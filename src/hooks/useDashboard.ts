@@ -1,7 +1,17 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { dashboardsService, Dashboard } from '@/lib/api/dashboards';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { dashboardsApi } from '@/lib/api/dashboards';
+
+type Dashboard = {
+  id?: string;
+  stats: {
+    totalJobs: number;
+    applications: number;
+    interviews: number;
+  };
+  onboarding_completed?: boolean;
+};
 
 export const useDashboard = () => {
   const { user } = useAuth();
@@ -9,34 +19,27 @@ export const useDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      loadDashboard();
-    } else {
-      setLoading(false);
-      setDashboard(null);
-    }
-  }, [user]);
-
-  const loadDashboard = async () => {
+  const loadDashboard = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
       setError(null);
       
-      console.log('Loading dashboard for user:', user.id);
+      console.log('Loading dashboard for user:', user._id);
       
-      let dashboardData = await dashboardsService.getUserDashboard(user.id);
+      let dashboardData = await dashboardsApi.getDashboard(user._id);
       
       // If dashboard doesn't exist, create one
       if (!dashboardData) {
-        console.log('Creating dashboard for user:', user.id, 'role:', user.role);
-        dashboardData = await dashboardsService.createDashboard(
-          user.id,
-          user.role,
-          user.name
-        );
+        console.log('Creating dashboard for user:', user._id, 'role:', user.role);
+        dashboardData = await dashboardsApi.updateDashboard(user._id, {
+          stats: {
+            totalJobs: 0,
+            applications: 0,
+            interviews: 0
+          }
+        });
         
         if (!dashboardData) {
           throw new Error('Failed to create dashboard');
@@ -51,14 +54,23 @@ export const useDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadDashboard();
+    } else {
+      setLoading(false);
+      setDashboard(null);
+    }
+  }, [user, loadDashboard]);
 
   const updateDashboard = async (updates: Partial<Dashboard>) => {
     if (!user) return;
 
     try {
       console.log('Updating dashboard with:', updates);
-      const updatedDashboard = await dashboardsService.updateDashboard(user.id, updates);
+      const updatedDashboard = await dashboardsApi.updateDashboard(user._id, updates);
       if (updatedDashboard) {
         setDashboard(updatedDashboard);
         console.log('Dashboard updated successfully');

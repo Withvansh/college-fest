@@ -1,5 +1,4 @@
-
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { ReactNode } from 'react';
 
@@ -9,7 +8,7 @@ interface LocalProtectedRouteProps {
 }
 
 const LocalProtectedRoute = ({ children, requiredRole }: LocalProtectedRouteProps) => {
-  const { user, isAuthenticated, loading } = useLocalAuth();
+  const { user, isAuthenticated, loading } = useAuth();
 
   if (loading) {
     return (

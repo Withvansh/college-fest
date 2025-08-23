@@ -1,46 +1,54 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { useAuth } from '@/hooks/useAuth';
 import { Plus, ExternalLink, Edit, Trash2, Github, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 const FreelancerPortfolio = () => {
-  const { user, logout } = useLocalAuth();
+  const { user, logout } = useAuth();
   const [portfolioItems, setPortfolioItems] = useState([
     {
       id: 1,
       title: 'E-commerce Platform',
-      description: 'A full-stack e-commerce solution built with React, Node.js, and MongoDB. Features include user authentication, payment processing, inventory management, and admin dashboard.',
+      description:
+        'A full-stack e-commerce solution built with React, Node.js, and MongoDB. Features include user authentication, payment processing, inventory management, and admin dashboard.',
       tags: ['React', 'Node.js', 'MongoDB', 'Stripe'],
       link: 'https://github.com/example/ecommerce',
       type: 'github',
-      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=400&h=200&fit=crop',
     },
     {
       id: 2,
       title: 'Task Management App',
-      description: 'A collaborative task management tool with real-time updates, team collaboration features, and project tracking capabilities.',
+      description:
+        'A collaborative task management tool with real-time updates, team collaboration features, and project tracking capabilities.',
       tags: ['TypeScript', 'Express', 'PostgreSQL', 'Socket.io'],
       link: 'https://taskmanager-demo.com',
       type: 'website',
-      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=400&h=200&fit=crop',
     },
     {
       id: 3,
       title: 'Mobile Banking App UI',
-      description: 'Modern mobile banking application UI design with intuitive user experience and secure transaction flows.',
+      description:
+        'Modern mobile banking application UI design with intuitive user experience and secure transaction flows.',
       tags: ['Figma', 'UI/UX', 'Mobile Design'],
       link: 'https://figma.com/example-banking-app',
       type: 'design',
-      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=200&fit=crop'
-    }
+      image: 'https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=200&fit=crop',
+    },
   ]);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -49,7 +57,7 @@ const FreelancerPortfolio = () => {
     description: '',
     tags: '',
     link: '',
-    type: 'website'
+    type: 'website',
   });
 
   const handleAddItem = () => {
@@ -65,7 +73,7 @@ const FreelancerPortfolio = () => {
       tags: newItem.tags.split(',').map(tag => tag.trim()),
       link: newItem.link,
       type: newItem.type,
-      image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=400&h=200&fit=crop'
+      image: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=400&h=200&fit=crop',
     };
 
     setPortfolioItems([...portfolioItems, item]);
@@ -81,9 +89,12 @@ const FreelancerPortfolio = () => {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'github': return <Github className="h-4 w-4" />;
-      case 'website': return <Globe className="h-4 w-4" />;
-      default: return <ExternalLink className="h-4 w-4" />;
+      case 'github':
+        return <Github className="h-4 w-4" />;
+      case 'website':
+        return <Globe className="h-4 w-4" />;
+      default:
+        return <ExternalLink className="h-4 w-4" />;
     }
   };
 
@@ -114,7 +125,7 @@ const FreelancerPortfolio = () => {
                       <label className="block text-sm font-medium mb-2">Title *</label>
                       <Input
                         value={newItem.title}
-                        onChange={(e) => setNewItem({...newItem, title: e.target.value})}
+                        onChange={e => setNewItem({ ...newItem, title: e.target.value })}
                         placeholder="Project title"
                       />
                     </div>
@@ -122,7 +133,7 @@ const FreelancerPortfolio = () => {
                       <label className="block text-sm font-medium mb-2">Description *</label>
                       <Textarea
                         value={newItem.description}
-                        onChange={(e) => setNewItem({...newItem, description: e.target.value})}
+                        onChange={e => setNewItem({ ...newItem, description: e.target.value })}
                         placeholder="Describe your project..."
                         rows={4}
                       />
@@ -131,7 +142,7 @@ const FreelancerPortfolio = () => {
                       <label className="block text-sm font-medium mb-2">Technologies/Skills</label>
                       <Input
                         value={newItem.tags}
-                        onChange={(e) => setNewItem({...newItem, tags: e.target.value})}
+                        onChange={e => setNewItem({ ...newItem, tags: e.target.value })}
                         placeholder="React, Node.js, MongoDB (comma separated)"
                       />
                     </div>
@@ -139,7 +150,7 @@ const FreelancerPortfolio = () => {
                       <label className="block text-sm font-medium mb-2">Project Link</label>
                       <Input
                         value={newItem.link}
-                        onChange={(e) => setNewItem({...newItem, link: e.target.value})}
+                        onChange={e => setNewItem({ ...newItem, link: e.target.value })}
                         placeholder="https://..."
                       />
                     </div>
@@ -147,9 +158,7 @@ const FreelancerPortfolio = () => {
                       <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
                         Cancel
                       </Button>
-                      <Button onClick={handleAddItem}>
-                        Add Item
-                      </Button>
+                      <Button onClick={handleAddItem}>Add Item</Button>
                     </div>
                   </div>
                 </DialogContent>
@@ -157,7 +166,9 @@ const FreelancerPortfolio = () => {
               <Button variant="outline" asChild>
                 <Link to="/freelancer/dashboard">Back to Dashboard</Link>
               </Button>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -169,7 +180,9 @@ const FreelancerPortfolio = () => {
             <CardContent className="text-center py-12">
               <Plus className="h-16 w-16 text-gray-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">No portfolio items yet</h3>
-              <p className="text-gray-600 mb-4">Start building your portfolio by adding your best work</p>
+              <p className="text-gray-600 mb-4">
+                Start building your portfolio by adding your best work
+              </p>
               <Button onClick={() => setIsAddModalOpen(true)}>
                 <Plus className="h-4 w-4 mr-2" />
                 Add Your First Item
@@ -178,9 +191,9 @@ const FreelancerPortfolio = () => {
           </Card>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {portfolioItems.map((item) => (
+            {portfolioItems.map(item => (
               <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <div 
+                <div
                   className="h-48 bg-cover bg-center"
                   style={{ backgroundImage: `url(${item.image})` }}
                 />
@@ -191,8 +204,8 @@ const FreelancerPortfolio = () => {
                       <Button size="sm" variant="ghost">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="ghost"
                         onClick={() => handleDeleteItem(item.id)}
                         className="text-red-600 hover:text-red-700"
@@ -201,11 +214,9 @@ const FreelancerPortfolio = () => {
                       </Button>
                     </div>
                   </div>
-                  
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {item.description}
-                  </p>
-                  
+
+                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">{item.description}</p>
+
                   <div className="flex flex-wrap gap-1 mb-4">
                     {item.tags.map((tag, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
@@ -213,9 +224,9 @@ const FreelancerPortfolio = () => {
                       </Badge>
                     ))}
                   </div>
-                  
+
                   {item.link && (
-                    <a 
+                    <a
                       href={item.link}
                       target="_blank"
                       rel="noopener noreferrer"

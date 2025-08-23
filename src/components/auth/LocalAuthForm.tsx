@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,8 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
@@ -26,13 +24,9 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  
-  const { login: localLogin } = useLocalAuth();
+
   const { login, signup } = useAuth();
   const navigate = useNavigate();
-
-
-
 
   // Function to get redirect path based on user type
   const getRedirectPath = (userType: string): string => {
@@ -70,7 +64,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
     setIsLoading(true);
     try {
       console.log('Attempting login for:', email.trim(), 'as', userType);
-      await login(email.trim(), password.trim(), userType);
+      await login(email.trim(), password.trim());
       // Redirect will be handled by useEffect when auth state changes
     } catch (error) {
       console.error('Login error:', error);
@@ -89,7 +83,12 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
 
     setIsLoading(true);
     try {
-      const success = await signup(email.trim(), password.trim(), name.trim(), userType);
+      const success = await signup(
+        email.trim(),
+        password.trim(),
+        name.trim(),
+        userType as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student'
+      );
       if (success) {
         setActiveTab('login');
       }
@@ -99,8 +98,6 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
       setIsLoading(false);
     }
   };
-
-
 
   const handleDemoLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,8 +109,8 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
     setIsLoading(true);
     try {
       console.log('Attempting demo login for:', email.trim(), 'as', userType);
-      await localLogin(email.trim(), password.trim(), userType);
-      
+      await login(email.trim(), password.trim());
+
       // For demo login, redirect immediately since local auth doesn't have async return
       console.log('Demo login successful, redirecting to:', getRedirectPath(userType));
       setTimeout(() => {
@@ -130,28 +127,28 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
   // Get demo credentials for this user type
   const getDemoCredentials = () => {
     const roleMap: Record<string, string> = {
-      'jobseeker': 'demo.candidate@minutehire.com',
-      'recruiter': 'demo.hr@minutehire.com',
-      'freelancer': 'demo.freelancer@minutehire.com',
-      'client': 'demo.client@minutehire.com',
-      'student': 'demo.student@minutehire.com',
-      'college': 'demo.college@minutehire.com',
-      'admin': 'demo.admin@minutehire.com'
+      jobseeker: 'demo.candidate@minutehire.com',
+      recruiter: 'demo.hr@minutehire.com',
+      freelancer: 'demo.freelancer@minutehire.com',
+      client: 'demo.client@minutehire.com',
+      student: 'demo.student@minutehire.com',
+      college: 'demo.college@minutehire.com',
+      admin: 'demo.admin@minutehire.com',
     };
-    
+
     const passwordMap: Record<string, string> = {
-      'jobseeker': '#Candidate123',
-      'recruiter': '#HRaccess123',
-      'freelancer': '#Freelance123',
-      'client': '#Client123',
-      'student': '#Student123',
-      'college': '#College123',
-      'admin': '#Admin123'
+      jobseeker: '#Candidate123',
+      recruiter: '#HRaccess123',
+      freelancer: '#Freelance123',
+      client: '#Client123',
+      student: '#Student123',
+      college: '#College123',
+      admin: '#Admin123',
     };
 
     return {
       email: roleMap[userType] || '',
-      password: passwordMap[userType] || ''
+      password: passwordMap[userType] || '',
     };
   };
 
@@ -187,7 +184,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -201,7 +198,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter your password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       className="h-12 pr-10"
                       required
                     />
@@ -220,8 +217,6 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                 </Button>
               </form>
 
-
-              
               {/* {userType === 'recruiter' && (
                 <div className="text-center text-sm text-gray-600">
                   <p>After Google sign-in, you'll be able to post jobs immediately!</p>
@@ -238,7 +233,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                     type="text"
                     placeholder="Enter your full name"
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={e => setName(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -251,7 +246,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -265,7 +260,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Create a password (min. 6 characters)"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       className="h-12 pr-10"
                       required
                       minLength={6}
@@ -284,8 +279,6 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                   {isLoading ? 'Creating Account...' : 'Create Account'}
                 </Button>
               </form>
-
-
             </TabsContent>
 
             <TabsContent value="demo" className="space-y-4">
@@ -297,7 +290,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                     type="email"
                     placeholder="Enter demo email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="h-12"
                     required
                   />
@@ -311,7 +304,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                       type={showPassword ? 'text' : 'password'}
                       placeholder="Enter demo password"
                       value={password}
-                      onChange={(e) => setPassword(e.target.value)}
+                      onChange={e => setPassword(e.target.value)}
                       className="h-12 pr-10"
                       required
                     />
@@ -346,7 +339,9 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
                     type="button"
                     variant="outline"
                     className="w-full justify-start text-left border-blue-300 hover:bg-blue-100"
-                    onClick={() => handleFillCredentials(demoCredentials.email, demoCredentials.password)}
+                    onClick={() =>
+                      handleFillCredentials(demoCredentials.email, demoCredentials.password)
+                    }
                   >
                     <div className="flex items-center space-x-2">
                       {icon}
