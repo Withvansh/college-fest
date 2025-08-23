@@ -1,12 +1,11 @@
-
-import { useEffect, useState } from "react";
-import { useParams, Navigate, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "react-router-dom";
-import { Building2, Users, FileText, TestTube, BarChart3, Calendar, Plus } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { recruiterDashboardsApi } from "@/lib/api/recruiterDashboards";
+import { useEffect, useState } from 'react';
+import { useParams, Navigate, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Link } from 'react-router-dom';
+import { Building2, Users, FileText, TestTube, BarChart3, Calendar, Plus } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { recruiterDashboardsApi } from '@/lib/api/recruiterDashboards';
 
 type RecruiterDashboard = {
   id: string;
@@ -15,7 +14,7 @@ type RecruiterDashboard = {
   totalApplications: number;
   pendingApplications: number;
 };
-import { toast } from "sonner";
+import { toast } from 'sonner';
 
 const RecruiterDashboardDynamic = () => {
   const { dashboardId } = useParams();
@@ -29,7 +28,7 @@ const RecruiterDashboardDynamic = () => {
     console.log('🎯 RecruiterDashboardDynamic - Component mounted');
     console.log('📊 Dashboard ID from URL:', dashboardId);
     console.log('👤 Current user:', user);
-    
+
     if (user && dashboardId) {
       // Check if dashboardId is valid (not 'undefined' or empty)
       if (dashboardId === 'undefined' || !dashboardId.trim()) {
@@ -38,7 +37,7 @@ const RecruiterDashboardDynamic = () => {
         navigate('/recruiter/hrms', { replace: true });
         return;
       }
-      
+
       loadDashboard();
     } else if (user && !dashboardId) {
       console.log('❌ No dashboard ID provided, redirecting to HRMS');
@@ -58,13 +57,13 @@ const RecruiterDashboardDynamic = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('🔄 Loading dashboard for user:', user.id, 'dashboardId:', dashboardId);
-      
+
       // First get the user's dashboard to verify ownership
       const userDashboard = await recruiterDashboardsApi.getDashboard(user.id);
       console.log('📊 User dashboard fetched:', userDashboard);
-      
+
       if (!userDashboard) {
         console.log('❌ No dashboard found for user, redirecting to HRMS');
         toast.error('Dashboard not found. Redirecting to HRMS workspace.');
@@ -76,7 +75,7 @@ const RecruiterDashboardDynamic = () => {
       if (userDashboard.id !== dashboardId) {
         console.log('❌ Dashboard ID mismatch:', {
           userDashboardId: userDashboard.id,
-          urlDashboardId: dashboardId
+          urlDashboardId: dashboardId,
         });
         toast.error('Access denied - Dashboard not found. Redirecting to HRMS.');
         navigate('/recruiter/hrms', { replace: true });
@@ -90,7 +89,7 @@ const RecruiterDashboardDynamic = () => {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(errorMessage);
       toast.error('Failed to load dashboard. Redirecting to HRMS workspace.');
-      
+
       // Fallback to HRMS after a delay
       setTimeout(() => {
         navigate('/recruiter/hrms', { replace: true });
@@ -169,10 +168,14 @@ const RecruiterDashboardDynamic = () => {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">{dashboard.dashboard_name}</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              {dashboard.dashboard_name}
+            </h1>
             <div className="flex items-center space-x-3 md:space-x-4">
               <span className="text-sm md:text-base text-gray-600">Welcome back, {user.name}</span>
-              <Button variant="outline" size="sm" className="text-xs md:text-sm">Profile</Button>
+              <Button variant="outline" size="sm" className="text-xs md:text-sm">
+                Profile
+              </Button>
             </div>
           </div>
         </div>
@@ -190,7 +193,7 @@ const RecruiterDashboardDynamic = () => {
               <div className="text-lg md:text-2xl font-bold">{dashboard.stats.activeJobs}</div>
             </CardContent>
           </Card>
-          
+
           <Card className="p-3 md:p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs md:text-sm font-medium">Applications</CardTitle>
@@ -200,7 +203,7 @@ const RecruiterDashboardDynamic = () => {
               <div className="text-lg md:text-2xl font-bold">{dashboard.stats.applications}</div>
             </CardContent>
           </Card>
-          
+
           <Card className="p-3 md:p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs md:text-sm font-medium">Tests Created</CardTitle>
@@ -210,14 +213,16 @@ const RecruiterDashboardDynamic = () => {
               <div className="text-lg md:text-2xl font-bold">{dashboard.stats.testsCreated}</div>
             </CardContent>
           </Card>
-          
+
           <Card className="p-3 md:p-4">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-xs md:text-sm font-medium">Interviews</CardTitle>
               <Calendar className="h-3 w-3 md:h-4 md:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-0">
-              <div className="text-lg md:text-2xl font-bold">{dashboard.stats.interviewsScheduled}</div>
+              <div className="text-lg md:text-2xl font-bold">
+                {dashboard.stats.interviewsScheduled}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -241,18 +246,27 @@ const RecruiterDashboardDynamic = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.jobPosts.map((job) => (
-                    <div key={job.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {dashboard.mockData.jobPosts.map(job => (
+                    <div
+                      key={job.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <h3 className="font-medium">{job.title}</h3>
-                        <p className="text-sm text-gray-600">{job.company} • {job.location}</p>
+                        <p className="text-sm text-gray-600">
+                          {job.company} • {job.location}
+                        </p>
                         <p className="text-xs text-gray-500">Posted: {job.postedDate}</p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-medium">{job.applicants} applicants</p>
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          job.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            job.status === 'Active'
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {job.status}
                         </span>
                       </div>
@@ -269,8 +283,11 @@ const RecruiterDashboardDynamic = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.applicants.map((applicant) => (
-                    <div key={applicant.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {dashboard.mockData.applicants.map(applicant => (
+                    <div
+                      key={applicant.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <h3 className="font-medium">{applicant.name}</h3>
                         <p className="text-sm text-gray-600">{applicant.email}</p>
@@ -279,14 +296,21 @@ const RecruiterDashboardDynamic = () => {
                       <div className="text-right">
                         <p className="text-sm">{applicant.appliedDate}</p>
                         {applicant.testScore && (
-                          <p className="text-xs text-blue-600">Test Score: {applicant.testScore}%</p>
+                          <p className="text-xs text-blue-600">
+                            Test Score: {applicant.testScore}%
+                          </p>
                         )}
-                        <span className={`text-xs px-2 py-1 rounded-full ${
-                          applicant.status === 'Interview Scheduled' ? 'bg-blue-100 text-blue-800' :
-                          applicant.status === 'Shortlisted' ? 'bg-green-100 text-green-800' :
-                          applicant.status === 'Under Review' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${
+                            applicant.status === 'Interview Scheduled'
+                              ? 'bg-blue-100 text-blue-800'
+                              : applicant.status === 'Shortlisted'
+                                ? 'bg-green-100 text-green-800'
+                                : applicant.status === 'Under Review'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-gray-100 text-gray-800'
+                          }`}
+                        >
                           {applicant.status}
                         </span>
                       </div>
@@ -303,19 +327,26 @@ const RecruiterDashboardDynamic = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.testResults.map((result) => (
-                    <div key={result.id} className="flex items-center justify-between p-4 border rounded-lg">
+                  {dashboard.mockData.testResults.map(result => (
+                    <div
+                      key={result.id}
+                      className="flex items-center justify-between p-4 border rounded-lg"
+                    >
                       <div>
                         <h3 className="font-medium">{result.candidateName}</h3>
                         <p className="text-sm text-gray-600">{result.testName}</p>
                         <p className="text-xs text-gray-500">Completed: {result.completedAt}</p>
                       </div>
                       <div className="text-right">
-                        <div className={`text-lg font-bold ${
-                          result.score >= 90 ? 'text-green-600' :
-                          result.score >= 70 ? 'text-blue-600' :
-                          'text-yellow-600'
-                        }`}>
+                        <div
+                          className={`text-lg font-bold ${
+                            result.score >= 90
+                              ? 'text-green-600'
+                              : result.score >= 70
+                                ? 'text-blue-600'
+                                : 'text-yellow-600'
+                          }`}
+                        >
                           {result.score}%
                         </div>
                       </div>
@@ -367,7 +398,9 @@ const RecruiterDashboardDynamic = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-gray-600 text-xs">Manage HR operations and onboard employees.</p>
+                    <p className="text-gray-600 text-xs">
+                      Manage HR operations and onboard employees.
+                    </p>
                   </CardContent>
                 </Card>
               </Link>

@@ -1,11 +1,16 @@
-
 import { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { enhancedJobsService } from "@/services/sampleDataService";
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useAuth } from '@/hooks/useAuth';
+import { enhancedJobsService } from '@/services/sampleDataService';
 import { ArrowLeft, Building2, MapPin, Calendar, Eye, Trash2, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -23,7 +28,7 @@ interface Application {
 }
 
 const JobSeekerApplications = () => {
-  const { user } = useLocalAuth();
+  const { user } = useAuth();
   const [applications, setApplications] = useState<Application[]>([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState('newest');
@@ -47,7 +52,7 @@ const JobSeekerApplications = () => {
           appliedDate: '2024-01-15',
           status: 'interview_scheduled',
           salary: '₹6.7L - ₹10L',
-          jobType: 'Full-time'
+          jobType: 'Full-time',
         },
         {
           id: '2',
@@ -58,7 +63,7 @@ const JobSeekerApplications = () => {
           appliedDate: '2024-01-10',
           status: 'applied',
           salary: '₹5.9L - ₹8.4L',
-          jobType: 'Full-time'
+          jobType: 'Full-time',
         },
         {
           id: '3',
@@ -69,8 +74,8 @@ const JobSeekerApplications = () => {
           appliedDate: '2024-01-05',
           status: 'rejected',
           salary: '₹5L - ₹7.5L',
-          jobType: 'Contract'
-        }
+          jobType: 'Contract',
+        },
       ];
       setApplications(mockApplications);
     } catch (error) {
@@ -95,34 +100,46 @@ const JobSeekerApplications = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'applied': return 'bg-blue-100 text-blue-800';
-      case 'interview_scheduled': return 'bg-green-100 text-green-800';
-      case 'rejected': return 'bg-red-100 text-red-800';
-      case 'hired': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'applied':
+        return 'bg-blue-100 text-blue-800';
+      case 'interview_scheduled':
+        return 'bg-green-100 text-green-800';
+      case 'rejected':
+        return 'bg-red-100 text-red-800';
+      case 'hired':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'applied': return 'Applied';
-      case 'interview_scheduled': return 'Interview Scheduled';
-      case 'rejected': return 'Rejected';
-      case 'hired': return 'Hired';
-      default: return status;
+      case 'applied':
+        return 'Applied';
+      case 'interview_scheduled':
+        return 'Interview Scheduled';
+      case 'rejected':
+        return 'Rejected';
+      case 'hired':
+        return 'Hired';
+      default:
+        return status;
     }
   };
 
-  const filteredApplications = applications.filter(app => {
-    if (filterStatus === 'all') return true;
-    return app.status === filterStatus;
-  }).sort((a, b) => {
-    if (sortBy === 'newest') {
-      return new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime();
-    } else {
-      return new Date(a.appliedDate).getTime() - new Date(b.appliedDate).getTime();
-    }
-  });
+  const filteredApplications = applications
+    .filter(app => {
+      if (filterStatus === 'all') return true;
+      return app.status === filterStatus;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'newest') {
+        return new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime();
+      } else {
+        return new Date(a.appliedDate).getTime() - new Date(b.appliedDate).getTime();
+      }
+    });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -131,7 +148,10 @@ const JobSeekerApplications = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/jobseeker/dashboard" className="inline-flex items-center text-gray-600 hover:text-gray-900 group">
+              <Link
+                to="/jobseeker/dashboard"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 group"
+              >
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Dashboard
               </Link>
@@ -163,7 +183,7 @@ const JobSeekerApplications = () => {
               </SelectContent>
             </Select>
           </div>
-          
+
           <Select value={sortBy} onValueChange={setSortBy}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Sort by" />
@@ -186,13 +206,14 @@ const JobSeekerApplications = () => {
             <CardContent className="pt-6">
               <Building2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {filterStatus === 'all' ? 'No applications yet' : `No ${filterStatus.replace('_', ' ')} applications`}
+                {filterStatus === 'all'
+                  ? 'No applications yet'
+                  : `No ${filterStatus.replace('_', ' ')} applications`}
               </h3>
               <p className="text-gray-600 mb-6">
-                {filterStatus === 'all' 
+                {filterStatus === 'all'
                   ? "You haven't applied to any jobs yet. Start exploring opportunities!"
-                  : `You don't have any applications with ${filterStatus.replace('_', ' ')} status.`
-                }
+                  : `You don't have any applications with ${filterStatus.replace('_', ' ')} status.`}
               </p>
               <Button asChild>
                 <Link to="/jobseeker/dashboard">Browse Jobs</Link>
@@ -201,7 +222,7 @@ const JobSeekerApplications = () => {
           </Card>
         ) : (
           <div className="space-y-4">
-            {filteredApplications.map((application) => (
+            {filteredApplications.map(application => (
               <Card key={application.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start">
@@ -241,10 +262,12 @@ const JobSeekerApplications = () => {
                         </Link>
                       </Button>
                       {application.status === 'applied' && (
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          onClick={() => handleWithdrawApplication(application.id, application.jobTitle)}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() =>
+                            handleWithdrawApplication(application.id, application.jobTitle)
+                          }
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                         >
                           <Trash2 className="h-4 w-4 mr-2" />

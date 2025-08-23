@@ -1,18 +1,17 @@
-
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { useLocalAuth } from "@/contexts/LocalAuthContext";
-import { sampleDataService } from "@/services/sampleDataService";
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
+import { sampleDataService } from '@/services/sampleDataService';
 import { Search, DollarSign, Clock, Code, User, FileText, BarChart3 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import SubmitProposalModal from '@/components/freelancer/SubmitProposalModal';
 
 const FreelancerDashboard = () => {
-  const { user, logout } = useLocalAuth();
+  const { user, logout } = useAuth();
   const [gigs, setGigs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -36,10 +35,11 @@ const FreelancerDashboard = () => {
     }
   };
 
-  const filteredGigs = gigs.filter(gig => 
-    gig.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gig.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    gig.project_type.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredGigs = gigs.filter(
+    gig =>
+      gig.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      gig.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      gig.project_type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleSubmitProposal = (gig: any) => {
@@ -64,7 +64,9 @@ const FreelancerDashboard = () => {
                   Profile
                 </Link>
               </Button>
-              <Button variant="outline" onClick={logout}>Logout</Button>
+              <Button variant="outline" onClick={logout}>
+                Logout
+              </Button>
             </div>
           </div>
         </div>
@@ -82,7 +84,7 @@ const FreelancerDashboard = () => {
               <div className="text-2xl font-bold">{gigs.length}</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Proposals</CardTitle>
@@ -92,7 +94,7 @@ const FreelancerDashboard = () => {
               <div className="text-2xl font-bold">5</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Active Projects</CardTitle>
@@ -102,7 +104,7 @@ const FreelancerDashboard = () => {
               <div className="text-2xl font-bold">2</div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Earnings</CardTitle>
@@ -128,7 +130,7 @@ const FreelancerDashboard = () => {
                 <Input
                   placeholder="Search gigs by title, type, or skills..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="h-12"
                 />
               </div>
@@ -151,15 +153,20 @@ const FreelancerDashboard = () => {
                     <p className="text-gray-600">No gigs found matching your criteria.</p>
                   </div>
                 ) : (
-                  filteredGigs.map((gig) => (
+                  filteredGigs.map(gig => (
                     <Card key={gig.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="p-6">
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">{gig.title}</h3>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                              {gig.title}
+                            </h3>
                             <div className="flex items-center text-gray-600 mb-2">
                               <DollarSign className="h-4 w-4 mr-1" />
-                              <span className="mr-4">${gig.budget_min?.toLocaleString()} - ${gig.budget_max?.toLocaleString()}</span>
+                              <span className="mr-4">
+                                ${gig.budget_min?.toLocaleString()} - $
+                                {gig.budget_max?.toLocaleString()}
+                              </span>
                               <Clock className="h-4 w-4 mr-1" />
                               <span>{gig.duration_days} days</span>
                             </div>
@@ -169,11 +176,13 @@ const FreelancerDashboard = () => {
                             <p className="text-gray-600 mb-3 line-clamp-2">{gig.description}</p>
                             {gig.skills_required && (
                               <div className="flex flex-wrap gap-2 mb-3">
-                                {gig.skills_required.slice(0, 4).map((skill: string, index: number) => (
-                                  <Badge key={index} variant="outline" className="text-xs">
-                                    {skill}
-                                  </Badge>
-                                ))}
+                                {gig.skills_required
+                                  .slice(0, 4)
+                                  .map((skill: string, index: number) => (
+                                    <Badge key={index} variant="outline" className="text-xs">
+                                      {skill}
+                                    </Badge>
+                                  ))}
                                 {gig.skills_required.length > 4 && (
                                   <Badge variant="outline" className="text-xs">
                                     +{gig.skills_required.length - 4} more
@@ -183,7 +192,7 @@ const FreelancerDashboard = () => {
                             )}
                           </div>
                           <div className="ml-6 flex flex-col gap-2">
-                            <Button 
+                            <Button
                               onClick={() => handleSubmitProposal(gig)}
                               className="whitespace-nowrap"
                             >

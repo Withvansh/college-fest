@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft,
   User,
@@ -72,7 +72,7 @@ interface TestScore {
 }
 
 const JobSeekerProfile = () => {
-  const { user } = useLocalAuth();
+  const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

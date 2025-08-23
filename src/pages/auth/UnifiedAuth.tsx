@@ -5,49 +5,49 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useAuth } from '@/contexts/AuthContext';
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
+import { useAuth } from '@/hooks/useAuth';
+import { UserRole, unifiedAuthService } from '@/services/unifiedAuth';
 import { toast } from 'sonner';
 import { Eye, EyeOff, User, Briefcase, Code, Building2, GraduationCap, School } from 'lucide-react';
 
 const userTypes = [
   {
-    id: 'jobseeker',
+    id: 'jobseeker' as UserRole,
     label: 'Job Seeker',
     icon: User,
     color: 'from-blue-500 to-purple-600',
     description: 'Find your dream job',
   },
   {
-    id: 'recruiter',
+    id: 'recruiter' as UserRole,
     label: 'Recruiter',
     icon: Briefcase,
     color: 'from-green-500 to-blue-600',
     description: 'Hire top talent',
   },
   {
-    id: 'freelancer',
+    id: 'freelancer' as UserRole,
     label: 'Freelancer',
     icon: Code,
     color: 'from-purple-500 to-pink-600',
     description: 'Showcase your skills',
   },
   {
-    id: 'client',
+    id: 'client' as UserRole,
     label: 'Client',
     icon: Building2,
     color: 'from-blue-500 to-green-600',
     description: 'Hire freelancers',
   },
   {
-    id: 'student',
+    id: 'student' as UserRole,
     label: 'Student',
     icon: GraduationCap,
     color: 'from-indigo-500 to-cyan-600',
     description: 'Campus opportunities',
   },
   {
-    id: 'college',
+    id: 'college' as UserRole,
     label: 'College',
     icon: School,
     color: 'from-emerald-500 to-teal-600',
@@ -58,17 +58,15 @@ const userTypes = [
 const UnifiedAuth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [selectedUserType, setSelectedUserType] = useState('jobseeker');
+  const [selectedUserType, setSelectedUserType] = useState<UserRole>('jobseeker');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
-  
-  // Use AuthContext for main authentication and LocalAuth for demo
-  const { login: authLogin, signup: authSignup, getDashboardRoute, isAuthenticated } = useAuth();
-  const { login: localLogin } = useLocalAuth();
+
+  const { login, signup, demoLogin, isAuthenticated, getDemoCredentials } = useAuth();
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -77,14 +75,13 @@ const UnifiedAuth = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  // Handle URL parameters and authentication redirect
+  // Handle URL parameters
   useEffect(() => {
     const typeFromUrl = searchParams.get('type') || window.location.pathname.split('/').pop();
-    if (typeFromUrl && userTypes.find(type => type.id === typeFromUrl)) {
+    if (typeFromUrl && unifiedAuthService.isValidRole(typeFromUrl)) {
       setSelectedUserType(typeFromUrl);
     }
-    
-    // Handle tab parameter from URL
+
     const tabFromUrl = searchParams.get('tab');
     if (tabFromUrl && ['login', 'signup', 'demo'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
@@ -94,24 +91,11 @@ const UnifiedAuth = () => {
   const selectedType = userTypes.find(type => type.id === selectedUserType)!;
   const IconComponent = selectedType.icon;
 
-  const handleUserTypeChange = (userType: string) => {
+  const handleUserTypeChange = (userType: UserRole) => {
     setSelectedUserType(userType);
     navigate(`/auth/${userType}`, { replace: true });
   };
 
-  const getDemoCredentials = () => {
-    const credentials: Record<string, { email: string; password: string }> = {
-      jobseeker: { email: 'demo.candidate@minutehire.com', password: '#Candidate123' },
-      recruiter: { email: 'demo.hr@minutehire.com', password: '#HRaccess123' },
-      freelancer: { email: 'demo.freelancer@minutehire.com', password: '#Freelance123' },
-      client: { email: 'demo.client@minutehire.com', password: '#Client123' },
-      student: { email: 'demo.student@minutehire.com', password: '#Student123' },
-      college: { email: 'demo.college@minutehire.com', password: '#College123' },
-    };
-    return credentials[selectedUserType] || { email: '', password: '' };
-  };
-
-  // Handle login with AuthContext integration
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -121,22 +105,12 @@ const UnifiedAuth = () => {
 
     setIsLoading(true);
     try {
-      const success = await authLogin(email.trim(), password.trim());
-      if (success) {
-        // Get user role from localStorage and redirect to appropriate dashboard
-        const userRole = localStorage.getItem('user_role') as any;
-        const dashboardRoute = getDashboardRoute(userRole);
-        navigate(dashboardRoute, { replace: true });
-      }
-    } catch (error) {
-      // Error handling is done in AuthContext
-      console.error('Login error:', error);
+      await login(email.trim(), password.trim());
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Handle signup with role selection
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim() || !name.trim()) {
@@ -146,15 +120,7 @@ const UnifiedAuth = () => {
 
     setIsLoading(true);
     try {
-      const success = await authSignup(email.trim(), password.trim(), name.trim(), selectedUserType);
-      if (success) {
-        // After successful signup, redirect to dashboard
-        const dashboardRoute = getDashboardRoute(selectedUserType as any);
-        navigate(dashboardRoute, { replace: true });
-      }
-    } catch (error) {
-      // Error handling is done in AuthContext
-      console.error('Signup error:', error);
+      await signup(email.trim(), password.trim(), name.trim(), selectedUserType);
     } finally {
       setIsLoading(false);
     }
@@ -162,41 +128,16 @@ const UnifiedAuth = () => {
 
   const handleDemoLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const demo = getDemoCredentials();
-    if (!demo.email) return;
-
     setIsLoading(true);
     try {
-      await localLogin(demo.email, demo.password, selectedUserType);
-      // Redirect after successful demo login
-      const getRedirectPath = (userType: string): string => {
-        switch (userType) {
-          case 'recruiter':
-            return '/recruiter/dashboard';
-          case 'jobseeker':
-            return '/jobseeker/dashboard';
-          case 'freelancer':
-            return '/freelancer/dashboard';
-          case 'client':
-            return '/client/dashboard';
-          case 'college':
-            return '/college/dashboard';
-          case 'student':
-            return '/student/dashboard';
-          default:
-            return '/';
-        }
-      };
-      setTimeout(() => navigate(getRedirectPath(selectedUserType)), 100);
-    } catch (error) {
-      toast.error('Demo login failed. Please try again.');
+      await demoLogin(selectedUserType);
     } finally {
       setIsLoading(false);
     }
   };
 
   const fillDemoCredentials = () => {
-    const demo = getDemoCredentials();
+    const demo = getDemoCredentials(selectedUserType);
     setEmail(demo.email);
     setPassword(demo.password);
     setActiveTab('demo');
@@ -372,19 +313,23 @@ const UnifiedAuth = () => {
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Role Selection Display */}
                     <div className="p-3 bg-gray-50 rounded-lg border">
                       <Label className="text-sm font-medium text-gray-700">Selected Role</Label>
                       <div className="flex items-center mt-1">
-                        <div className={`w-6 h-6 rounded bg-gradient-to-r ${selectedType.color} flex items-center justify-center mr-2`}>
+                        <div
+                          className={`w-6 h-6 rounded bg-gradient-to-r ${selectedType.color} flex items-center justify-center mr-2`}
+                        >
                           <IconComponent className="h-3 w-3 text-white" />
                         </div>
                         <span className="text-sm font-medium">{selectedType.label}</span>
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Change role using the selection above</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Change role using the selection above
+                      </p>
                     </div>
-                    
+
                     <Button type="submit" className="w-full h-11" disabled={isLoading}>
                       {isLoading ? 'Creating Account...' : `Create ${selectedType.label} Account`}
                     </Button>
@@ -396,8 +341,8 @@ const UnifiedAuth = () => {
                     <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <h3 className="font-medium text-blue-900 mb-2">Demo Account</h3>
                       <div className="text-sm text-blue-700 space-y-1">
-                        <div>Email: {getDemoCredentials().email}</div>
-                        <div>Password: {getDemoCredentials().password}</div>
+                        <div>Email: {getDemoCredentials(selectedUserType).email}</div>
+                        <div>Password: {getDemoCredentials(selectedUserType).password}</div>
                       </div>
                     </div>
                     <Button type="submit" className="w-full h-11" disabled={isLoading}>
