@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { applicationsApi } from '@/lib/api/applications';
 import { profilesApi } from '@/lib/api/profiles';
 import { toast } from 'sonner';
@@ -30,29 +29,30 @@ const JobApplicationForm = ({ jobId, jobTitle, onSuccess }: JobApplicationFormPr
     setLoading(true);
     try {
       let resumeUrl = '';
-      
+
       // Upload resume if provided
       if (resumeFile) {
-        const uploadResult = await profilesApi.uploadResume(user.id, resumeFile);
+        const uploadResult = await profilesApi.uploadResume(user._id, resumeFile);
         resumeUrl = uploadResult;
       }
 
       // Submit application
       await applicationsApi.applyToJob({
         job_id: jobId,
-        applicant_id: user.id,
+        applicant_id: user._id,
         cover_letter: coverLetter,
         resume_url: resumeUrl,
-        status: 'applied'
+        status: 'applied',
       });
 
       toast.success('Application submitted successfully!');
       setCoverLetter('');
       setResumeFile(null);
       if (onSuccess) onSuccess();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Application error:', error);
-      toast.error(error.message || 'Failed to submit application');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit application';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -73,7 +73,7 @@ const JobApplicationForm = ({ jobId, jobTitle, onSuccess }: JobApplicationFormPr
             <Textarea
               id="coverLetter"
               value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
+              onChange={e => setCoverLetter(e.target.value)}
               placeholder="Tell us why you're interested in this position and what makes you a great fit..."
               rows={6}
               required
@@ -87,7 +87,7 @@ const JobApplicationForm = ({ jobId, jobTitle, onSuccess }: JobApplicationFormPr
                 id="resume"
                 type="file"
                 accept=".pdf,.doc,.docx"
-                onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                onChange={e => setResumeFile(e.target.files?.[0] || null)}
                 className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
               />
               {resumeFile && (

@@ -20,6 +20,9 @@ interface AuthContextType {
   getDashboardRoute: (role?: UserRole) => string;
   getDemoCredentials: (role: UserRole) => { email: string; password: string };
   hasRole: (role: UserRole | UserRole[]) => boolean;
+  getToken: () => string | null;
+  getUserRole: () => string | null;
+  getUserId: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -141,7 +144,7 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
       unifiedAuthService.saveSession(updatedUser);
       setUser(updatedUser);
       toast.success('Profile updated successfully');
-      console.log('📝 Profile updated for user:', user.id);
+      console.log('📝 Profile updated for user:', user._id);
     } catch (error) {
       console.error('❌ Profile update failed:', error);
       toast.error('Profile update failed');
@@ -164,6 +167,18 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     return roleArray.includes(user.role);
   };
 
+  const getToken = (): string | null => {
+    return unifiedAuthService.getToken();
+  };
+
+  const getUserRole = (): string | null => {
+    return unifiedAuthService.getUserRole();
+  };
+
+  const getUserId = (): string | null => {
+    return unifiedAuthService.getUserId();
+  };
+
   const value: AuthContextType = {
     // State
     user,
@@ -181,6 +196,9 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     getDashboardRoute,
     getDemoCredentials,
     hasRole,
+    getToken,
+    getUserRole,
+    getUserId,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

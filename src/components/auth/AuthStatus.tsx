@@ -1,5 +1,5 @@
 // Authentication status component for testing and debugging
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,18 +40,9 @@ const AuthStatus = () => {
             <Badge variant="secondary" className="capitalize">
               {user.role}
             </Badge>
-            <div className="text-xs text-gray-500">
-              ID: {user.id}
-            </div>
-            <div className="text-xs text-gray-500">
-              Token: {user.token.substring(0, 20)}...
-            </div>
-            <Button 
-              onClick={logout} 
-              variant="outline" 
-              size="sm" 
-              className="w-full"
-            >
+            <div className="text-xs text-gray-500">ID: {user._id}</div>
+            <div className="text-xs text-gray-500">Token: {user.token.substring(0, 20)}...</div>
+            <Button onClick={logout} variant="outline" size="sm" className="w-full">
               <LogOut className="h-4 w-4 mr-2" />
               Logout
             </Button>

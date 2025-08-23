@@ -1,15 +1,20 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 // Supabase removed
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { X } from 'lucide-react';
 
@@ -29,7 +34,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [currentSkill, setCurrentSkill] = useState('');
-  
+
   const [formData, setFormData] = useState<ProjectFormData>({
     title: '',
     description: '',
@@ -39,14 +44,14 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     skills_required: [],
     project_type: '',
     experience_level: '',
-    deadline: ''
+    deadline: '',
   });
 
   const addSkill = () => {
     if (currentSkill.trim() && !formData.skills_required.includes(currentSkill.trim())) {
       setFormData(prev => ({
         ...prev,
-        skills_required: [...prev.skills_required, currentSkill.trim()]
+        skills_required: [...prev.skills_required, currentSkill.trim()],
       }));
       setCurrentSkill('');
     }
@@ -55,13 +60,13 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const removeSkill = (skill: string) => {
     setFormData(prev => ({
       ...prev,
-      skills_required: prev.skills_required.filter(s => s !== skill)
+      skills_required: prev.skills_required.filter(s => s !== skill),
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!user) {
       toast.error('You must be logged in to post a project');
       return;
@@ -77,14 +82,16 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     try {
       const projectData = {
         ...formData,
-        client_id: user.id,
+        client_id: user._id,
         budget_min: formData.budget_min || null,
         budget_max: formData.budget_max || null,
         deadline: formData.deadline ? new Date(formData.deadline).toISOString() : null,
-        is_active: true
+        is_active: true,
       };
 
-      const { error } = return { data: null, error: null };
+      // TODO: Implement actual project posting API call
+      const result = { data: null, error: null };
+      const { error } = result;
 
       if (error) {
         console.error('Project posting error:', error);
@@ -93,7 +100,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       }
 
       toast.success('Project posted successfully!');
-      
+
       // Reset form
       setFormData({
         title: '',
@@ -104,7 +111,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         skills_required: [],
         project_type: '',
         experience_level: '',
-        deadline: ''
+        deadline: '',
       });
 
       if (onSuccess) {
@@ -132,7 +139,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                 placeholder="Build a responsive website"
                 required
               />
@@ -140,7 +147,10 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="project_type">Project Type *</Label>
-              <Select value={formData.project_type} onValueChange={(value) => setFormData(prev => ({ ...prev, project_type: value }))}>
+              <Select
+                value={formData.project_type}
+                onValueChange={value => setFormData(prev => ({ ...prev, project_type: value }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select project type" />
                 </SelectTrigger>
@@ -158,7 +168,10 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="experience_level">Experience Level *</Label>
-              <Select value={formData.experience_level} onValueChange={(value) => setFormData(prev => ({ ...prev, experience_level: value }))}>
+              <Select
+                value={formData.experience_level}
+                onValueChange={value => setFormData(prev => ({ ...prev, experience_level: value }))}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select experience level" />
                 </SelectTrigger>
@@ -176,7 +189,9 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="budget_min"
                 type="number"
                 value={formData.budget_min || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, budget_min: parseInt(e.target.value) || 0 }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, budget_min: parseInt(e.target.value) || 0 }))
+                }
                 placeholder="500"
               />
             </div>
@@ -187,7 +202,9 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="budget_max"
                 type="number"
                 value={formData.budget_max || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, budget_max: parseInt(e.target.value) || 0 }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, budget_max: parseInt(e.target.value) || 0 }))
+                }
                 placeholder="2000"
               />
             </div>
@@ -198,7 +215,9 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="duration_days"
                 type="number"
                 value={formData.duration_days || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, duration_days: parseInt(e.target.value) || 0 }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, duration_days: parseInt(e.target.value) || 0 }))
+                }
                 placeholder="30"
                 min="1"
               />
@@ -210,7 +229,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 id="deadline"
                 type="date"
                 value={formData.deadline}
-                onChange={(e) => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, deadline: e.target.value }))}
               />
             </div>
           </div>
@@ -220,7 +239,7 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
               placeholder="Describe your project requirements, goals, and deliverables..."
               className="min-h-[120px]"
               required
@@ -232,30 +251,27 @@ const ProjectPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
             <div className="flex gap-2">
               <Input
                 value={currentSkill}
-                onChange={(e) => setCurrentSkill(e.target.value)}
+                onChange={e => setCurrentSkill(e.target.value)}
                 placeholder="Add a skill"
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSkill())}
+                onKeyPress={e => e.key === 'Enter' && (e.preventDefault(), addSkill())}
               />
               <Button type="button" onClick={addSkill} variant="outline">
                 Add
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.skills_required.map((skill) => (
+              {formData.skills_required.map(skill => (
                 <Badge key={skill} variant="secondary" className="flex items-center gap-1">
                   {skill}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeSkill(skill)}
-                  />
+                  <X className="h-3 w-3 cursor-pointer" onClick={() => removeSkill(skill)} />
                 </Badge>
               ))}
             </div>
           </div>
 
-          <Button 
-            type="submit" 
-            className="w-full bg-blue-600 hover:bg-blue-700" 
+          <Button
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700"
             disabled={isLoading}
           >
             {isLoading ? 'Posting Project...' : 'Post Project'}

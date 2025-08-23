@@ -11,7 +11,23 @@ import { toast } from 'sonner';
 
 const JobSeekerDashboard = () => {
   const { user, logout } = useAuth();
-  const [jobs, setJobs] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<
+    Array<{
+      id: string;
+      title: string;
+      company: string;
+      company_name?: string;
+      location: string;
+      salary_range?: string;
+      salary_min?: number;
+      salary_max?: number;
+      description: string;
+      requirements?: string[];
+      skills_required?: string[];
+      job_type?: string;
+      posted_date?: string;
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 

@@ -1,26 +1,25 @@
+import { useState, useEffect, useCallback } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/hooks/useAuth';
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/AuthContext";
-
-import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
-import { 
-  MessageCircle, 
-  Clock, 
-  CheckCircle, 
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
+import {
+  MessageCircle,
+  Clock,
+  CheckCircle,
   AlertTriangle,
   Mic,
   MicOff,
   Play,
-  Square
-} from "lucide-react";
+  Square,
+} from 'lucide-react';
 
 interface Question {
   type: string;
@@ -53,7 +52,7 @@ const AITextInterview = () => {
     startTime: null,
     jobTitle: '',
     jobDescription: '',
-    industry: ''
+    industry: '',
   });
   const [currentAnswer, setCurrentAnswer] = useState('');
   const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes per question
@@ -73,7 +72,7 @@ const AITextInterview = () => {
 
   const startInterview = async () => {
     if (!user || !interview.jobTitle) {
-      toast.error("Please fill in all required fields");
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -81,11 +80,34 @@ const AITextInterview = () => {
     try {
       // Mock AI interview questions
       const mockQuestions = [
-        { type: 'Technical', question: `What are the key skills required for a ${interview.jobTitle} role?`, category: 'technical' },
-        { type: 'Behavioral', question: 'Tell me about a challenging project you worked on and how you overcame obstacles.', category: 'behavioral' },
-        { type: 'Experience', question: 'How do you stay updated with the latest trends in your field?', category: 'experience' },
-        { type: 'Problem Solving', question: 'Describe a time when you had to solve a complex problem. What was your approach?', category: 'problem-solving' },
-        { type: 'Career Goals', question: 'Where do you see yourself in 5 years and how does this role align with your goals?', category: 'career' }
+        {
+          type: 'Technical',
+          question: `What are the key skills required for a ${interview.jobTitle} role?`,
+          category: 'technical',
+        },
+        {
+          type: 'Behavioral',
+          question:
+            'Tell me about a challenging project you worked on and how you overcame obstacles.',
+          category: 'behavioral',
+        },
+        {
+          type: 'Experience',
+          question: 'How do you stay updated with the latest trends in your field?',
+          category: 'experience',
+        },
+        {
+          type: 'Problem Solving',
+          question:
+            'Describe a time when you had to solve a complex problem. What was your approach?',
+          category: 'problem-solving',
+        },
+        {
+          type: 'Career Goals',
+          question:
+            'Where do you see yourself in 5 years and how does this role align with your goals?',
+          category: 'career',
+        },
       ];
 
       setInterview(prev => ({
@@ -94,22 +116,55 @@ const AITextInterview = () => {
         status: 'in_progress',
         questions: mockQuestions,
         startTime: new Date(),
-        responses: new Array(mockQuestions.length).fill('')
+        responses: new Array(mockQuestions.length).fill(''),
       }));
-      
+
       setTimeRemaining(300);
-      toast.success("Interview started! Good luck!");
+      toast.success('Interview started! Good luck!');
     } catch (error) {
       console.error('Error starting interview:', error);
-      toast.error("Failed to start interview. Please try again.");
+      toast.error('Failed to start interview. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleNextQuestion = async () => {
+  const completeInterview = useCallback(async () => {
+    if (!interview.id) return;
+
+    setLoading(true);
+    try {
+      setInterview(prev => ({ ...prev, status: 'completed' }));
+
+      toast.success('Interview completed! Redirecting to results...');
+
+      // Mock scores and feedback
+      const mockData = {
+        scores: { technical: 85, communication: 90, overall: 87 },
+        feedback:
+          'Great responses! You demonstrated strong technical knowledge and communication skills.',
+      };
+
+      setTimeout(() => {
+        navigate('/ai-interview/results', {
+          state: {
+            interviewId: interview.id,
+            scores: mockData.scores,
+            feedback: mockData.feedback,
+          },
+        });
+      }, 2000);
+    } catch (error) {
+      console.error('Error completing interview:', error);
+      toast.error('Failed to complete interview. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [interview.id, navigate]);
+
+  const handleNextQuestion = useCallback(async () => {
     if (!interview.id || !currentAnswer.trim()) {
-      toast.error("Please provide an answer before continuing");
+      toast.error('Please provide an answer before continuing');
       return;
     }
 
@@ -118,11 +173,11 @@ const AITextInterview = () => {
       // Update responses
       const newResponses = [...interview.responses];
       newResponses[interview.currentQuestionIndex] = currentAnswer;
-      
+
       setInterview(prev => ({
         ...prev,
         responses: newResponses,
-        currentQuestionIndex: prev.currentQuestionIndex + 1
+        currentQuestionIndex: prev.currentQuestionIndex + 1,
       }));
 
       setCurrentAnswer('');
@@ -134,43 +189,18 @@ const AITextInterview = () => {
       }
     } catch (error) {
       console.error('Error processing answer:', error);
-      toast.error("Failed to process answer. Please try again.");
+      toast.error('Failed to process answer. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const completeInterview = async () => {
-    if (!interview.id) return;
-
-    setLoading(true);
-    try {
-      setInterview(prev => ({ ...prev, status: 'completed' }));
-      
-      toast.success("Interview completed! Redirecting to results...");
-      
-      // Mock scores and feedback
-      const mockData = {
-        scores: { technical: 85, communication: 90, overall: 87 },
-        feedback: 'Great responses! You demonstrated strong technical knowledge and communication skills.'
-      };
-      
-      setTimeout(() => {
-        navigate('/ai-interview/results', { 
-          state: { 
-            interviewId: interview.id,
-            scores: mockData.scores,
-            feedback: mockData.feedback
-          }
-        });
-      }, 2000);
-    } catch (error) {
-      console.error('Error completing interview:', error);
-      toast.error("Failed to complete interview. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [
+    interview.id,
+    interview.responses,
+    interview.currentQuestionIndex,
+    interview.questions.length,
+    currentAnswer,
+    completeInterview,
+  ]);
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -178,9 +208,10 @@ const AITextInterview = () => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = interview.questions.length > 0 
-    ? ((interview.currentQuestionIndex) / interview.questions.length) * 100 
-    : 0;
+  const progress =
+    interview.questions.length > 0
+      ? (interview.currentQuestionIndex / interview.questions.length) * 100
+      : 0;
 
   if (interview.status === 'setup') {
     return (
@@ -193,7 +224,8 @@ const AITextInterview = () => {
                 AI Text Interview Setup
               </CardTitle>
               <p className="text-gray-600">
-                Prepare for your interview by providing some context about the role you're applying for.
+                Prepare for your interview by providing some context about the role you're applying
+                for.
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -202,7 +234,7 @@ const AITextInterview = () => {
                 <Input
                   id="jobTitle"
                   value={interview.jobTitle}
-                  onChange={(e) => setInterview(prev => ({ ...prev, jobTitle: e.target.value }))}
+                  onChange={e => setInterview(prev => ({ ...prev, jobTitle: e.target.value }))}
                   placeholder="e.g. Frontend Developer, Data Scientist"
                   required
                 />
@@ -213,7 +245,7 @@ const AITextInterview = () => {
                 <Input
                   id="industry"
                   value={interview.industry}
-                  onChange={(e) => setInterview(prev => ({ ...prev, industry: e.target.value }))}
+                  onChange={e => setInterview(prev => ({ ...prev, industry: e.target.value }))}
                   placeholder="e.g. Tech, Healthcare, Finance"
                 />
               </div>
@@ -223,7 +255,9 @@ const AITextInterview = () => {
                 <Textarea
                   id="jobDescription"
                   value={interview.jobDescription}
-                  onChange={(e) => setInterview(prev => ({ ...prev, jobDescription: e.target.value }))}
+                  onChange={e =>
+                    setInterview(prev => ({ ...prev, jobDescription: e.target.value }))
+                  }
                   placeholder="Paste the job description here to get more relevant questions..."
                   rows={4}
                 />
@@ -239,13 +273,13 @@ const AITextInterview = () => {
                 </ul>
               </div>
 
-              <Button 
-                onClick={startInterview} 
-                className="w-full" 
+              <Button
+                onClick={startInterview}
+                className="w-full"
                 size="lg"
                 disabled={loading || !interview.jobTitle}
               >
-                {loading ? "Starting Interview..." : "Start Interview"}
+                {loading ? 'Starting Interview...' : 'Start Interview'}
               </Button>
             </CardContent>
           </Card>
@@ -267,12 +301,14 @@ const AITextInterview = () => {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h2 className="text-xl font-semibold">AI Interview in Progress</h2>
-                  <p className="text-gray-600">Question {interview.currentQuestionIndex + 1} of {interview.questions.length}</p>
+                  <p className="text-gray-600">
+                    Question {interview.currentQuestionIndex + 1} of {interview.questions.length}
+                  </p>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center text-lg font-mono">
                     <Clock className="h-5 w-5 mr-2" />
-                    <span className={timeRemaining < 60 ? "text-red-600" : "text-gray-900"}>
+                    <span className={timeRemaining < 60 ? 'text-red-600' : 'text-gray-900'}>
                       {formatTime(timeRemaining)}
                     </span>
                   </div>
@@ -291,9 +327,7 @@ const AITextInterview = () => {
                   <MessageCircle className="h-5 w-5 mr-2" />
                   Interview Question
                 </CardTitle>
-                <Badge variant="outline">
-                  {currentQuestion?.type || 'General'}
-                </Badge>
+                <Badge variant="outline">{currentQuestion?.type || 'General'}</Badge>
               </div>
             </CardHeader>
             <CardContent>
@@ -309,17 +343,18 @@ const AITextInterview = () => {
             <CardContent className="space-y-4">
               <Textarea
                 value={currentAnswer}
-                onChange={(e) => setCurrentAnswer(e.target.value)}
+                onChange={e => setCurrentAnswer(e.target.value)}
                 placeholder="Type your answer here..."
                 rows={8}
                 className="resize-none"
               />
-              
+
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-500">
-                  {currentAnswer.length} characters • {currentAnswer.split(' ').filter(word => word.length > 0).length} words
+                  {currentAnswer.length} characters •{' '}
+                  {currentAnswer.split(' ').filter(word => word.length > 0).length} words
                 </div>
-                
+
                 <div className="flex space-x-2">
                   <Button
                     variant="outline"
@@ -327,21 +362,27 @@ const AITextInterview = () => {
                       if (interview.currentQuestionIndex > 0) {
                         setInterview(prev => ({
                           ...prev,
-                          currentQuestionIndex: prev.currentQuestionIndex - 1
+                          currentQuestionIndex: prev.currentQuestionIndex - 1,
                         }));
-                        setCurrentAnswer(interview.responses[interview.currentQuestionIndex - 1] || '');
+                        setCurrentAnswer(
+                          interview.responses[interview.currentQuestionIndex - 1] || ''
+                        );
                       }
                     }}
                     disabled={interview.currentQuestionIndex === 0}
                   >
                     Previous
                   </Button>
-                  
+
                   <Button
                     onClick={isLastQuestion ? completeInterview : handleNextQuestion}
                     disabled={loading || !currentAnswer.trim()}
                   >
-                    {loading ? "Processing..." : isLastQuestion ? "Complete Interview" : "Next Question"}
+                    {loading
+                      ? 'Processing...'
+                      : isLastQuestion
+                        ? 'Complete Interview'
+                        : 'Next Question'}
                   </Button>
                 </div>
               </div>

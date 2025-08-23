@@ -82,7 +82,7 @@ const PostGig = () => {
       return;
     }
 
-    if (user.role !== 'client' && localUser?.name !== 'Demo Client') {
+    if (user.role !== 'client' && user?.full_name !== 'Demo Client') {
       toast.error('Only clients can post gigs');
       return;
     }
@@ -92,14 +92,9 @@ const PostGig = () => {
     try {
       let clientId;
 
-      // For authenticated users (Supabase auth), use their user ID
-      if (authUser) {
-        clientId = authUser.id;
-      }
-      // For local demo users, use predefined IDs
-      else if (localUser) {
-        clientId =
-          localUser.id === 'demo-client-1' ? '00000000-0000-4000-8000-000000000002' : localUser.id;
+      // For authenticated users, use their user ID
+      if (user) {
+        clientId = user._id;
       } else {
         toast.error('You must be logged in to post a gig');
         return;

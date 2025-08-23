@@ -1,20 +1,25 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Upload, Plus, Minus } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Upload, Plus, Minus } from 'lucide-react';
+import { toast } from 'sonner';
 // import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { useAuth } from "@/contexts/AuthContext";
-import { hrmsApi } from "@/lib/api/hrms";
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { hrmsApi } from '@/lib/api/hrms';
 
 interface EmployeeFormData {
   fullName: string;
@@ -60,32 +65,49 @@ const OnboardEmployee = () => {
       hra: 0,
       allowance: 0,
       bonus: 0,
-      deductions: 0
+      deductions: 0,
     },
     emergencyContact: {
       name: '',
       relationship: '',
-      phone: ''
-    }
+      phone: '',
+    },
   });
 
   const departments = [
-    "Engineering", "Human Resources", "Sales", "Marketing", 
-    "Finance", "Operations", "Customer Support", "Design"
+    'Engineering',
+    'Human Resources',
+    'Sales',
+    'Marketing',
+    'Finance',
+    'Operations',
+    'Customer Support',
+    'Design',
   ];
 
   const designations = [
-    "Software Engineer", "Senior Software Engineer", "Tech Lead", "Manager",
-    "HR Executive", "HR Manager", "Sales Executive", "Marketing Executive",
-    "Finance Analyst", "Operations Executive", "Customer Support Executive"
+    'Software Engineer',
+    'Senior Software Engineer',
+    'Tech Lead',
+    'Manager',
+    'HR Executive',
+    'HR Manager',
+    'Sales Executive',
+    'Marketing Executive',
+    'Finance Analyst',
+    'Operations Executive',
+    'Customer Support Executive',
   ];
 
-  const relationships = ["Spouse", "Father", "Mother", "Brother", "Sister", "Friend"];
+  const relationships = ['Spouse', 'Father', 'Mother', 'Brother', 'Sister', 'Friend'];
 
-  const handleInputChange = (field: keyof EmployeeFormData, value: any) => {
+  const handleInputChange = (
+    field: keyof EmployeeFormData,
+    value: string | number | boolean | Date
+  ) => {
     setFormData(prev => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -94,18 +116,21 @@ const OnboardEmployee = () => {
       ...prev,
       salary: {
         ...prev.salary,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
-  const handleEmergencyContactChange = (field: keyof typeof formData.emergencyContact, value: string) => {
+  const handleEmergencyContactChange = (
+    field: keyof typeof formData.emergencyContact,
+    value: string
+  ) => {
     setFormData(prev => ({
       ...prev,
       emergencyContact: {
         ...prev.emergencyContact,
-        [field]: value
-      }
+        [field]: value,
+      },
     }));
   };
 
@@ -113,7 +138,9 @@ const OnboardEmployee = () => {
     const date = new Date();
     const year = date.getFullYear().toString().slice(-2);
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    const random = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, '0');
     return `EMP${year}${month}${random}`;
   };
 
@@ -125,7 +152,13 @@ const OnboardEmployee = () => {
     }
 
     // Validation
-    if (!formData.fullName || !formData.email || !formData.department || !formData.designation || !formData.joiningDate) {
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.department ||
+      !formData.designation ||
+      !formData.joiningDate
+    ) {
       toast.error('Please fill in all required fields');
       return;
     }
@@ -133,14 +166,14 @@ const OnboardEmployee = () => {
     setLoading(true);
 
     try {
-      console.log('Onboarding employee for user:', user.id);
-      
+      console.log('Onboarding employee for user:', user._id);
+
       // Generate unique employee ID
       const employeeId = generateEmployeeId();
 
       // Create employee record with proper data structure
       const employeeData = {
-        created_by: user.id, // The current user who is creating this employee
+        created_by: user._id, // The current user who is creating this employee
         employee_id: employeeId,
         department: formData.department,
         designation: formData.designation,
@@ -152,12 +185,17 @@ const OnboardEmployee = () => {
           allowance: formData.salary.allowance,
           bonus: formData.salary.bonus,
           deductions: formData.salary.deductions,
-          total: formData.salary.base + formData.salary.hra + formData.salary.allowance + formData.salary.bonus - formData.salary.deductions
+          total:
+            formData.salary.base +
+            formData.salary.hra +
+            formData.salary.allowance +
+            formData.salary.bonus -
+            formData.salary.deductions,
         },
         emergency_contact: {
           name: formData.emergencyContact.name,
           relationship: formData.emergencyContact.relationship,
-          phone: formData.emergencyContact.phone
+          phone: formData.emergencyContact.phone,
         },
         employment_status: 'probation' as const,
         employee_type: 'full_time',
@@ -168,8 +206,8 @@ const OnboardEmployee = () => {
           phone: formData.phone,
           aadhar: formData.aadhar,
           pan: formData.pan,
-          manager: formData.manager
-        }
+          manager: formData.manager,
+        },
       };
 
       console.log('Employee data to be saved:', employeeData);
@@ -178,7 +216,7 @@ const OnboardEmployee = () => {
 
       toast.success(`Employee onboarded successfully! Employee ID: ${employeeId}`);
       console.log('Employee created:', employee);
-      
+
       // Reset form
       setFormData({
         fullName: '',
@@ -196,17 +234,19 @@ const OnboardEmployee = () => {
           hra: 0,
           allowance: 0,
           bonus: 0,
-          deductions: 0
+          deductions: 0,
         },
         emergencyContact: {
           name: '',
           relationship: '',
-          phone: ''
-        }
+          phone: '',
+        },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error onboarding employee:', error);
-      toast.error(error.message || 'Failed to onboard employee. Please try again.');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to onboard employee. Please try again.';
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -218,7 +258,8 @@ const OnboardEmployee = () => {
         <CardHeader>
           <CardTitle className="text-2xl">Onboard New Employee</CardTitle>
           <p className="text-sm text-gray-600">
-            Add a new employee to your organization. All data will be saved securely and associated with your account.
+            Add a new employee to your organization. All data will be saved securely and associated
+            with your account.
           </p>
         </CardHeader>
         <CardContent>
@@ -232,7 +273,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="fullName"
                     value={formData.fullName}
-                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    onChange={e => handleInputChange('fullName', e.target.value)}
                     required
                   />
                 </div>
@@ -242,7 +283,7 @@ const OnboardEmployee = () => {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     required
                   />
                 </div>
@@ -251,7 +292,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="phone"
                     value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={e => handleInputChange('phone', e.target.value)}
                   />
                 </div>
                 <div>
@@ -259,7 +300,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="aadhar"
                     value={formData.aadhar}
-                    onChange={(e) => handleInputChange('aadhar', e.target.value)}
+                    onChange={e => handleInputChange('aadhar', e.target.value)}
                     placeholder="xxxx-xxxx-xxxx"
                   />
                 </div>
@@ -268,7 +309,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="pan"
                     value={formData.pan}
-                    onChange={(e) => handleInputChange('pan', e.target.value)}
+                    onChange={e => handleInputChange('pan', e.target.value)}
                     placeholder="ABCDE1234F"
                   />
                 </div>
@@ -281,26 +322,36 @@ const OnboardEmployee = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="department">Department *</Label>
-                  <Select value={formData.department} onValueChange={(value) => handleInputChange('department', value)}>
+                  <Select
+                    value={formData.department}
+                    onValueChange={value => handleInputChange('department', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Department" />
                     </SelectTrigger>
                     <SelectContent>
                       {departments.map(dept => (
-                        <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                        <SelectItem key={dept} value={dept}>
+                          {dept}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
                   <Label htmlFor="designation">Designation *</Label>
-                  <Select value={formData.designation} onValueChange={(value) => handleInputChange('designation', value)}>
+                  <Select
+                    value={formData.designation}
+                    onValueChange={value => handleInputChange('designation', value)}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Designation" />
                     </SelectTrigger>
                     <SelectContent>
                       {designations.map(designation => (
-                        <SelectItem key={designation} value={designation}>{designation}</SelectItem>
+                        <SelectItem key={designation} value={designation}>
+                          {designation}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -310,7 +361,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="manager"
                     value={formData.manager}
-                    onChange={(e) => handleInputChange('manager', e.target.value)}
+                    onChange={e => handleInputChange('manager', e.target.value)}
                     placeholder="Manager's name"
                   />
                 </div>
@@ -321,19 +372,19 @@ const OnboardEmployee = () => {
                       <Button
                         variant="outline"
                         className={cn(
-                          "w-full justify-start text-left font-normal",
-                          !formData.joiningDate && "text-muted-foreground"
+                          'w-full justify-start text-left font-normal',
+                          !formData.joiningDate && 'text-muted-foreground'
                         )}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {formData.joiningDate ? format(formData.joiningDate, "PPP") : "Pick a date"}
+                        {formData.joiningDate ? format(formData.joiningDate, 'PPP') : 'Pick a date'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
                       <Calendar
                         mode="single"
                         selected={formData.joiningDate}
-                        onSelect={(date) => handleInputChange('joiningDate', date)}
+                        onSelect={date => handleInputChange('joiningDate', date)}
                         initialFocus
                       />
                     </PopoverContent>
@@ -344,7 +395,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="location"
                     value={formData.location}
-                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    onChange={e => handleInputChange('location', e.target.value)}
                     placeholder="Office location"
                   />
                 </div>
@@ -361,7 +412,7 @@ const OnboardEmployee = () => {
                     id="base"
                     type="number"
                     value={formData.salary.base}
-                    onChange={(e) => handleSalaryChange('base', parseInt(e.target.value) || 0)}
+                    onChange={e => handleSalaryChange('base', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div>
@@ -370,7 +421,7 @@ const OnboardEmployee = () => {
                     id="hra"
                     type="number"
                     value={formData.salary.hra}
-                    onChange={(e) => handleSalaryChange('hra', parseInt(e.target.value) || 0)}
+                    onChange={e => handleSalaryChange('hra', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div>
@@ -379,7 +430,7 @@ const OnboardEmployee = () => {
                     id="allowance"
                     type="number"
                     value={formData.salary.allowance}
-                    onChange={(e) => handleSalaryChange('allowance', parseInt(e.target.value) || 0)}
+                    onChange={e => handleSalaryChange('allowance', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div>
@@ -388,7 +439,7 @@ const OnboardEmployee = () => {
                     id="bonus"
                     type="number"
                     value={formData.salary.bonus}
-                    onChange={(e) => handleSalaryChange('bonus', parseInt(e.target.value) || 0)}
+                    onChange={e => handleSalaryChange('bonus', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div>
@@ -397,13 +448,20 @@ const OnboardEmployee = () => {
                     id="deductions"
                     type="number"
                     value={formData.salary.deductions}
-                    onChange={(e) => handleSalaryChange('deductions', parseInt(e.target.value) || 0)}
+                    onChange={e => handleSalaryChange('deductions', parseInt(e.target.value) || 0)}
                   />
                 </div>
                 <div>
                   <Label>Total CTC</Label>
                   <div className="p-2 bg-gray-100 rounded">
-                    ₹{(formData.salary.base + formData.salary.hra + formData.salary.allowance + formData.salary.bonus - formData.salary.deductions).toLocaleString()}
+                    ₹
+                    {(
+                      formData.salary.base +
+                      formData.salary.hra +
+                      formData.salary.allowance +
+                      formData.salary.bonus -
+                      formData.salary.deductions
+                    ).toLocaleString()}
                   </div>
                 </div>
               </div>
@@ -418,21 +476,23 @@ const OnboardEmployee = () => {
                   <Input
                     id="emergencyName"
                     value={formData.emergencyContact.name}
-                    onChange={(e) => handleEmergencyContactChange('name', e.target.value)}
+                    onChange={e => handleEmergencyContactChange('name', e.target.value)}
                   />
                 </div>
                 <div>
                   <Label htmlFor="relationship">Relationship</Label>
-                  <Select 
-                    value={formData.emergencyContact.relationship} 
-                    onValueChange={(value) => handleEmergencyContactChange('relationship', value)}
+                  <Select
+                    value={formData.emergencyContact.relationship}
+                    onValueChange={value => handleEmergencyContactChange('relationship', value)}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Relationship" />
                     </SelectTrigger>
                     <SelectContent>
                       {relationships.map(rel => (
-                        <SelectItem key={rel} value={rel}>{rel}</SelectItem>
+                        <SelectItem key={rel} value={rel}>
+                          {rel}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -442,7 +502,7 @@ const OnboardEmployee = () => {
                   <Input
                     id="emergencyPhone"
                     value={formData.emergencyContact.phone}
-                    onChange={(e) => handleEmergencyContactChange('phone', e.target.value)}
+                    onChange={e => handleEmergencyContactChange('phone', e.target.value)}
                   />
                 </div>
               </div>
@@ -450,32 +510,36 @@ const OnboardEmployee = () => {
 
             {/* Action Buttons */}
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={() => {
-                setFormData({
-                  fullName: '',
-                  email: '',
-                  phone: '',
-                  aadhar: '',
-                  pan: '',
-                  department: '',
-                  designation: '',
-                  manager: '',
-                  joiningDate: undefined,
-                  location: '',
-                  salary: {
-                    base: 0,
-                    hra: 0,
-                    allowance: 0,
-                    bonus: 0,
-                    deductions: 0
-                  },
-                  emergencyContact: {
-                    name: '',
-                    relationship: '',
-                    phone: ''
-                  }
-                });
-              }}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setFormData({
+                    fullName: '',
+                    email: '',
+                    phone: '',
+                    aadhar: '',
+                    pan: '',
+                    department: '',
+                    designation: '',
+                    manager: '',
+                    joiningDate: undefined,
+                    location: '',
+                    salary: {
+                      base: 0,
+                      hra: 0,
+                      allowance: 0,
+                      bonus: 0,
+                      deductions: 0,
+                    },
+                    emergencyContact: {
+                      name: '',
+                      relationship: '',
+                      phone: '',
+                    },
+                  });
+                }}
+              >
                 Reset Form
               </Button>
               <Button type="submit" disabled={loading}>

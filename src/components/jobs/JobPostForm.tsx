@@ -18,21 +18,18 @@ import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 // Supabase integration removed
 import { useAuth } from '@/hooks/useAuth';
-import { useLocalAuth } from '@/contexts/LocalAuthContext';
 import { toast } from 'sonner';
 import { X, Loader2 } from 'lucide-react';
 import { jobFormSchema, type JobFormData } from '@/lib/validation/jobValidation';
 
 const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
-  const { user: authUser } = useAuth();
-  const { user: localUser } = useLocalAuth();
-  const user = authUser || localUser;
+  const { user } = useAuth();
 
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentBenefit, setCurrentBenefit] = useState('');
 
   const defaultCompanyName =
-    localUser?.name === 'Demo HR Manager' || authUser?.role === 'recruiter' ? 'TechCorp Inc.' : '';
+    user?.full_name === 'Demo HR Manager' || user?.role === 'recruiter' ? 'TechCorp Inc.' : '';
 
   const {
     register,
@@ -99,22 +96,14 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
     }
 
     console.log('Current user:', user);
-    console.log('Auth user:', authUser);
-    console.log('Local user:', localUser);
 
     try {
       let recruiterId;
 
-      // For authenticated users (Supabase auth), use their user ID which matches their profile ID
-      if (authUser) {
-        recruiterId = authUser.id;
-        console.log('Using Supabase auth user ID as recruiter_id:', recruiterId);
-      }
-      // For local demo users, use predefined IDs
-      else if (localUser) {
-        recruiterId =
-          localUser.id === 'demo-hr-1' ? '00000000-0000-4000-8000-000000000001' : localUser.id;
-        console.log('Using local user ID as recruiter_id:', recruiterId);
+      // Use the current user's ID as recruiter ID
+      if (user) {
+        recruiterId = user._id;
+        console.log('Using user ID as recruiter_id:', recruiterId);
       } else {
         toast.error('You must be logged in to post a job');
         return;

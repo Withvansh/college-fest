@@ -1,4 +1,3 @@
-
 import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
 
@@ -86,6 +85,7 @@ const Blog = lazy(() => import('@/pages/Blog'));
 
 // Profile
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const ProfileSetup = lazy(() => import('@/components/profile/ProfileSetup'));
 
 // Admin pages
 const AdminAccess = lazy(() => import('@/pages/AdminAccess'));
@@ -108,7 +108,7 @@ const Employees = lazy(() => import('@/pages/admin/Employees'));
 const Onboarding = lazy(() => import('@/pages/admin/Onboarding'));
 const SuperAdminLogin = lazy(() => import('@/pages/admin/SuperAdminLogin'));
 
-import { UserRole } from '@/contexts/AuthContext';
+import { UserRole } from '@/services/unifiedAuth';
 
 export const dashboardRoutes: Record<UserRole, string> = {
   jobseeker: '/jobseeker/dashboard',
@@ -119,11 +119,8 @@ export const dashboardRoutes: Record<UserRole, string> = {
   student: '/student/dashboard',
   admin: '/admin/dashboard',
   hr_admin: '/admin/dashboard',
+  super_admin: '/super-admin/dashboard',
 };
-
-
-
-
 
 export const routes: RouteObject[] = [
   {
@@ -225,6 +222,10 @@ export const routes: RouteObject[] = [
   {
     path: '/profile',
     element: <ProfilePage />,
+  },
+  {
+    path: '/profile-setup',
+    element: <ProfileSetup />,
   },
 
   // Job routes

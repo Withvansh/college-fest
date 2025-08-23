@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from '../../lib/utils/axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -78,26 +78,14 @@ const JobSeekerProfile = () => {
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [isEditing, setIsEditing] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const userId = localStorage.getItem('user_id');
-    if (userId) {
-      setUserId(userId);
-    }
-  }, []);
-  useEffect(() => {
-    if (userId) {
-      loadProfile();
-    }
-  }, [userId]);
+  const loadProfile = useCallback(async () => {
+    if (!user?._id) return;
 
-  const loadProfile = async () => {
-    // if (!user?.id) return;
     try {
       setLoading(true);
 
-      const res = await axios.get(`/user/${userId}`);
+      const res = await axios.get(`/user/${user._id}`);
       const data = res.data.user;
       console.log(data.user);
       // Map backend data to UserProfile shape if needed
@@ -122,7 +110,13 @@ const JobSeekerProfile = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?._id]);
+
+  useEffect(() => {
+    if (user?._id) {
+      loadProfile();
+    }
+  }, [user?._id, loadProfile]);
 
   const handleSaveProfile = async () => {
     // if (!profile || !user?.id) return;
@@ -139,7 +133,7 @@ const JobSeekerProfile = () => {
         publicProfile: profile.publicProfile,
         // Add workExperience, education, testScores, resumeUrl if supported by backend
       };
-      await axios.put(`/user/${userId}`, payload);
+      await axios.put(`/user/${user?._id}`, payload);
       toast.success('Profile updated successfully!');
       setIsEditing(false);
     } catch (error) {

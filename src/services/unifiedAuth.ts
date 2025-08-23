@@ -1,11 +1,47 @@
+import { saveSession, loadSession, clearSession, getToken, getUserRole, getUserId, getUser, isAuthenticated, updateUserData } from '@/lib/utils/storage';
+
 export interface User {
-  id: string;
+  _id: string;
   email: string;
   full_name: string;
+  name?: string; // Alias for full_name for backward compatibility
   role: UserRole;
   profile_complete?: boolean;
   dashboardId?: string;
   token?: string;
+  phone?: string;
+  bio?: string;
+  
+  // Profile fields for different user types
+  location?: string;
+  skills?: string[];
+  experience_years?: number;
+  education?: string;
+  portfolio_url?: string;
+  linkedin_url?: string;
+  github_url?: string;
+  avatar?: string;
+  
+  // Recruiter/Company fields
+  company_name?: string;
+  company_size?: string;
+  hiring_needs?: string;
+  
+  // College fields
+  college_name?: string;
+  institution_name?: string;
+  placement_officer_contact?: string;
+  final_year_students?: number;
+  
+  // Student fields
+  student_id?: string;
+  degree?: string;
+  
+  // Client/Freelancer fields
+  project_description?: string;
+  budget_range?: string;
+  website?: string;
+  contact_info?: string;
 }
 
 export interface AuthResponse {
@@ -76,7 +112,7 @@ class UnifiedAuthService {
 
       const data = await response.json();
       const user: User = {
-        id: data.user.id,
+        _id: data.user._id,
         email: data.user.email,
         full_name: data.user.full_name,
         role: data.user.role as UserRole,
@@ -114,7 +150,7 @@ class UnifiedAuthService {
 
       const data = await response.json();
       const user: User = {
-        id: data.user.id || Date.now().toString(),
+        _id: data.user.id || Date.now().toString(),
         email,
         full_name,
         role,
@@ -148,7 +184,7 @@ class UnifiedAuthService {
       await new Promise(resolve => setTimeout(resolve, 500));
 
       const user: User = {
-        id: `demo-${role}-${Date.now()}`,
+        _id: `demo-${role}-${Date.now()}`,
         email: credentials.email,
         full_name: `Demo ${role.charAt(0).toUpperCase() + role.slice(1)}`,
         role,
@@ -175,64 +211,40 @@ class UnifiedAuthService {
 
   // Session Management
   saveSession(user: User): void {
-    try {
-      localStorage.setItem(this.STORAGE_KEYS.USER, JSON.stringify(user));
-      localStorage.setItem(this.STORAGE_KEYS.TOKEN, user.token || '');
-      localStorage.setItem(this.STORAGE_KEYS.SESSION, JSON.stringify({
-        userId: user.id,
-        role: user.role,
-        timestamp: Date.now(),
-      }));
-      
-      // Backward compatibility with existing system
-      localStorage.setItem('user_role', user.role);
-      localStorage.setItem('user_id', user.id);
-      localStorage.setItem('auth_session', JSON.stringify(user));
-      localStorage.setItem('auth_token', user.token || '');
-      
-      console.log('💾 Session saved for user:', user.id, 'role:', user.role);
-    } catch (error) {
-      console.error('❌ Failed to save session:', error);
-    }
+    saveSession(user);
   }
 
   loadSession(): User | null {
-    try {
-      const userData = localStorage.getItem(this.STORAGE_KEYS.USER);
-      if (!userData) return null;
-
-      const user = JSON.parse(userData) as User;
-      console.log('📖 Session loaded for user:', user.id, 'role:', user.role);
-      return user;
-    } catch (error) {
-      console.error('❌ Failed to load session:', error);
-      this.clearSession();
-      return null;
-    }
+    return loadSession();
   }
 
   clearSession(): void {
-    try {
-      // Clear all auth-related localStorage keys
-      const keysToRemove = [
-        ...Object.values(this.STORAGE_KEYS),
-        'user_role',
-        'user_id',
-        'auth_session',
-        'auth_token',
-        'local_auth_user',
-        'admin_session',
-        'super_admin_session'
-      ];
-      
-      keysToRemove.forEach(key => {
-        localStorage.removeItem(key);
-      });
-      
-      console.log('🗑️ Session cleared');
-    } catch (error) {
-      console.error('❌ Failed to clear session:', error);
-    }
+    clearSession();
+  }
+
+  // Storage utility methods
+  getToken(): string | null {
+    return getToken();
+  }
+
+  getUserRole(): string | null {
+    return getUserRole();
+  }
+
+  getUserId(): string | null {
+    return getUserId();
+  }
+
+  getCurrentUser(): User | null {
+    return getUser();
+  }
+
+  isUserAuthenticated(): boolean {
+    return isAuthenticated();
+  }
+
+  updateUserData(updates: Partial<User>): void {
+    updateUserData(updates);
   }
 
   // Utility Methods

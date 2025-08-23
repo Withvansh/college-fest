@@ -10,7 +10,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
-import { enhancedJobsService } from '@/services/sampleDataService';
 import { ArrowLeft, Building2, MapPin, Calendar, Eye, Trash2, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';

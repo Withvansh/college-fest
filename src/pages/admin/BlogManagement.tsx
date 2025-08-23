@@ -5,13 +5,32 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Pencil, Plus, Trash2, Eye, Calendar, User } from 'lucide-react';
 
 import { toast } from 'sonner';
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/hooks/useAuth';
 
 interface BlogPost {
   id: string;
@@ -40,11 +59,11 @@ const BlogManagement = () => {
     excerpt: '',
     featured_image_url: '',
     tags: '',
-    status: 'draft' as 'draft' | 'published'
+    status: 'draft' as 'draft' | 'published',
   });
 
-    const { user } = useAuth();
-  
+  const { user } = useAuth();
+
   useEffect(() => {
     fetchPosts();
   }, []);
@@ -66,8 +85,8 @@ const BlogManagement = () => {
           published_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
-          slug: 'getting-started-with-minutehire'
-        }
+          slug: 'getting-started-with-minutehire',
+        },
       ];
       setPosts(mockPosts);
     } catch (error) {
@@ -90,21 +109,21 @@ const BlogManagement = () => {
       toast.error('Failed to create blog post');
     }
   };
-const handleEditPost = async () => {
-  if (!selectedPost) return;
+  const handleEditPost = async () => {
+    if (!selectedPost) return;
 
-  try {
-    // Mock edit functionality
-    toast.success('Blog post updated successfully');
-    setIsEditModalOpen(false);
-    setSelectedPost(null);
-    resetForm();
-    fetchPosts();
-  } catch (error) {
-    console.error('Error updating post:', error);
-    toast.error('Failed to update blog post');
-  }
-};
+    try {
+      // Mock edit functionality
+      toast.success('Blog post updated successfully');
+      setIsEditModalOpen(false);
+      setSelectedPost(null);
+      resetForm();
+      fetchPosts();
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast.error('Failed to update blog post');
+    }
+  };
 
   const handleDeletePost = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
@@ -126,7 +145,7 @@ const handleEditPost = async () => {
       excerpt: '',
       featured_image_url: '',
       tags: '',
-      status: 'draft'
+      status: 'draft',
     });
   };
 
@@ -138,7 +157,7 @@ const handleEditPost = async () => {
       excerpt: post.excerpt,
       featured_image_url: post.featured_image_url,
       tags: post.tags.join(', '),
-      status: post.status
+      status: post.status,
     });
     setIsEditModalOpen(true);
   };
@@ -164,7 +183,7 @@ const handleEditPost = async () => {
                 <Input
                   id="title"
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={e => setFormData({ ...formData, title: e.target.value })}
                   placeholder="Enter post title"
                 />
               </div>
@@ -173,7 +192,7 @@ const handleEditPost = async () => {
                 <Textarea
                   id="excerpt"
                   value={formData.excerpt}
-                  onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                  onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
                   placeholder="Enter post excerpt"
                   rows={3}
                 />
@@ -183,7 +202,7 @@ const handleEditPost = async () => {
                 <Textarea
                   id="content"
                   value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  onChange={e => setFormData({ ...formData, content: e.target.value })}
                   placeholder="Enter post content"
                   rows={10}
                 />
@@ -193,7 +212,7 @@ const handleEditPost = async () => {
                 <Input
                   id="featured_image"
                   value={formData.featured_image_url}
-                  onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
+                  onChange={e => setFormData({ ...formData, featured_image_url: e.target.value })}
                   placeholder="Enter image URL"
                 />
               </div>
@@ -202,13 +221,18 @@ const handleEditPost = async () => {
                 <Input
                   id="tags"
                   value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  onChange={e => setFormData({ ...formData, tags: e.target.value })}
                   placeholder="Enter tags separated by commas"
                 />
               </div>
               <div>
                 <Label htmlFor="status">Status</Label>
-                <Select value={formData.status} onValueChange={(value: 'draft' | 'published') => setFormData({ ...formData, status: value })}>
+                <Select
+                  value={formData.status}
+                  onValueChange={(value: 'draft' | 'published') =>
+                    setFormData({ ...formData, status: value })
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
                   </SelectTrigger>
@@ -248,7 +272,7 @@ const handleEditPost = async () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {posts.map((post) => (
+                {posts.map(post => (
                   <TableRow key={post.id}>
                     <TableCell className="font-medium">{post.title}</TableCell>
                     <TableCell>
@@ -278,18 +302,10 @@ const handleEditPost = async () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditModal(post)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => openEditModal(post)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeletePost(post.id)}
-                        >
+                        <Button variant="ghost" size="sm" onClick={() => handleDeletePost(post.id)}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
@@ -314,7 +330,7 @@ const handleEditPost = async () => {
               <Input
                 id="edit-title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={e => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Enter post title"
               />
             </div>
@@ -323,7 +339,7 @@ const handleEditPost = async () => {
               <Textarea
                 id="edit-excerpt"
                 value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
+                onChange={e => setFormData({ ...formData, excerpt: e.target.value })}
                 placeholder="Enter post excerpt"
                 rows={3}
               />
@@ -333,7 +349,7 @@ const handleEditPost = async () => {
               <Textarea
                 id="edit-content"
                 value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                onChange={e => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Enter post content"
                 rows={10}
               />
@@ -343,7 +359,7 @@ const handleEditPost = async () => {
               <Input
                 id="edit-featured_image"
                 value={formData.featured_image_url}
-                onChange={(e) => setFormData({ ...formData, featured_image_url: e.target.value })}
+                onChange={e => setFormData({ ...formData, featured_image_url: e.target.value })}
                 placeholder="Enter image URL"
               />
             </div>
@@ -352,13 +368,18 @@ const handleEditPost = async () => {
               <Input
                 id="edit-tags"
                 value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                onChange={e => setFormData({ ...formData, tags: e.target.value })}
                 placeholder="Enter tags separated by commas"
               />
             </div>
             <div>
               <Label htmlFor="edit-status">Status</Label>
-              <Select value={formData.status} onValueChange={(value: 'draft' | 'published') => setFormData({ ...formData, status: value })}>
+              <Select
+                value={formData.status}
+                onValueChange={(value: 'draft' | 'published') =>
+                  setFormData({ ...formData, status: value })
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>

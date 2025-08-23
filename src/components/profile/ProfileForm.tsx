@@ -56,7 +56,7 @@ const ProfileForm = () => {
     }
   }, [user]);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (field: string, value: string | number | string[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -85,16 +85,16 @@ const ProfileForm = () => {
     try {
       // Upload avatar if provided
       if (avatarFile) {
-        await profilesApi.uploadAvatar(user.id, avatarFile);
+        await profilesApi.uploadAvatar(user._id, avatarFile);
       }
 
       // Upload resume if provided
       if (resumeFile) {
-        await profilesApi.uploadResume(user.id, resumeFile);
+        await profilesApi.uploadResume(user._id, resumeFile);
       }
 
       // Update profile
-      await profilesApi.updateProfile(user.id, {
+      await profilesApi.updateProfile(user._id, {
         ...formData,
         profile_complete: true,
       });
@@ -102,15 +102,15 @@ const ProfileForm = () => {
       await updateProfile({
         ...formData,
         name: formData.full_name,
-        profileComplete: true,
+        profile_complete: true,
       });
 
       toast.success('Profile updated successfully!');
       setAvatarFile(null);
       setResumeFile(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile');
     } finally {
       setLoading(false);
     }

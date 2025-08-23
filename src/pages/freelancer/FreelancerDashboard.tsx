@@ -12,10 +12,34 @@ import SubmitProposalModal from '@/components/freelancer/SubmitProposalModal';
 
 const FreelancerDashboard = () => {
   const { user, logout } = useAuth();
-  const [gigs, setGigs] = useState<any[]>([]);
+  const [gigs, setGigs] = useState<
+    Array<{
+      id: string;
+      title: string;
+      description: string;
+      project_type: string;
+      budget_min?: number;
+      budget_max?: number;
+      client_name?: string;
+      deadline?: string;
+      duration_days?: number;
+      skills_required?: string[];
+    }>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedGig, setSelectedGig] = useState<any>(null);
+  const [selectedGig, setSelectedGig] = useState<{
+    id: string;
+    title: string;
+    description: string;
+    project_type: string;
+    budget_min?: number;
+    budget_max?: number;
+    client_name?: string;
+    deadline?: string;
+    duration_days?: number;
+    skills_required?: string[];
+  } | null>(null);
   const [isProposalModalOpen, setIsProposalModalOpen] = useState(false);
 
   useEffect(() => {
@@ -42,7 +66,18 @@ const FreelancerDashboard = () => {
       gig.project_type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleSubmitProposal = (gig: any) => {
+  const handleSubmitProposal = (gig: {
+    id: string;
+    title: string;
+    description: string;
+    project_type: string;
+    budget_min?: number;
+    budget_max?: number;
+    client_name?: string;
+    deadline?: string;
+    duration_days?: number;
+    skills_required?: string[];
+  }) => {
     setSelectedGig(gig);
     setIsProposalModalOpen(true);
   };
@@ -262,7 +297,14 @@ const FreelancerDashboard = () => {
       <SubmitProposalModal
         isOpen={isProposalModalOpen}
         onClose={() => setIsProposalModalOpen(false)}
-        gig={selectedGig}
+        gig={
+          selectedGig && {
+            ...selectedGig,
+            budget_min: selectedGig.budget_min || 0,
+            budget_max: selectedGig.budget_max || 0,
+            duration_days: selectedGig.duration_days || 0,
+          }
+        }
       />
     </div>
   );

@@ -16,7 +16,7 @@ import {
   BookOpen,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { hrmsApi } from '@/lib/api/hrms';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -32,9 +32,31 @@ interface DashboardMetrics {
   pendingLeaveApprovals: number;
   openPositions: number;
   trainingHours: number;
-  employees: any[];
-  positions: any[];
-  trainingSessions: any[];
+  employees: Array<{
+    id: string;
+    name: string;
+    department: string;
+    position: string;
+    status: string;
+    profiles?: {
+      full_name?: string;
+    };
+    created_at?: string;
+  }>;
+  positions: Array<{
+    id: string;
+    title: string;
+    department: string;
+    applicants: number;
+  }>;
+  trainingSessions: Array<{
+    id: string;
+    title: string;
+    date: string;
+    participants: number;
+    status?: string;
+    created_at?: string;
+  }>;
 }
 
 const HRDashboard = () => {
@@ -51,17 +73,13 @@ const HRDashboard = () => {
   });
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [user]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     if (!user) return;
 
     try {
       setLoading(true);
-      console.log('Loading dashboard data for user:', user.id);
-      const data = await hrmsApi.getDashboardMetrics(user.id);
+      console.log('Loading dashboard data for user:', user._id);
+      const data = await hrmsApi.getDashboardMetrics(user._id);
       setMetrics(data);
     } catch (error) {
       console.error('Error loading dashboard data:', error);
@@ -69,7 +87,11 @@ const HRDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const quickActions = [
     {
