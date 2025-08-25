@@ -1,112 +1,145 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle, XCircle, Clock, RefreshCw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { paymentService, PaymentStatus } from '@/services/paymentService';
 
-import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { toast } from "sonner";
-
-const PaymentSuccess = () => {
+const PaymentSuccess: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const [status, setStatus] = useState<"LOADING" | "SUCCESS" | "FAILED">("LOADING");
-  const [orderInfo, setOrderInfo] = useState<any>(null);
-  const txnId = searchParams.get("transactionId");
+  const navigate = useNavigate();
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [verificationAttempts, setVerificationAttempts] = useState(0);
+
+  // Get order ID from URL params or localStorage
+  const orderId = searchParams.get('orderId') || localStorage.getItem('current_payment_order_id');
 
   useEffect(() => {
-    const verifyPayment = async () => {
-      if (!txnId) {
-        console.error("No transaction ID found in URL");
-        setStatus("FAILED");
-        return;
-      }
-
-      try {
-        console.log("Verifying payment for transaction:", txnId);
-        
-         const backendUrl = import.meta.env.VITE_API_BASE_URL;
-
-        const res = await fetch(`${backendUrl}/api/phonepe/verify-payment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ transactionId: txnId })
-        });
-
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-
-        const data = await res.json();
-        console.log("Payment verification response:", data);
-
-        if (data.success) {
-          setStatus("SUCCESS");
-          setOrderInfo(data.order);
-          toast.success("Payment verified successfully!");
-        } else {
-          setStatus("FAILED");
-          toast.error(data.message || "Payment verification failed");
-        }
-      } catch (error) {
-        console.error("Payment verification error:", error);
-        setStatus("FAILED");
-        toast.error("Error verifying payment");
-      }
-    };
+    if (!orderId) {
+      toast.error('No payment information found');
+      navigate('/products');
+      return;
+    }
 
     verifyPayment();
-  }, [txnId]);
+  }, [orderId]);
+
+  const verifyPayment = async () => {
+    if (!orderId) return;
+
+    setLoading(true);
+    try {
+      const status = await paymentService.verifyPayment(orderId);
+      setPaymentStatus(status);
+
+      if (status.isCompleted) {
+        toast.success('Payment completed successfully!');
+        // Clear stored order ID
+        localStorage.removeItem('current_payment_order_id');
+      } else if (status.status === 'FAILED') {
+        toast.error('Payment failed');
+      } else if (status.status === 'PENDING' && verificationAttempts < 10) {
+        // Retry verification for pending payments
+        setTimeout(() => {
+          setVerificationAttempts(prev => prev + 1);
+          verifyPayment();
+        }, 3000);
+      }
+    } catch (error: any) {
+      console.error('Payment verification error:', error);
+      toast.error('Failed to verify payment status');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderContent = () => {
-    if (status === "LOADING") {
+    if (loading) {
       return (
-        <div className="flex flex-col items-center justify-center space-y-3">
-          <div className="h-6 w-6 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
-          <p className="text-muted-foreground text-sm">Verifying payment...</p>
+        <div className="flex flex-col items-center justify-center space-y-4">
+          <RefreshCw className="w-8 h-8 animate-spin text-primary" />
+          <h2 className="text-lg font-semibold">Verifying Payment...</h2>
+          <p className="text-muted-foreground text-center">
+            Please wait while we confirm your payment.
+          </p>
         </div>
       );
     }
 
-    if (status === "FAILED") {
+    if (!paymentStatus) {
+      return (
+        <div className="text-center space-y-4">
+          <XCircle className="text-red-500 w-12 h-12 mx-auto" />
+          <h2 className="text-xl font-bold text-red-700">Payment Not Found</h2>
+          <p className="text-muted-foreground">We couldn't find your payment information.</p>
+          <Button onClick={() => navigate('/products')}>Back to Products</Button>
+        </div>
+      );
+    }
+
+    if (paymentStatus.status === 'FAILED') {
       return (
         <div className="text-center space-y-4">
           <XCircle className="text-red-500 w-12 h-12 mx-auto" />
           <h2 className="text-xl font-bold text-red-700">Payment Failed</h2>
           <p className="text-muted-foreground">
-            {txnId ? "Payment verification failed. Please contact support." : "Invalid payment link."}
+            Your payment could not be processed. Please try again.
           </p>
-          <Button onClick={() => window.location.href = "/products"}>
-            Back to Products
+          <div className="space-x-2">
+            <Button onClick={() => navigate('/products')}>Try Again</Button>
+            <Button variant="outline" onClick={() => navigate('/')}>
+              Go Home
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (paymentStatus.status === 'PENDING') {
+      return (
+        <div className="text-center space-y-4">
+          <Clock className="text-yellow-500 w-12 h-12 mx-auto" />
+          <h2 className="text-xl font-bold text-yellow-700">Payment Processing</h2>
+          <p className="text-muted-foreground">Your payment is being processed. Please wait...</p>
+          <Button onClick={verifyPayment} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Check Status
           </Button>
         </div>
       );
     }
 
+    // Payment completed successfully
     return (
       <div className="text-center space-y-4">
         <CheckCircle className="text-green-500 w-12 h-12 mx-auto" />
-        <h2 className="text-xl font-bold text-green-700">Payment Verified!</h2>
+        <h2 className="text-xl font-bold text-green-700">Payment Successful!</h2>
         <p className="text-muted-foreground">
-          Thank you {orderInfo?.buyer_name || "for your purchase"}, your download is ready.
+          Thank you for your purchase. Your payment has been processed successfully.
         </p>
 
-        {orderInfo?.download_link && (
-          <a
-            href={orderInfo.download_link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block mt-4"
-          >
-            <Button>Download Product</Button>
-          </a>
+        {paymentStatus.metadata?.product_type === 'DIGITAL_PRODUCT' && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+            <h3 className="font-semibold text-green-800">{paymentStatus.metadata.product_name}</h3>
+            <p className="text-sm text-green-600 mt-1">Product has been added to your account.</p>
+          </div>
         )}
 
-        <Button 
-          variant="outline" 
-          onClick={() => window.location.href = "/products"}
-          className="mt-2"
-        >
-          Back to Products
-        </Button>
+        {paymentStatus.metadata?.product_type === 'SUBSCRIPTION' && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
+            <h3 className="font-semibold text-blue-800">{paymentStatus.metadata.plan_name} Plan</h3>
+            <p className="text-sm text-blue-600 mt-1">Your subscription has been activated.</p>
+          </div>
+        )}
+
+        <div className="space-x-2 mt-6">
+          <Button onClick={() => navigate('/products')}>Continue Shopping</Button>
+          <Button variant="outline" onClick={() => navigate('/profile')}>
+            View Profile
+          </Button>
+        </div>
       </div>
     );
   };
@@ -115,7 +148,7 @@ const PaymentSuccess = () => {
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <h1 className="text-2xl font-bold text-center">Payment Status</h1>
+          <CardTitle className="text-center">Payment Status</CardTitle>
         </CardHeader>
         <CardContent>{renderContent()}</CardContent>
       </Card>

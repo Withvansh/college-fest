@@ -21,6 +21,7 @@ const AITextInterview = lazy(() => import('@/pages/AITextInterview'));
 const AIInterviewResults = lazy(() => import('@/pages/AIInterviewResults'));
 const NotFound = lazy(() => import('@/pages/NotFound'));
 const PaymentSuccess = lazy(() => import('@/pages/PaymentSuccess'));
+const PaymentSuccessNew = lazy(() => import('@/pages/PaymentSuccessNew'));
 const FakePhonePe = lazy(() => import('@/pages/FakePhonePe'));
 
 // Job-related pages
@@ -194,6 +195,10 @@ export const routes: RouteObject[] = [
   {
     path: '/payment-success',
     element: <PaymentSuccess />,
+  },
+  {
+    path: '/payment/success',
+    element: <PaymentSuccessNew />,
   },
   {
     path: '/fake-phonepe',
