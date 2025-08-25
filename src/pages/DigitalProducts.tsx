@@ -1,24 +1,19 @@
-import React, { useState, useEffect } from "react";
-import { Search, ShoppingCart, Download, Link as LinkIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useEffect } from 'react';
+import { Search, ShoppingCart, Download, Link as LinkIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { toast } from "sonner";
-import axios from "@/lib/utils/axios";
+} from '@/components/ui/select';
+import { toast } from 'sonner';
+import axios from '@/lib/utils/axios';
+import PhonePePayment from '@/components/PhonePePayment';
 import {
   Dialog,
   DialogContent,
@@ -26,7 +21,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 
 interface DigitalProduct {
   _id: string;
@@ -46,16 +41,15 @@ const DigitalProducts = () => {
   const [filteredProducts, setFilteredProducts] = useState<DigitalProduct[]>([]);
   const [categories, setCategories] = useState<any>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<string>("newest");
-  const [priceRange, setPriceRange] = useState<string>("all");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('newest');
+  const [priceRange, setPriceRange] = useState<string>('all');
   const [successModalOpen, setSuccessModalOpen] = useState(false);
-  const [purchasedProduct, setPurchasedProduct] =
-    useState<DigitalProduct | null>(null);
+  const [purchasedProduct, setPurchasedProduct] = useState<DigitalProduct | null>(null);
 
-  const userId = localStorage.getItem("user_id");
-  const token = localStorage.getItem("auth_token");
+  const userId = localStorage.getItem('user_id');
+  const token = localStorage.getItem('auth_token');
 
   useEffect(() => {
     loadProducts();
@@ -68,12 +62,12 @@ const DigitalProducts = () => {
 
   const loadProducts = async () => {
     try {
-      const { data } = await axios.get("/digitalproducts");
+      const { data } = await axios.get('/digitalproducts');
       setProducts(data);
       setFilteredProducts(data);
     } catch (error: any) {
-      console.error("Error loading products:", error);
-      toast.error("Failed to load products");
+      console.error('Error loading products:', error);
+      toast.error('Failed to load products');
     } finally {
       setLoading(false);
     }
@@ -81,13 +75,11 @@ const DigitalProducts = () => {
 
   const loadCategories = async () => {
     try {
-      const { data } = await axios.get("/digitalproducts");
-      const uniqueCategories = Array.from(
-        new Set(data.map((p: DigitalProduct) => p.category))
-      );
+      const { data } = await axios.get('/digitalproducts');
+      const uniqueCategories = Array.from(new Set(data.map((p: DigitalProduct) => p.category)));
       setCategories(uniqueCategories);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      console.error('Error loading categories:', error);
     }
   };
 
@@ -96,23 +88,19 @@ const DigitalProducts = () => {
 
     if (searchTerm) {
       filtered = filtered.filter(
-        (product) =>
+        product =>
           product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          product.short_description
-            ?.toLowerCase()
-            .includes(searchTerm.toLowerCase())
+          product.short_description?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
-    if (selectedCategory && selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (product) => product.category === selectedCategory
-      );
+    if (selectedCategory && selectedCategory !== 'all') {
+      filtered = filtered.filter(product => product.category === selectedCategory);
     }
 
-    if (priceRange && priceRange !== "all") {
-      const [min, max] = priceRange.split("-").map(Number);
-      filtered = filtered.filter((product) => {
+    if (priceRange && priceRange !== 'all') {
+      const [min, max] = priceRange.split('-').map(Number);
+      filtered = filtered.filter(product => {
         if (max) {
           return product.price >= min && product.price <= max;
         } else {
@@ -122,18 +110,16 @@ const DigitalProducts = () => {
     }
 
     switch (sortBy) {
-      case "price_asc":
+      case 'price_asc':
         filtered.sort((a, b) => a.price - b.price);
         break;
-      case "price_desc":
+      case 'price_desc':
         filtered.sort((a, b) => b.price - a.price);
         break;
-      case "newest":
+      case 'newest':
       default:
         filtered.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() -
-            new Date(a.created_at).getTime()
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
         );
         break;
     }
@@ -144,12 +130,12 @@ const DigitalProducts = () => {
   const purchaseProduct = async (product: DigitalProduct) => {
     try {
       if (!userId || !token) {
-        toast.error("Please login to purchase");
+        toast.error('Please login to purchase');
         return;
       }
 
       if (product.purchased_by?.includes(userId)) {
-        toast.info("You already own this product 🎉");
+        toast.info('You already own this product 🎉');
         setPurchasedProduct(product);
         setSuccessModalOpen(true);
         return;
@@ -161,15 +147,13 @@ const DigitalProducts = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      toast.success(data.message || "Product purchased successfully ✅");
+      toast.success(data.message || 'Product purchased successfully ✅');
       setPurchasedProduct(product);
       setSuccessModalOpen(true);
       await loadProducts();
     } catch (error: any) {
-      console.error("Error purchasing product:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to purchase product ❌"
-      );
+      console.error('Error purchasing product:', error);
+      toast.error(error.response?.data?.message || 'Failed to purchase product ❌');
     }
   };
 
@@ -189,12 +173,9 @@ const DigitalProducts = () => {
       {/* Hero */}
       <div className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Digital Products Store
-          </h1>
+          <h1 className="text-4xl font-bold text-foreground mb-4">Digital Products Store</h1>
           <p className="text-xl text-muted-foreground mb-8">
-            Professional templates, forms, and toolkits to streamline your
-            business processes
+            Professional templates, forms, and toolkits to streamline your business processes
           </p>
         </div>
       </div>
@@ -208,15 +189,12 @@ const DigitalProducts = () => {
               <Input
                 placeholder="Search products..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
 
-            <Select
-              value={selectedCategory}
-              onValueChange={setSelectedCategory}
-            >
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
               <SelectTrigger>
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -263,14 +241,12 @@ const DigitalProducts = () => {
         {/* Products Grid */}
         {filteredProducts.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg mb-4">
-              No products found
-            </p>
+            <p className="text-muted-foreground text-lg mb-4">No products found</p>
             <Button
               onClick={() => {
-                setSearchTerm("");
-                setSelectedCategory("all");
-                setPriceRange("all");
+                setSearchTerm('');
+                setSelectedCategory('all');
+                setPriceRange('all');
               }}
             >
               Clear Filters
@@ -278,10 +254,8 @@ const DigitalProducts = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => {
-              const isPurchased = userId
-                ? product.purchased_by?.includes(userId)
-                : false;
+            {filteredProducts.map(product => {
+              const isPurchased = userId ? product.purchased_by?.includes(userId) : false;
 
               return (
                 <Card
@@ -303,13 +277,15 @@ const DigitalProducts = () => {
                     <div className="flex justify-between items-start mb-2">
                       <Badge variant="secondary">{product.category}</Badge>
                       <span className="text-2xl font-bold text-primary">
-                        {new Intl.NumberFormat("en-IN", {
-                          style: "currency",
-                          currency: "INR",
+                        {new Intl.NumberFormat('en-IN', {
+                          style: 'currency',
+                          currency: 'INR',
                         }).format(product.price)}
                       </span>
                     </div>
-                    <CardTitle className="text-lg">Original Price: <del>{`${product.price}`}</del> Now: ₹0</CardTitle>
+                    <CardTitle className="text-lg">
+                      Original Price: <del>{`${product.price}`}</del> Now: ₹0
+                    </CardTitle>
                   </CardHeader>
 
                   <CardContent className="flex-grow">
@@ -335,13 +311,10 @@ const DigitalProducts = () => {
                   <CardFooter className="flex-shrink-0">
                     <div className="w-full space-y-2">
                       {!isPurchased ? (
-                        <Button
-                          className="w-full"
-                          onClick={() => purchaseProduct(product)}
-                        >
+                        <PhonePePayment productId={product._id} className="w-full">
                           <ShoppingCart className="h-4 w-4 mr-2" />
-                          Buy Now
-                        </Button>
+                          Buy Now - ₹{product.price}
+                        </PhonePePayment>
                       ) : (
                         <Button
                           variant="outline"
@@ -369,15 +342,12 @@ const DigitalProducts = () => {
           <DialogHeader>
             <DialogTitle>Purchase Successful 🎉</DialogTitle>
             <DialogDescription>
-              {purchasedProduct?.title} has been unlocked. Click below to
-              download your package.
+              {purchasedProduct?.title} has been unlocked. Click below to download your package.
             </DialogDescription>
           </DialogHeader>
 
           <div className="bg-muted rounded-md p-4 my-4">
-            <p className="text-sm font-medium text-foreground mb-2">
-              Download Link:
-            </p>
+            <p className="text-sm font-medium text-foreground mb-2">Download Link:</p>
             <a
               href={purchasedProduct?.product_file_url}
               target="_blank"
