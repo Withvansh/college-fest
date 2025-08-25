@@ -5,10 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { Building2, Users, FileText, TestTube, BarChart3, Calendar, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { recruiterDashboardsApi } from '@/lib/api/recruiterDashboards';
+import { recruiterDashboardsApi } from '@/lib/api/recruiter-dashboard';
 
 interface JobPost {
-  id: string;
+  _id: string;
   title: string;
   company: string;
   location: string;
@@ -18,7 +18,7 @@ interface JobPost {
 }
 
 interface Applicant {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   position: string;
@@ -28,7 +28,7 @@ interface Applicant {
 }
 
 interface TestResult {
-  id: string;
+  _id: string;
   candidateName: string;
   position: string;
   score: number;
@@ -39,7 +39,7 @@ interface TestResult {
 }
 
 type RecruiterDashboard = {
-  id: string;
+  _id: string;
   dashboard_name?: string;
   totalJobs: number;
   activeJobs: number;
@@ -96,9 +96,34 @@ const RecruiterDashboardDynamic = () => {
         return;
       }
 
+      // Fetch real jobs for this recruiter
+      let realJobs: JobPost[] = [];
+      try {
+        const jobsResponse = await recruiterDashboardsApi.getJobs(user._id, 1, 10);
+        console.log('🏢 Jobs fetched:', jobsResponse);
+
+        // Handle the expected response structure
+        const jobsArray = jobsResponse?.jobs || [];
+
+        realJobs = Array.isArray(jobsArray)
+          ? jobsArray.map(job => ({
+              _id: job._id,
+              title: job.title,
+              company: job.department || 'TechCorp Inc.',
+              location: job.location,
+              postedDate: new Date(job.created_at).toISOString().split('T')[0],
+              applicants: 0, // Will be updated with real application count later
+              status: job.status === 'active' ? 'Active' : 'Inactive',
+            }))
+          : [];
+      } catch (jobError) {
+        console.error('❌ Error fetching jobs:', jobError);
+        // Continue with empty jobs array
+      }
+
       // Create a properly formatted dashboard object
       const dashboardData: RecruiterDashboard = {
-        id: dashboardId,
+        _id: dashboardId,
         dashboard_name: `${user.full_name}'s Dashboard`,
         totalJobs: userDashboard.totalJobs || 0,
         activeJobs: userDashboard.activeJobs || 0,
@@ -117,29 +142,32 @@ const RecruiterDashboardDynamic = () => {
           recentJobs: [],
           recentApplications: [],
           analyticsData: [],
-          jobPosts: [
-            {
-              id: '1',
-              title: 'Senior Frontend Developer',
-              company: 'TechCorp Inc.',
-              location: 'Remote',
-              postedDate: '2024-01-15',
-              applicants: 24,
-              status: 'Active',
-            },
-            {
-              id: '2',
-              title: 'Backend Engineer',
-              company: 'TechCorp Inc.',
-              location: 'New York',
-              postedDate: '2024-01-12',
-              applicants: 18,
-              status: 'Active',
-            },
-          ],
+          jobPosts:
+            realJobs.length > 0
+              ? realJobs
+              : [
+                  {
+                    _id: '1',
+                    title: 'Senior Frontend Developer',
+                    company: 'TechCorp Inc.',
+                    location: 'Remote',
+                    postedDate: '2024-01-15',
+                    applicants: 24,
+                    status: 'Active',
+                  },
+                  {
+                    _id: '2',
+                    title: 'Backend Engineer',
+                    company: 'TechCorp Inc.',
+                    location: 'New York',
+                    postedDate: '2024-01-12',
+                    applicants: 18,
+                    status: 'Active',
+                  },
+                ],
           applicants: [
             {
-              id: '1',
+              _id: '1',
               name: 'John Doe',
               email: 'john@example.com',
               position: 'Frontend Developer',
@@ -148,7 +176,7 @@ const RecruiterDashboardDynamic = () => {
               status: 'Interview Scheduled',
             },
             {
-              id: '2',
+              _id: '2',
               name: 'Jane Smith',
               email: 'jane@example.com',
               position: 'Backend Engineer',
@@ -159,7 +187,7 @@ const RecruiterDashboardDynamic = () => {
           ],
           testResults: [
             {
-              id: '1',
+              _id: '1',
               candidateName: 'Alex Johnson',
               position: 'Full Stack Developer',
               score: 88,
@@ -211,6 +239,23 @@ const RecruiterDashboardDynamic = () => {
       console.log('⏳ Missing user or dashboardId:', { user: !!user, dashboardId });
       setLoading(false);
     }
+
+    // Also listen for storage events to refresh when returning from job posting
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'refresh-dashboard' && e.newValue === 'true') {
+        console.log('🔄 Dashboard refresh requested via storage event');
+        localStorage.removeItem('refresh-dashboard');
+        if (user && dashboardId) {
+          loadDashboard();
+        }
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [user, dashboardId, navigate, loadDashboard]);
 
   // Add detailed debugging for authentication
@@ -352,7 +397,6 @@ const RecruiterDashboardDynamic = () => {
                   <span>Recent Job Posts</span>
                   <Link to="/recruiter/post-job">
                     <Button size="sm">
-                      
                       <Plus className="h-4 w-4 mr-2" />
                       Post Job
                     </Button>
@@ -363,7 +407,7 @@ const RecruiterDashboardDynamic = () => {
                 <div className="space-y-4">
                   {dashboard.mockData.jobPosts.map(job => (
                     <div
-                      key={job.id}
+                      key={job._id}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
                       <div>
@@ -400,7 +444,7 @@ const RecruiterDashboardDynamic = () => {
                 <div className="space-y-4">
                   {dashboard.mockData.applicants.map(applicant => (
                     <div
-                      key={applicant.id}
+                      key={applicant._id}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
                       <div>
@@ -444,7 +488,7 @@ const RecruiterDashboardDynamic = () => {
                 <div className="space-y-4">
                   {dashboard.mockData.testResults.map(result => (
                     <div
-                      key={result.id}
+                      key={result._id}
                       className="flex items-center justify-between p-4 border rounded-lg"
                     >
                       <div>

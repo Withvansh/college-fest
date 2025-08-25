@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
+import { applicationsApi } from '@/lib/api/applications';
 import { ArrowLeft, Building2, MapPin, Calendar, Eye, Trash2, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -38,9 +39,68 @@ const JobSeekerApplications = () => {
   }, []);
 
   const loadApplications = async () => {
+    if (!user?._id) return;
+
     try {
       setLoading(true);
-      // Mock data - in real app, fetch from API
+      const userApplications = await applicationsApi.getApplications(user._id);
+
+      if (Array.isArray(userApplications)) {
+        // Convert backend application format to frontend format
+        const formattedApplications: Application[] = userApplications.map((app: any) => ({
+          id: app._id || app.id,
+          jobId: app.job_id,
+          jobTitle: app.job?.title || 'Job Title',
+          companyName: app.job?.company_name || 'Company Name',
+          location: app.job?.location || 'Location',
+          appliedDate: app.applied_at || app.createdAt || new Date().toISOString(),
+          status: app.status || 'applied',
+          salary: app.job?.salary_range || 'Salary not specified',
+          jobType: app.job?.job_type || 'Full-time',
+        }));
+        setApplications(formattedApplications);
+      } else {
+        // Fallback to mock data if API returns unexpected format
+        const mockApplications: Application[] = [
+          {
+            id: '1',
+            jobId: '1',
+            jobTitle: 'Senior Frontend Developer',
+            companyName: 'TechCorp Solutions',
+            location: 'Bangalore, India',
+            appliedDate: '2024-01-15',
+            status: 'interview_scheduled',
+            salary: '₹6.7L - ₹10L',
+            jobType: 'Full-time',
+          },
+          {
+            id: '2',
+            jobId: '2',
+            jobTitle: 'Product Manager',
+            companyName: 'StartupX',
+            location: 'Mumbai, India',
+            appliedDate: '2024-01-10',
+            status: 'applied',
+            salary: '₹5.9L - ₹8.4L',
+            jobType: 'Full-time',
+          },
+          {
+            id: '3',
+            jobId: '3',
+            jobTitle: 'UX Designer',
+            companyName: 'DesignHub',
+            location: 'Delhi, India',
+            appliedDate: '2024-01-05',
+            status: 'rejected',
+            salary: '₹5L - ₹7.5L',
+            jobType: 'Contract',
+          },
+        ];
+        setApplications(mockApplications);
+      }
+    } catch (error) {
+      console.error('Error loading applications:', error);
+      // Show mock data in case of error
       const mockApplications: Application[] = [
         {
           id: '1',
@@ -64,22 +124,9 @@ const JobSeekerApplications = () => {
           salary: '₹5.9L - ₹8.4L',
           jobType: 'Full-time',
         },
-        {
-          id: '3',
-          jobId: '3',
-          jobTitle: 'UX Designer',
-          companyName: 'DesignHub',
-          location: 'Delhi, India',
-          appliedDate: '2024-01-05',
-          status: 'rejected',
-          salary: '₹5L - ₹7.5L',
-          jobType: 'Contract',
-        },
       ];
       setApplications(mockApplications);
-    } catch (error) {
-      console.error('Error loading applications:', error);
-      toast.error('Failed to load applications');
+      toast.error('Failed to load applications from server. Showing sample data.');
     } finally {
       setLoading(false);
     }
@@ -88,10 +135,11 @@ const JobSeekerApplications = () => {
   const handleWithdrawApplication = async (applicationId: string, jobTitle: string) => {
     if (window.confirm(`Are you sure you want to withdraw your application for ${jobTitle}?`)) {
       try {
-        // Mock API call - in real app, call actual API
+        await applicationsApi.withdrawApplication(applicationId);
         setApplications(prev => prev.filter(app => app.id !== applicationId));
         toast.success('Application withdrawn successfully');
       } catch (error) {
+        console.error('Error withdrawing application:', error);
         toast.error('Failed to withdraw application');
       }
     }

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,14 +17,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-// Supabase integration removed
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { X, Loader2 } from 'lucide-react';
 import { jobFormSchema, type JobFormData } from '@/lib/validation/jobValidation';
+import { recruiterDashboardsApi, type Job } from '@/lib/api/recruiter-dashboard';
 
 const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentBenefit, setCurrentBenefit] = useState('');
@@ -109,34 +111,44 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         return;
       }
 
-      // Mock job posting - replace with actual API call when backend is ready
-      console.log('Mock job posting for recruiter:', recruiterId);
-
+      // Prepare job data for backend
       const jobData = {
-        id: 'mock-' + Date.now(),
         title: data.title,
         description: data.description,
-        requirements: data.requirements,
+        requirements: data.requirements, // Keep as string for backend
         company_name: data.company_name,
         location: data.location,
-        job_type: data.job_type,
-        recruiter_id: recruiterId,
-        min_salary: data.salary_min || null,
-        max_salary: data.salary_max || null,
+        job_type: data.job_type as Job['job_type'],
+        employment_type: data.job_type,
+        min_salary: data.salary_min || undefined,
+        max_salary: data.salary_max || undefined,
+        currency: 'INR',
         experience_required: data.experience_required,
+        experience_level:
+          data.experience_required <= 2
+            ? 'entry'
+            : data.experience_required <= 5
+              ? 'mid'
+              : 'senior',
         skills_required: data.skills_required,
         benefits: data.benefits,
         remote_allowed: data.remote_allowed,
+        recruiter_id: recruiterId,
         application_deadline: data.application_deadline
-          ? new Date(data.application_deadline).toISOString()
-          : null,
+          ? new Date(data.application_deadline)
+          : undefined,
         status: 'active' as const,
-        created_at: new Date().toISOString(),
       };
 
-      console.log('✅ Job posted successfully (mock):', jobData);
+      console.log('Creating job with data:', jobData);
+
+      // Create job using backend API
+      const createdJob = await recruiterDashboardsApi.createJob(jobData);
+
+      console.log('✅ Job created successfully:', createdJob);
       toast.success('Job posted successfully!');
 
+      // Reset form
       reset({
         title: '',
         description: '',
@@ -153,10 +165,22 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         application_deadline: '',
       });
 
-      if (onSuccess) onSuccess();
+      // Redirect to the created job page
+      if (createdJob && createdJob._id) {
+        console.log('Redirecting to job details page:', `/jobs/${createdJob._id}`);
+        setTimeout(() => {
+          navigate(`/jobs/${createdJob._id}`);
+        }, 1000); // Small delay to show success message
+      }
+
+      // Also call the onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      console.error('❌ Unexpected error:', error);
-      toast.error('An unexpected error occurred');
+      console.error('❌ Error creating job:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create job';
+      toast.error(errorMessage);
     }
   };
 

@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import { jobsApi } from '@/lib/api/jobs';
 import { applicationsApi } from '@/lib/api/applications';
+import { type Job } from '@/lib/api/recruiter-dashboard';
 import JobApplicationForm from '@/components/jobs/JobApplicationForm';
 import { toast } from 'sonner';
 import {
@@ -25,33 +26,7 @@ import {
 const JobDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const [job, setJob] = useState<{
-    id: string;
-    title: string;
-    company_name?: string;
-    description: string;
-    requirements?: string[];
-    location?: string;
-    salary_min?: number;
-    salary_max?: number;
-    min_salary?: number;
-    max_salary?: number;
-    job_type?: string;
-    experience_level?: string;
-    experience_required?: number;
-    skills_required?: string[];
-    posted_date?: string;
-    deadline?: string;
-    created_at?: string;
-    application_deadline?: string;
-    benefits?: string[];
-    remote_allowed?: boolean;
-    profiles?: {
-      avatar_url?: string;
-      full_name?: string;
-    };
-    job_applications?: Array<{ count: number }>;
-  } | null>(null);
+  const [job, setJob] = useState<Job | null>(null);
   const [loading, setLoading] = useState(true);
   const [hasApplied, setHasApplied] = useState(false);
   const [showApplicationForm, setShowApplicationForm] = useState(false);
@@ -133,9 +108,8 @@ const JobDetailsPage = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarImage src={job.profiles?.avatar_url} />
                       <AvatarFallback>
-                        {job.company_name.substring(0, 2).toUpperCase()}
+                        {job.company_name?.substring(0, 2).toUpperCase() || 'CO'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -215,7 +189,7 @@ const JobDetailsPage = () => {
             {/* Application Form */}
             {showApplicationForm && user?.role === 'jobseeker' && (
               <JobApplicationForm
-                jobId={job.id}
+                jobId={job._id}
                 jobTitle={job.title}
                 onSuccess={handleApplicationSuccess}
               />
@@ -263,7 +237,8 @@ const JobDetailsPage = () => {
                     <Users className="h-4 w-4 text-orange-600" />
                     <span className="text-sm font-medium">Applications</span>
                   </div>
-                  <span className="text-sm">{job.job_applications?.[0]?.count || 0}</span>
+                  <span className="text-sm">0</span>{' '}
+                  {/* TODO: Get actual application count from backend */}
                 </div>
 
                 {job.remote_allowed && (
@@ -325,13 +300,12 @@ const JobDetailsPage = () => {
               <CardContent>
                 <div className="flex items-center gap-3 mb-4">
                   <Avatar>
-                    <AvatarImage src={job.profiles?.avatar_url} />
                     <AvatarFallback>
-                      {job.company_name.substring(0, 2).toUpperCase()}
+                      {job.company_name?.substring(0, 2).toUpperCase() || 'CO'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">{job.profiles?.full_name}</p>
+                    <p className="font-medium">{job.company_name}</p>
                     <p className="text-sm text-gray-600">Recruiter</p>
                   </div>
                 </div>

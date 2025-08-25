@@ -1,50 +1,89 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { CheckCircle, XCircle, Clock, Search } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { CheckCircle, XCircle, Clock, Search } from 'lucide-react';
+import { toast } from 'sonner';
+import { hrmsApi } from '@/lib/api/hrms';
+import { useAuth } from '@/hooks/useAuth';
 
 const LeaveManager = () => {
-  const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [leaveRequests, setLeaveRequests] = useState([
-    {
-      id: 1,
-      employee: 'John Doe',
-      type: 'Sick',
-      startDate: '2024-01-20',
-      endDate: '2024-01-22',
-      days: 3,
-      reason: 'Fever and cold',
-      status: 'Pending',
-      appliedOn: '2024-01-18'
-    },
-    {
-      id: 2,
-      employee: 'Jane Smith',
-      type: 'Casual',
-      startDate: '2024-01-25',
-      endDate: '2024-01-25',
-      days: 1,
-      reason: 'Personal work',
-      status: 'Approved',
-      appliedOn: '2024-01-15'
-    },
-    {
-      id: 3,
-      employee: 'Mike Johnson',
-      type: 'Earned',
-      startDate: '2024-02-01',
-      endDate: '2024-02-05',
-      days: 5,
-      reason: 'Family vacation',
-      status: 'Rejected',
-      appliedOn: '2024-01-10'
-    },
-  ]);
+  const { user } = useAuth();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [leaveRequests, setLeaveRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLeaveApplications();
+  }, []);
+
+  const loadLeaveApplications = async () => {
+    if (!user?._id) return;
+
+    try {
+      setLoading(true);
+      const applications = await hrmsApi.getLeaveApplications();
+
+      // Transform backend data to match UI expectations
+      if (Array.isArray(applications)) {
+        const transformedApplications = applications.map((app: any) => ({
+          id: app._id || app.id,
+          employee: app.employee_name || app.employee,
+          type: app.leave_type || app.type,
+          startDate: app.start_date || app.startDate,
+          endDate: app.end_date || app.endDate,
+          days: app.total_days || app.days,
+          reason: app.reason,
+          status:
+            app.status === 'pending'
+              ? 'Pending'
+              : app.status === 'approved'
+                ? 'Approved'
+                : app.status === 'rejected'
+                  ? 'Rejected'
+                  : app.status,
+          appliedOn: app.applied_date || app.appliedOn,
+        }));
+
+        setLeaveRequests(transformedApplications);
+      } else {
+        setLeaveRequests([]);
+      }
+    } catch (error) {
+      console.error('Error loading leave applications:', error);
+      toast.error('Failed to load leave applications. Showing sample data.');
+
+      // Fallback to mock data
+      const mockRequests = [
+        {
+          id: 1,
+          employee: 'John Doe',
+          type: 'Sick',
+          startDate: '2024-01-20',
+          endDate: '2024-01-22',
+          days: 3,
+          reason: 'Fever and cold',
+          status: 'Pending',
+          appliedOn: '2024-01-18',
+        },
+        {
+          id: 2,
+          employee: 'Jane Smith',
+          type: 'Casual',
+          startDate: '2024-01-25',
+          endDate: '2024-01-25',
+          days: 1,
+          reason: 'Personal work',
+          status: 'Approved',
+          appliedOn: '2024-01-15',
+        },
+      ];
+      setLeaveRequests(mockRequests);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const leaveBalances = [
     { type: 'Sick Leave', allocated: 12, used: 3, remaining: 9 },
@@ -52,24 +91,36 @@ const LeaveManager = () => {
     { type: 'Earned Leave', allocated: 21, used: 8, remaining: 13 },
   ];
 
-  const handleApprove = (id: number) => {
-    setLeaveRequests(prev => 
-      prev.map(req => req.id === id ? { ...req, status: 'Approved' } : req)
-    );
-    toast({
-      title: "Leave Approved",
-      description: "Leave request has been approved successfully.",
-    });
+  const handleApprove = async (id: number) => {
+    try {
+      await hrmsApi.updateLeaveApplication(id.toString(), { status: 'approved' });
+
+      // Update local state
+      setLeaveRequests(prev =>
+        prev.map(req => (req.id === id ? { ...req, status: 'Approved' } : req))
+      );
+
+      toast.success('Leave request approved successfully');
+    } catch (error) {
+      console.error('Error approving leave:', error);
+      toast.error('Failed to approve leave request');
+    }
   };
 
-  const handleReject = (id: number) => {
-    setLeaveRequests(prev => 
-      prev.map(req => req.id === id ? { ...req, status: 'Rejected' } : req)
-    );
-    toast({
-      title: "Leave Rejected",
-      description: "Leave request has been rejected.",
-    });
+  const handleReject = async (id: number) => {
+    try {
+      await hrmsApi.updateLeaveApplication(id.toString(), { status: 'rejected' });
+
+      // Update local state
+      setLeaveRequests(prev =>
+        prev.map(req => (req.id === id ? { ...req, status: 'Rejected' } : req))
+      );
+
+      toast.success('Leave request rejected successfully');
+    } catch (error) {
+      console.error('Error rejecting leave:', error);
+      toast.error('Failed to reject leave request');
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -98,9 +149,10 @@ const LeaveManager = () => {
     }
   };
 
-  const filteredRequests = leaveRequests.filter(req =>
-    req.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    req.type.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredRequests = leaveRequests.filter(
+    req =>
+      req.employee.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      req.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -143,7 +195,7 @@ const LeaveManager = () => {
                 <Input
                   placeholder="Search employees or leave type..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-9 w-64"
                 />
               </div>
@@ -151,52 +203,65 @@ const LeaveManager = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredRequests.map((request) => (
-              <div key={request.id} className="border rounded-lg p-4">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-3">
-                      <h3 className="font-medium">{request.employee}</h3>
-                      <Badge className={getTypeColor(request.type)}>
-                        {request.type} Leave
-                      </Badge>
-                      <Badge className={getStatusColor(request.status)}>
-                        {request.status}
-                      </Badge>
+          {loading ? (
+            <div className="flex justify-center items-center h-32">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {filteredRequests.map(request => (
+                <div key={request.id} className="border rounded-lg p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <div className="flex items-center space-x-3">
+                        <h3 className="font-medium">{request.employee}</h3>
+                        <Badge className={getTypeColor(request.type)}>{request.type} Leave</Badge>
+                        <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
+                      </div>
+
+                      <div className="text-sm text-gray-600">
+                        <p>
+                          <strong>Duration:</strong> {request.startDate} to {request.endDate} (
+                          {request.days} days)
+                        </p>
+                        <p>
+                          <strong>Reason:</strong> {request.reason}
+                        </p>
+                        <p>
+                          <strong>Applied on:</strong> {request.appliedOn}
+                        </p>
+                      </div>
                     </div>
-                    
-                    <div className="text-sm text-gray-600">
-                      <p><strong>Duration:</strong> {request.startDate} to {request.endDate} ({request.days} days)</p>
-                      <p><strong>Reason:</strong> {request.reason}</p>
-                      <p><strong>Applied on:</strong> {request.appliedOn}</p>
-                    </div>
+
+                    {request.status === 'Pending' && (
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleApprove(request.id)}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleReject(request.id)}
+                        >
+                          <XCircle className="h-4 w-4 mr-1" />
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  
-                  {request.status === 'Pending' && (
-                    <div className="flex space-x-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleApprove(request.id)}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Approve
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleReject(request.id)}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Reject
-                      </Button>
-                    </div>
-                  )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+
+              {filteredRequests.length === 0 && !loading && (
+                <div className="text-center text-gray-500 py-8">No leave requests found.</div>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
