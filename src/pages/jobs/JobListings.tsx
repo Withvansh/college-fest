@@ -10,7 +10,7 @@ import JobCard from '@/components/jobs/JobCard';
 import { Building2 } from 'lucide-react';
 
 interface Job {
-  id: string;
+  _id: string;
   title: string;
   company_name: string;
   location: string;
@@ -157,7 +157,7 @@ const JobListings = () => {
             <div className="space-y-3 md:space-y-4">
               {filteredJobs.map((job) => (
                 <JobCard 
-                  key={job.id} 
+                  key={job._id} 
                   job={job}
                   onBookmark={handleBookmark}
                 />

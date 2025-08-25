@@ -47,8 +47,8 @@ const JobDetailsPage = () => {
     if (!user || !id) return;
 
     try {
-      const applications = await applicationsApi.getApplications(user._id);
-      const hasAppliedToJob = applications.some(app => app.job_id === id);
+      const applications:any = await applicationsApi.getApplications(user._id);
+      const hasAppliedToJob = applications.some((app:any) => app.job_id === id);
       setHasApplied(hasAppliedToJob);
     } catch (error) {
       console.error('Error checking application status:', error);

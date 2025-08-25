@@ -27,7 +27,7 @@ import { jobsService } from "@/services/jobsService"
 // Supabase integration removed
 
 interface JobListing {
-  id: string
+  _id: string
   title: string
   company: string
   location: string
@@ -41,7 +41,7 @@ interface JobListing {
 }
 
 interface FreelanceProject {
-  id: string
+  _id: string
   title: string
   budget: string
   skills: string[]
@@ -124,7 +124,7 @@ const LiveFeedsSection = () => {
 
         // Transform the data to match our interface
         const transformedJobs: JobListing[] = (jobsData || []).slice(0, 6).map((job) => ({
-          id: job.id,
+          _id: job._id,
           title: job.title,
           company: job.company_name,
           location: job.location,
@@ -145,7 +145,7 @@ const LiveFeedsSection = () => {
         // Fallback to mock data if there's an error
         const mockJobs: JobListing[] = [
           {
-            id: "1",
+            _id: "1",
             title: "Senior Frontend Developer",
             company: "TechCorp Solutions",
             location: "Bangalore, India",
@@ -168,7 +168,7 @@ const LiveFeedsSection = () => {
     const fetchFreelanceProjects = async () => {
       const mockProjects: FreelanceProject[] = [
         {
-          id: "1",
+          _id: "1",
           title: "E-commerce Website Development",
           budget: "₹2,000 - ₹5,000",
           skills: ["React", "Node.js", "MongoDB"],
@@ -291,7 +291,7 @@ const LiveFeedsSection = () => {
               ) : (
                 jobListings.map((job) => (
                   <Card
-                    key={job.id}
+                    key={job._id}
                     className="group hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-500 hover:scale-[1.02] bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden hover:bg-white/95 hover:border-blue-200/50"
                   >
                     <CardContent className="p-4 sm:p-6">
@@ -336,7 +336,7 @@ const LiveFeedsSection = () => {
                           size="sm"
                           asChild
                         >
-                          <Link to={`/jobs/${job.id}`} className="flex items-center justify-center">
+                          <Link to={`/jobs/${job?._id}`} className="flex items-center justify-center">
                             View Details
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Link>
@@ -539,7 +539,7 @@ const LiveFeedsSection = () => {
               ) : (
                 freelanceProjects.map((project) => (
                   <Card
-                    key={project.id}
+                    key={project._id}
                     className="group hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:scale-[1.02] bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden hover:bg-white/95 hover:border-purple-200/50"
                   >
                     <CardContent className="p-4 sm:p-6">
@@ -603,7 +603,7 @@ const LiveFeedsSection = () => {
                           size="sm"
                           asChild
                         >
-                          <Link to={`/gigs/${project.id}`} className="flex items-center justify-center">
+                          <Link to={`/gigs/${project._id}`} className="flex items-center justify-center">
                             View Project
                             <ArrowRight className="w-4 h-4 ml-2" />
                           </Link>

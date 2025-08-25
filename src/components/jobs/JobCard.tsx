@@ -1,10 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bookmark, MapPin, Clock, Building2 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Bookmark, MapPin, Clock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface Job {
-  id: string;
+  _id: string;
   title: string;
   company_name: string;
   location: string;
@@ -23,6 +23,8 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job, onBookmark }: JobCardProps) => {
+  const navigate = useNavigate();
+
   const getTimeAgo = (dateString: string) => {
     const now = new Date();
     const posted = new Date(dateString);
@@ -40,8 +42,15 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
     return company.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  const handleNavigate = (_id: string) => {
+    navigate(`/jobs/${_id}`);
+  };
+
   return (
-    <div className="bg-white rounded-lg border border-border p-4 hover:bg-job-tag-bg/30 transition-colors cursor-pointer group">
+    <div 
+      className="bg-white rounded-lg border border-border p-4 hover:bg-job-tag-bg/30 transition-colors cursor-pointer group" 
+      onClick={() => handleNavigate(job._id)}
+    >
       <div className="flex items-start justify-between">
         {/* Left Content */}
         <div className="flex items-start space-x-4 flex-1">
@@ -98,7 +107,10 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
           <Button 
             variant="ghost" 
             size="icon"
-            onClick={() => onBookmark?.(job.id)}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent card navigation
+              onBookmark?.(job._id);
+            }}
             className="h-8 w-8 hover:bg-job-tag-bg"
           >
             <Bookmark className="h-4 w-4 text-job-text-secondary hover:text-job-text-primary" />
