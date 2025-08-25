@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { sampleDataService } from '@/services/sampleDataService';
+import { applicationsApi } from '@/lib/api/applications';
 import { Search, MapPin, DollarSign, Clock, Building2, BookOpen, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -30,9 +31,11 @@ const JobSeekerDashboard = () => {
   >([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadJobs();
+    loadUserApplications();
   }, []);
 
   const loadJobs = async () => {
@@ -48,6 +51,20 @@ const JobSeekerDashboard = () => {
     }
   };
 
+  const loadUserApplications = async () => {
+    if (!user?._id) return;
+
+    try {
+      const applications = await applicationsApi.getApplications(user._id);
+      if (Array.isArray(applications)) {
+        const appliedJobIds = new Set(applications.map((app: any) => app.job_id));
+        setAppliedJobs(appliedJobIds);
+      }
+    } catch (error) {
+      console.error('Error loading applications:', error);
+    }
+  };
+
   const filteredJobs = jobs.filter(
     job =>
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -55,9 +72,32 @@ const JobSeekerDashboard = () => {
       job.location.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleApplyToJob = (jobId: string) => {
-    toast.success('Application submitted successfully!');
-    // In a real app, this would create a job application record
+  const handleApplyToJob = async (jobId: string) => {
+    if (!user?._id) {
+      toast.error('Please log in to apply for jobs');
+      return;
+    }
+
+    if (appliedJobs.has(jobId)) {
+      toast.info('You have already applied to this job');
+      return;
+    }
+
+    try {
+      await applicationsApi.applyToJob({
+        job_id: jobId,
+        applicant_id: user._id,
+        status: 'applied',
+        cover_letter: 'Applied through JobSeeker Dashboard',
+      });
+
+      // Update local state
+      setAppliedJobs(prev => new Set(prev).add(jobId));
+      toast.success('Application submitted successfully!');
+    } catch (error) {
+      console.error('Error applying to job:', error);
+      toast.error('Failed to submit application. Please try again.');
+    }
   };
 
   return (
@@ -212,8 +252,10 @@ const JobSeekerDashboard = () => {
                             <Button
                               onClick={() => handleApplyToJob(job.id)}
                               className="whitespace-nowrap"
+                              disabled={appliedJobs.has(job.id)}
+                              variant={appliedJobs.has(job.id) ? 'secondary' : 'default'}
                             >
-                              Apply Now
+                              {appliedJobs.has(job.id) ? 'Applied' : 'Apply Now'}
                             </Button>
                             <Button variant="outline" size="sm" asChild>
                               <Link to={`/jobs/${job.id}`}>View Details</Link>

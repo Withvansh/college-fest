@@ -1,16 +1,38 @@
-
-import { useState, useEffect } from "react";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Users, Clock, CreditCard, FileText, Plus, Upload, CheckCircle, MessageSquare, UserPlus, Building, BarChart3, Settings, Folder, MapPin, Target, Award, FolderOpen, Briefcase } from "lucide-react";
-import { Link } from "react-router-dom";
-import { hrmsApi } from "@/lib/api/hrms";
+import { useState, useEffect, useContext } from 'react';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ArrowLeft,
+  Users,
+  Clock,
+  CreditCard,
+  FileText,
+  Plus,
+  Upload,
+  CheckCircle,
+  MessageSquare,
+  UserPlus,
+  Building,
+  BarChart3,
+  Settings,
+  Folder,
+  MapPin,
+  Target,
+  Award,
+  FolderOpen,
+  Briefcase,
+} from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { hrmsApi } from '@/lib/api/hrms';
+import { AuthContext } from '@/contexts/UnifiedAuthContext';
 
 const HRMSLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isMainDashboard = location.pathname === '/recruiter/hrms' || location.pathname === '/recruiter/hrms/dashboard';
+  const auth = useContext(AuthContext);
+  const isMainDashboard =
+    location.pathname === '/recruiter/hrms' || location.pathname === '/recruiter/hrms/dashboard';
 
   const navigationItems = [
     { path: 'dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -46,14 +68,38 @@ const HRMSLayout = () => {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // Use a mock user ID for now - in real app this would come from auth context
-        const userId = 'mock-user-id';
+        // Get user ID from auth context
+        const userId = auth?.getUserId();
+        if (!userId) {
+          console.log('No user ID available');
+          return;
+        }
+
         const metrics = await hrmsApi.getDashboardMetrics(userId);
+        console.log('HRMS metrics received:', metrics);
+
+        // Type the metrics properly with fallbacks
+        const typedMetrics = metrics as any;
         setDashboardCards([
-          { title: 'Total Employees', value: metrics.totalEmployees.toString(), icon: Users, color: 'text-blue-600' },
-          { title: "Today's Attendance", value: `${metrics.todayAttendance.percentage}%`, icon: Clock, color: 'text-green-600' },
+          {
+            title: 'Total Employees',
+            value: typedMetrics?.totalEmployees?.toString() || '0',
+            icon: Users,
+            color: 'text-blue-600',
+          },
+          {
+            title: "Today's Attendance",
+            value: `${typedMetrics?.todayAttendance?.percentage || 0}%`,
+            icon: Clock,
+            color: 'text-green-600',
+          },
           { title: 'Payroll Completion', value: '78%', icon: CreditCard, color: 'text-purple-600' }, // Mock for now
-          { title: 'Pending Approvals', value: metrics.pendingLeaveApprovals.toString(), icon: FileText, color: 'text-orange-600' },
+          {
+            title: 'Pending Approvals',
+            value: typedMetrics?.pendingLeaveApprovals?.toString() || '0',
+            icon: FileText,
+            color: 'text-orange-600',
+          },
         ]);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -63,7 +109,7 @@ const HRMSLayout = () => {
     if (isMainDashboard) {
       fetchDashboardData();
     }
-  }, [isMainDashboard]);
+  }, [isMainDashboard, auth]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -80,14 +126,14 @@ const HRMSLayout = () => {
               </Link>
               <h1 className="text-xl md:text-2xl font-bold text-gray-900">HR Management System</h1>
             </div>
-            
+
             {/* Quick Actions - Hidden on mobile, shown on larger screens */}
             <div className="hidden lg:flex gap-2">
               {quickActions.map((action, idx) => (
-                <Button 
-                  key={idx} 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  key={idx}
+                  variant="outline"
+                  size="sm"
                   onClick={() => navigate(`/recruiter/hrms/${action.path}`)}
                   className="flex items-center"
                 >
@@ -103,13 +149,14 @@ const HRMSLayout = () => {
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-6 md:py-8">
         {/* Navigation Tabs */}
         <div className="flex flex-wrap gap-2 mb-6 md:mb-8">
-          {navigationItems.map((item) => {
-            const isActive = location.pathname === `/recruiter/hrms/${item.path}` || 
-                           (item.path === 'dashboard' && isMainDashboard);
+          {navigationItems.map(item => {
+            const isActive =
+              location.pathname === `/recruiter/hrms/${item.path}` ||
+              (item.path === 'dashboard' && isMainDashboard);
             return (
               <Button
                 key={item.path}
-                variant={isActive ? "default" : "outline"}
+                variant={isActive ? 'default' : 'outline'}
                 onClick={() => navigate(`/recruiter/hrms/${item.path}`)}
                 className="mb-2 text-xs md:text-sm"
                 size="sm"

@@ -1,17 +1,50 @@
-
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Eye, Edit, RotateCcw, UserMinus, Search, Filter, Users, Phone, Mail, MapPin, Calendar, Building, User } from "lucide-react";
-import { toast } from "sonner";
-
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Label } from '@/components/ui/label';
+import {
+  Eye,
+  Edit,
+  RotateCcw,
+  UserMinus,
+  Search,
+  Filter,
+  Users,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar,
+  Building,
+  User,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { hrmsApi } from '@/lib/api/hrms';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Employee {
   id: string;
@@ -33,20 +66,27 @@ interface Employee {
 }
 
 const EmployeeDirectory = () => {
+  const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [departmentFilter, setDepartmentFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
 
   const departments = [
-    "Engineering", "Human Resources", "Sales", "Marketing", 
-    "Finance", "Operations", "Customer Support", "Design"
+    'Engineering',
+    'Human Resources',
+    'Sales',
+    'Marketing',
+    'Finance',
+    'Operations',
+    'Customer Support',
+    'Design',
   ];
 
-  const statuses = ["probation", "active", "inactive", "terminated"];
+  const statuses = ['probation', 'active', 'inactive', 'terminated'];
 
   useEffect(() => {
     loadEmployees();
@@ -57,8 +97,37 @@ const EmployeeDirectory = () => {
   }, [employees, searchTerm, departmentFilter, statusFilter]);
 
   const loadEmployees = async () => {
+    if (!user?._id) return;
+
     try {
-      // Mock employee data
+      setLoading(true);
+      const employeeData = await hrmsApi.getEmployees(user._id);
+
+      // Format the data to match our interface
+      const formattedEmployees: Employee[] = employeeData.map((emp: any) => ({
+        id: emp._id,
+        employee_id: emp.employee_id,
+        full_name: emp.metadata?.full_name || emp.full_name || 'N/A',
+        email: emp.metadata?.email || emp.email || 'N/A',
+        phone: emp.metadata?.phone || emp.phone || 'N/A',
+        department: emp.department || 'N/A',
+        designation: emp.designation || 'N/A',
+        employment_status: emp.employment_status || 'active',
+        joining_date: emp.joining_date || new Date().toISOString().split('T')[0],
+        work_location: emp.work_location || 'Office',
+        profiles: {
+          full_name: emp.metadata?.full_name || emp.full_name || 'N/A',
+          email: emp.metadata?.email || emp.email || 'N/A',
+          phone: emp.metadata?.phone || emp.phone || 'N/A',
+        },
+      }));
+
+      setEmployees(formattedEmployees);
+    } catch (error) {
+      console.error('Error loading employees:', error);
+      toast.error('Failed to load employees. Showing sample data.');
+
+      // Fallback to mock data
       const mockEmployees: Employee[] = [
         {
           id: '1',
@@ -74,8 +143,8 @@ const EmployeeDirectory = () => {
           profiles: {
             full_name: 'John Doe',
             email: 'john.doe@company.com',
-            phone: '+1-555-0123'
-          }
+            phone: '+1-555-0123',
+          },
         },
         {
           id: '2',
@@ -91,32 +160,11 @@ const EmployeeDirectory = () => {
           profiles: {
             full_name: 'Jane Smith',
             email: 'jane.smith@company.com',
-            phone: '+1-555-0124'
-          }
+            phone: '+1-555-0124',
+          },
         },
-        {
-          id: '3',
-          employee_id: 'EMP003',
-          full_name: 'Mike Johnson',
-          email: 'mike.johnson@company.com',
-          phone: '+1-555-0125',
-          department: 'Sales',
-          designation: 'Sales Executive',
-          employment_status: 'probation',
-          joining_date: '2024-01-10',
-          work_location: 'Remote',
-          profiles: {
-            full_name: 'Mike Johnson',
-            email: 'mike.johnson@company.com',
-            phone: '+1-555-0125'
-          }
-        }
       ];
-      
       setEmployees(mockEmployees);
-    } catch (error: any) {
-      console.error('Error loading employees:', error);
-      toast.error('Failed to load employees: ' + error.message);
     } finally {
       setLoading(false);
     }
@@ -126,10 +174,11 @@ const EmployeeDirectory = () => {
     let filtered = employees;
 
     if (searchTerm) {
-      filtered = filtered.filter(emp => 
-        emp.employee_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        emp.email.toLowerCase().includes(searchTerm.toLowerCase())
+      filtered = filtered.filter(
+        emp =>
+          emp.employee_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emp.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          emp.email.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -156,11 +205,11 @@ const EmployeeDirectory = () => {
   const handleTerminate = async (employeeId: string) => {
     try {
       // Mock update - in real app, call your API
-      const updatedEmployees = employees.map(emp => 
+      const updatedEmployees = employees.map(emp =>
         emp.id === employeeId ? { ...emp, employment_status: 'terminated' } : emp
       );
       setEmployees(updatedEmployees);
-      
+
       toast.success('Employee terminated successfully');
     } catch (error) {
       toast.error('Failed to terminate employee');
@@ -169,11 +218,16 @@ const EmployeeDirectory = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800 border-green-200';
-      case 'probation': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'inactive': return 'bg-gray-100 text-gray-800 border-gray-200';
-      case 'terminated': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'active':
+        return 'bg-green-100 text-green-800 border-green-200';
+      case 'probation':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'inactive':
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'terminated':
+        return 'bg-red-100 text-red-800 border-red-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
@@ -229,7 +283,7 @@ const EmployeeDirectory = () => {
                 <Input
                   placeholder="Search by ID, name, or email..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -241,7 +295,9 @@ const EmployeeDirectory = () => {
               <SelectContent>
                 <SelectItem value="">All Departments</SelectItem>
                 {departments.map(dept => (
-                  <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                  <SelectItem key={dept} value={dept}>
+                    {dept}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -285,7 +341,7 @@ const EmployeeDirectory = () => {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredEmployees.map((employee) => (
+                  filteredEmployees.map(employee => (
                     <TableRow key={employee.id}>
                       <TableCell className="font-medium">{employee.employee_id}</TableCell>
                       <TableCell>
@@ -323,8 +379,8 @@ const EmployeeDirectory = () => {
                         <div className="flex space-x-2">
                           <Dialog>
                             <DialogTrigger asChild>
-                              <Button 
-                                size="sm" 
+                              <Button
+                                size="sm"
                                 variant="outline"
                                 onClick={() => setSelectedEmployee(employee)}
                               >
@@ -392,7 +448,11 @@ const EmployeeDirectory = () => {
                                       </div>
                                       <div>
                                         <Label>Status</Label>
-                                        <Badge className={getStatusColor(selectedEmployee.employment_status)}>
+                                        <Badge
+                                          className={getStatusColor(
+                                            selectedEmployee.employment_status
+                                          )}
+                                        >
                                           {selectedEmployee.employment_status}
                                         </Badge>
                                       </div>
@@ -400,7 +460,9 @@ const EmployeeDirectory = () => {
                                         <Label>Joining Date</Label>
                                         <p className="text-sm text-gray-600 mt-1 flex items-center gap-1">
                                           <Calendar className="h-3 w-3" />
-                                          {new Date(selectedEmployee.joining_date).toLocaleDateString()}
+                                          {new Date(
+                                            selectedEmployee.joining_date
+                                          ).toLocaleDateString()}
                                         </p>
                                       </div>
                                       <div>
@@ -428,16 +490,16 @@ const EmployeeDirectory = () => {
                             <Edit className="h-4 w-4" />
                           </Button>
 
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => handleResetPassword(employee.id, employee.email)}
                           >
                             <RotateCcw className="h-4 w-4" />
                           </Button>
 
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             variant="outline"
                             onClick={() => handleTerminate(employee.id)}
                             className="text-red-600 hover:text-red-700"
