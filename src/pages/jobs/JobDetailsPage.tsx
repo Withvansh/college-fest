@@ -5,12 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -48,7 +43,7 @@ const JobDetailsPage = () => {
     expectedSalary: '',
     availableFrom: '',
   });
-
+const [check,SetCheck]= useState(false);
   const loadJobDetails = useCallback(async () => {
     try {
       const jobData = await jobsApi.getJobById(id!);
@@ -81,7 +76,7 @@ const JobDetailsPage = () => {
       navigate('/login', { state: { from: `/jobs/${id}` } });
       return;
     }
-    
+
     setShowApplicationModal(true);
   };
 
@@ -94,10 +89,10 @@ const JobDetailsPage = () => {
       navigate('/login', { state: { from: `/jobs/${id}` } });
       return;
     }
-    
+
     try {
       setSubmitting(true);
-      
+
       // Validate required fields
       if (!jobApplicationData.coverLetter || !jobApplicationData.expectedSalary) {
         toast.error('Please fill in all required fields');
@@ -106,22 +101,29 @@ const JobDetailsPage = () => {
       }
 
       // Convert expected salary to number if needed
-      const expectedSalary = parseFloat(jobApplicationData.expectedSalary.replace(/[^\d.]/g, '')) || 0;
+      const expectedSalary =
+        parseFloat(jobApplicationData.expectedSalary.replace(/[^\d.]/g, '')) || 0;
 
       // Submit application using axios
-      const response = await axios.post('/job-applications', {
-        job_id: id,
-        applicant_id: user._id,
-        cover_letter: jobApplicationData.coverLetter,
-        expected_salary: expectedSalary,
-        available_from: jobApplicationData.availableFrom ? new Date(jobApplicationData.availableFrom) : undefined,
-        status: 'applied',
-        applied_at: new Date(),
-      }, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`
+      const response = await axios.post(
+        '/job-applications',
+        {
+          job_id: id,
+          applicant_id: user._id,
+          cover_letter: jobApplicationData.coverLetter,
+          expected_salary: expectedSalary,
+          available_from: jobApplicationData.availableFrom
+            ? new Date(jobApplicationData.availableFrom)
+            : undefined,
+          status: 'applied',
+          applied_at: new Date(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
         }
-      });
+      );
 
       // Reset form and update state
       setJobApplicationData({
@@ -129,7 +131,7 @@ const JobDetailsPage = () => {
         expectedSalary: '',
         availableFrom: '',
       });
-      
+
       setHasApplied(true);
       setShowApplicationModal(false);
       toast.success('Application submitted successfully!');
@@ -146,9 +148,27 @@ const JobDetailsPage = () => {
     }
   };
 
+  const checkAlreadyApplied = async (id:string) => {
+    try {
+      const response= await axios.get(`/job-applications/job/${id}`);
+    
+response.data.data.forEach((element:any) => {
+  
+  if(element.applicant_id._id==localStorage.getItem("user_id")){
+    
+    SetCheck(true)
+  }
+});
+     
+    
+    } catch (e: any) {
+console.log(e)
+    }
+  };
   useEffect(() => {
     if (id) {
       loadJobDetails();
+      checkAlreadyApplied(id)
       if (isAuthenticated && user) {
         checkApplicationStatus();
       }
@@ -336,9 +356,9 @@ const JobDetailsPage = () => {
             </Card>
 
             {/* Application Actions */}
-            <Card>
+           { localStorage.getItem("auth_token")?<Card>
               <CardContent className="pt-6">
-                {hasApplied ? (
+                {hasApplied || check ? (
                   <div className="text-center">
                     <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                     <h3 className="font-semibold text-green-700 mb-2">Applied Successfully!</h3>
@@ -353,10 +373,7 @@ const JobDetailsPage = () => {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    <Button
-                      className="w-full"
-                      onClick={handleOpenApplicationModal}
-                    >
+                    <Button className="w-full" onClick={handleOpenApplicationModal}>
                       Apply for this Job
                     </Button>
                     <Button variant="outline" className="w-full">
@@ -365,7 +382,10 @@ const JobDetailsPage = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </Card>:<Button className="w-full" >
+                     Login to apply
+                    </Button>
+                   }
 
             {/* Company Info */}
             <Card>
@@ -415,7 +435,7 @@ const JobDetailsPage = () => {
                   id="coverLetter"
                   placeholder="Tell us why you're the perfect fit for this role..."
                   value={jobApplicationData.coverLetter}
-                  onChange={(e) =>
+                  onChange={e =>
                     setJobApplicationData({ ...jobApplicationData, coverLetter: e.target.value })
                   }
                   rows={4}
@@ -428,7 +448,7 @@ const JobDetailsPage = () => {
                     id="expectedSalary"
                     placeholder="e.g., ₹7.5L"
                     value={jobApplicationData.expectedSalary}
-                    onChange={(e) =>
+                    onChange={e =>
                       setJobApplicationData({
                         ...jobApplicationData,
                         expectedSalary: e.target.value,
@@ -442,7 +462,7 @@ const JobDetailsPage = () => {
                     id="availableFrom"
                     type="date"
                     value={jobApplicationData.availableFrom}
-                    onChange={(e) =>
+                    onChange={e =>
                       setJobApplicationData({
                         ...jobApplicationData,
                         availableFrom: e.target.value,
@@ -451,7 +471,18 @@ const JobDetailsPage = () => {
                   />
                 </div>
               </div>
-              <Button
+             { check?<Button
+                onClick={handleJobApplication}
+                disabled={submitting}
+                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+              >
+                {submitting ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                { 'Already Submitted'}
+              </Button>:<Button
                 onClick={handleJobApplication}
                 disabled={submitting}
                 className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
@@ -462,7 +493,7 @@ const JobDetailsPage = () => {
                   <Send className="w-4 h-4 mr-2" />
                 )}
                 {submitting ? 'Submitting...' : 'Submit Application'}
-              </Button>
+              </Button>}
             </div>
           </DialogContent>
         </Dialog>

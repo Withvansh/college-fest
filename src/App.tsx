@@ -102,6 +102,8 @@ import FaqManagement from './pages/admin/FaqManagement';
 import OrderManagement from './pages/admin/OrderManagement';
 import PaymentSuccess from './pages/PaymentSuccess';
 import HirePage from './pages/HirePage';
+import JobPostings from './pages/recruiter/AllJobs';
+import ViewPosting from './pages/recruiter/ViewPosting';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -236,6 +238,22 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['recruiter']}>
                         <PostJob />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recruiter/jobs"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                        <JobPostings />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recruiter/jobs/:id"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                        <ViewPosting />
                       </UnifiedProtectedRoute>
                     }
                   />
