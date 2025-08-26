@@ -395,10 +395,10 @@ const RecruiterDashboardDynamic = () => {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>Recent Job Posts</span>
-                  <Link to="/recruiter/post-job">
+                  <Link to="/recruiter/jobs">
                     <Button size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post Job
+                      
+                     View all posting
                     </Button>
                   </Link>
                 </CardTitle>
