@@ -63,16 +63,28 @@ export interface Job {
 
 export interface JobApplication {
   _id: string;
-  job_id: string;
-  applicant_id: string;
-  recruiter_id: string;
-  status: 'applied' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected';
-  application_date: Date;
-  resume_url?: string;
+  job_id: string | {
+    _id: string;
+    title: string;
+    company_name: string;
+  };
+  applicant_id: string | {
+    _id: string;
+    full_name: string;
+    email: string;
+  };
+  status: 'applied' | 'reviewed' | 'shortlisted' | 'interview_scheduled' | 'interviewed' | 'selected' | 'rejected' | 'withdrawn';
   cover_letter?: string;
+  resume_url?: string;
+  portfolio_url?: string;
+  expected_salary?: number;
+  test_score?: number;
+  interview_score?: number;
   interview_date?: Date;
   interview_notes?: string;
   rejection_reason?: string;
+  notes?: string;
+  applied_at?: Date;
   created_at: Date;
   updated_at: Date;
 }
@@ -177,11 +189,37 @@ class RecruiterDashboardAPI extends BackendAPI {
 
   // Job Application endpoints
   async getApplications(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ applications: JobApplication[], total: number, pagination: any }> {
-    return this.get(`/job-applications/recruiter/${recruiterId}?page=${page}&limit=${limit}`);
+    const endpoint = `/job-applications/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
+    
+    try {
+      const fullResponse: any = await this.get(endpoint);
+      
+      return {
+        applications: fullResponse.data || [],
+        total: fullResponse.total || 0,
+        pagination: fullResponse.pagination || {}
+      };
+    } catch (error) {
+      console.error(`API request failed: ${endpoint}`, error);
+      throw error;
+    }
   }
 
   async getApplicationsByJob(jobId: string, page: number = 1, limit: number = 20): Promise<{ applications: JobApplication[], total: number, pagination: any }> {
-    return this.get(`/job-applications/job/${jobId}?page=${page}&limit=${limit}`);
+    const endpoint = `/job-applications/job/${jobId}?page=${page}&limit=${limit}`;
+    
+    try {
+      const fullResponse: any = await this.get(endpoint);
+      
+      return {
+        applications: fullResponse.data || [],
+        total: fullResponse.total || 0,
+        pagination: fullResponse.pagination || {}
+      };
+    } catch (error) {
+      console.error(`API request failed: ${endpoint}`, error);
+      throw error;
+    }
   }
 
   async getApplicationById(applicationId: string): Promise<JobApplication> {

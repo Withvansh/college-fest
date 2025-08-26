@@ -36,6 +36,21 @@ const JobSeekerApplications = () => {
 
   useEffect(() => {
     loadApplications();
+  }, [user]); // Add user as dependency to reload when user changes
+
+  // Add this useEffect to reload data when component becomes visible
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        loadApplications();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   const loadApplications = async () => {
@@ -43,90 +58,39 @@ const JobSeekerApplications = () => {
 
     try {
       setLoading(true);
-      const userApplications = await applicationsApi.getApplications(user._id);
+      console.log('Loading applications for user:', user._id);
+      const response = await applicationsApi.getApplications(user._id);
+      console.log('Applications loaded:', response);
+
+      // Handle the nested response structure
+      const userApplications = (response as any)?.data || response;
 
       if (Array.isArray(userApplications)) {
         // Convert backend application format to frontend format
         const formattedApplications: Application[] = userApplications.map((app: any) => ({
           id: app._id || app.id,
-          jobId: app.job_id,
-          jobTitle: app.job?.title || 'Job Title',
-          companyName: app.job?.company_name || 'Company Name',
-          location: app.job?.location || 'Location',
+          jobId: app.job_id?._id || app.job_id,
+          jobTitle: app.job_id?.title || 'Job Title Not Available',
+          companyName: app.job_id?.company_name || 'Company Name Not Available',
+          location: app.job_id?.location || 'Location Not Available',
           appliedDate: app.applied_at || app.createdAt || new Date().toISOString(),
           status: app.status || 'applied',
-          salary: app.job?.salary_range || 'Salary not specified',
-          jobType: app.job?.job_type || 'Full-time',
+          salary: app.expected_salary
+            ? `₹${app.expected_salary.toLocaleString()}`
+            : 'Salary not specified',
+          jobType: app.job_id?.job_type || 'Full-time',
         }));
+
+        console.log('Formatted applications:', formattedApplications);
         setApplications(formattedApplications);
       } else {
-        // Fallback to mock data if API returns unexpected format
-        const mockApplications: Application[] = [
-          {
-            id: '1',
-            jobId: '1',
-            jobTitle: 'Senior Frontend Developer',
-            companyName: 'TechCorp Solutions',
-            location: 'Bangalore, India',
-            appliedDate: '2024-01-15',
-            status: 'interview_scheduled',
-            salary: '₹6.7L - ₹10L',
-            jobType: 'Full-time',
-          },
-          {
-            id: '2',
-            jobId: '2',
-            jobTitle: 'Product Manager',
-            companyName: 'StartupX',
-            location: 'Mumbai, India',
-            appliedDate: '2024-01-10',
-            status: 'applied',
-            salary: '₹5.9L - ₹8.4L',
-            jobType: 'Full-time',
-          },
-          {
-            id: '3',
-            jobId: '3',
-            jobTitle: 'UX Designer',
-            companyName: 'DesignHub',
-            location: 'Delhi, India',
-            appliedDate: '2024-01-05',
-            status: 'rejected',
-            salary: '₹5L - ₹7.5L',
-            jobType: 'Contract',
-          },
-        ];
-        setApplications(mockApplications);
+        console.log('No applications found');
+        setApplications([]);
       }
     } catch (error) {
       console.error('Error loading applications:', error);
-      // Show mock data in case of error
-      const mockApplications: Application[] = [
-        {
-          id: '1',
-          jobId: '1',
-          jobTitle: 'Senior Frontend Developer',
-          companyName: 'TechCorp Solutions',
-          location: 'Bangalore, India',
-          appliedDate: '2024-01-15',
-          status: 'interview_scheduled',
-          salary: '₹6.7L - ₹10L',
-          jobType: 'Full-time',
-        },
-        {
-          id: '2',
-          jobId: '2',
-          jobTitle: 'Product Manager',
-          companyName: 'StartupX',
-          location: 'Mumbai, India',
-          appliedDate: '2024-01-10',
-          status: 'applied',
-          salary: '₹5.9L - ₹8.4L',
-          jobType: 'Full-time',
-        },
-      ];
-      setApplications(mockApplications);
-      toast.error('Failed to load applications from server. Showing sample data.');
+      setApplications([]);
+      toast.error('Failed to load applications from server.');
     } finally {
       setLoading(false);
     }
@@ -193,6 +157,7 @@ const JobSeekerApplications = () => {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-6 py-4">
+          {/* Add refresh button in the header */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link
@@ -205,9 +170,12 @@ const JobSeekerApplications = () => {
               <div className="h-6 w-px bg-gray-300" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">My Applications</h1>
-                <p className="text-gray-600">Track your job applications and their status</p>
+                <p className="text-gray-600">Track your job applications</p>
               </div>
             </div>
+            <Button onClick={loadApplications} variant="outline" size="sm" disabled={loading}>
+              {loading ? 'Refreshing...' : 'Refresh'}
+            </Button>
           </div>
         </div>
       </div>
@@ -263,7 +231,7 @@ const JobSeekerApplications = () => {
                   : `You don't have any applications with ${filterStatus.replace('_', ' ')} status.`}
               </p>
               <Button asChild>
-                <Link to="/jobseeker/dashboard">Browse Jobs</Link>
+                <Link to="/jobs">Browse Jobs</Link>
               </Button>
             </CardContent>
           </Card>
