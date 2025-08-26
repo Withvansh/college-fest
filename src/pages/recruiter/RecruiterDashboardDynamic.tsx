@@ -331,7 +331,7 @@ const RecruiterDashboardDynamic = () => {
               {dashboard.dashboard_name}
             </h1>
             <div className="flex items-center space-x-3 md:space-x-4">
-              <span className="text-sm md:text-base text-gray-600">Welcome back, {user.name}</span>
+              <span className="text-sm md:text-base text-gray-600">Welcome back, {user.full_name}</span>
               <Button variant="outline" size="sm" className="text-xs md:text-sm">
                 Profile
               </Button>
