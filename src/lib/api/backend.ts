@@ -24,7 +24,10 @@ class BackendAPI {
     };
 
     // Add authorization header if token exists
-    const token = localStorage.getItem('auth_token');
+    const token = localStorage.getItem('auth_token') || 
+                  localStorage.getItem('token') || 
+                  localStorage.getItem('authToken') || 
+                  localStorage.getItem('userToken');
     if (token) {
       config.headers = {
         ...config.headers,

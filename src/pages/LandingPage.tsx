@@ -1,8 +1,8 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { ArrowRight, Search,  Star, Users, Code, Briefcase, Clock} from "lucide-react";
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { ArrowRight, Search, Star, Users, Code, Briefcase, Clock } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,34 +10,165 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
   DropdownMenuLabel,
-} from "@/components/ui/dropdown-menu";
-import Footer from "@/components/Footer";
-import LiveFeedsSection from "@/components/LiveFeedsSection";
-import FloatingActionButtons from "@/components/FloatingActionButtons";
-import BlogSection from "@/components/BlogSection";
-import SocialMediaSection from "@/components/SocialMediaSection";
-import WhyChooseUs from "@/sections/homepage/WhyChooseUs";
-import HowItWorks from "@/sections/homepage/HowItWorks";
-import Testimonials from "@/sections/homepage/Testimonials";
-import CTA from "@/sections/homepage/CTA";
+} from '@/components/ui/dropdown-menu';
+import { toast } from 'sonner';
+import Footer from '@/components/Footer';
+import LiveFeedsSection from '@/components/LiveFeedsSection';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
+import BlogSection from '@/components/BlogSection';
+import SocialMediaSection from '@/components/SocialMediaSection';
+import WhyChooseUs from '@/sections/homepage/WhyChooseUs';
+import HowItWorks from '@/sections/homepage/HowItWorks';
+import Testimonials from '@/sections/homepage/Testimonials';
+import CTA from '@/sections/homepage/CTA';
+import { useAuth } from '@/hooks/useAuth';
 
 const LandingPage = () => {
   const navigate = useNavigate();
-
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Use your existing auth hook
+  const { user, isAuthenticated, loading } = useAuth();
+
+  // Debug current auth state
+  useEffect(() => {
+    console.log('LandingPage - Auth Debug:', {
+      isAuthenticated,
+      loading,
+      user: user
+        ? {
+            id: user._id,
+            role: user.role,
+            email: user.email,
+          }
+        : null,
+      localStorage: {
+        token: !!localStorage.getItem('token'),
+        authToken: !!localStorage.getItem('authToken'),
+        user: !!localStorage.getItem('user'),
+        userRole: localStorage.getItem('userRole'),
+        role: localStorage.getItem('role'),
+      },
+    });
+  }, [isAuthenticated, loading, user]);
+
+  // Handle Post a Job click
+  const handlePostJobClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    console.log('Post Job clicked - Auth:', isAuthenticated, 'Loading:', loading, 'User:', user);
+
+    // If still loading, show loading message
+    if (loading) {
+      toast.info('Loading', {
+        description: 'Please wait while we check your authentication status...',
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      toast.info('Authentication Required', {
+        description: 'Please sign up or log in to post a job.',
+        duration: 3000,
+      });
+      navigate('/auth?tab=signup&redirect=post-job&type=recruiter');
+      return;
+    }
+
+    // Get user role - check multiple possible properties
+    const userRole = user.role || localStorage.getItem('userRole') || localStorage.getItem('role');
+
+    console.log('User role for job posting:', userRole);
+
+    // Check if user role has permission to post jobs
+    const allowedRoles = ['recruiter', 'hr', 'admin', 'employer', 'company'];
+    const currentRole = userRole?.toLowerCase();
+
+    if (allowedRoles.includes(currentRole || '')) {
+      console.log('User has permission, redirecting to /recruiter/post-job');
+      navigate('/recruiter/post-job');
+    } else {
+      console.log('User does not have permission. Current role:', userRole);
+      toast.error('Access Denied', {
+        description: `You don't have permission to post jobs. Only recruiters, HR personnel, and employers can post jobs. Your current role: ${userRole || 'Unknown'}`,
+        duration: 5000,
+        action: {
+          label: 'Switch to Recruiter',
+          onClick: () => navigate('/auth?tab=signup&type=recruiter'),
+        },
+      });
+    }
+  };
+
+  // Handle Post a Project click
+  const handlePostProjectClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    console.log(
+      'Post Project clicked - Auth:',
+      isAuthenticated,
+      'Loading:',
+      loading,
+      'User:',
+      user
+    );
+
+    // If still loading, show loading message
+    if (loading) {
+      toast.info('Loading', {
+        description: 'Please wait while we check your authentication status...',
+        duration: 2000,
+      });
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      toast.info('Authentication Required', {
+        description: 'Please sign up or log in to post a project.',
+        duration: 3000,
+      });
+      navigate('/auth?tab=signup&redirect=post-project&type=client');
+      return;
+    }
+
+    // Get user role - check multiple possible properties
+    const userRole = user.role || localStorage.getItem('userRole') || localStorage.getItem('role');
+
+    console.log('User role for project posting:', userRole);
+
+    // Check if user role has permission to post projects
+    const allowedRoles = ['client', 'admin', 'employer', 'company', 'freelancer'];
+    const currentRole = userRole?.toLowerCase();
+
+    if (allowedRoles.includes(currentRole || '')) {
+      console.log('User has permission, redirecting to /post-project');
+      navigate('/post-project');
+    } else {
+      console.log('User does not have permission. Current role:', userRole);
+      toast.error('Access Denied', {
+        description: `You don't have permission to post projects. Only clients and employers can post projects. Your current role: ${userRole || 'Unknown'}`,
+        duration: 5000,
+        action: {
+          label: 'Switch to Client',
+          onClick: () => navigate('/auth?tab=signup&type=client'),
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     // Security: Handle OAuth callback tokens if they mistakenly end up on landing page
     const handleOAuthTokens = async () => {
       const hash = window.location.hash;
       const urlParams = new URLSearchParams(window.location.search);
-      
+
       if (hash && hash.includes('access_token')) {
         console.log('OAuth tokens detected on landing page - redirecting to callback handler');
-        
+
         // Extract role from URL if available, default to recruiter for Google OAuth
         const role = urlParams.get('role') || 'recruiter';
-        
+
         // Preserve the hash when redirecting to callback handler
         const callbackUrl = `/auth/callback?role=${role}${hash}`;
         window.location.href = callbackUrl;
@@ -85,10 +216,10 @@ const LandingPage = () => {
                 Seamless HRMS
               </span>
             </h1>
-            
+
             {/* Enhanced Subheadline */}
             <p className="text-xl md:text-2xl text-gray-700 mb-8 max-w-4xl mx-auto leading-relaxed animate-fade-in font-medium">
-              Transform your workforce with an all-in-one platform for intelligent hiring, 
+              Transform your workforce with an all-in-one platform for intelligent hiring,
               effortless onboarding, and complete employee lifecycle management.
             </p>
 
@@ -114,39 +245,65 @@ const LandingPage = () => {
             {/* Enhanced CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center mb-10 animate-fade-in">
               <Link to="/jobs">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 text-xl font-bold rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
+                <Button
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-4 text-xl font-bold rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                >
                   <Search className="w-6 h-6 mr-3" />
                   Find Your Dream Job
                   <ArrowRight className="w-6 h-6 ml-3" />
                 </Button>
               </Link>
-              <Link to="/auth/recruiter">
-                <Button size="lg" variant="outline" className="border-2 border-white/80 text-gray-700 hover:bg-white hover:text-gray-900 px-10 py-4 text-xl font-bold rounded-xl backdrop-blur-sm shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                  <Briefcase className="w-6 h-6 mr-3" />
-                  Post a Job
-                  <ArrowRight className="w-6 h-6 ml-3" />
-                </Button>
-              </Link>
-              <Link to="/client-login">
-                <Button size="lg" className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-10 py-4 text-xl font-bold rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300">
-                  <Code className="w-6 h-6 mr-3" />
-                  Post a Project
-                  <ArrowRight className="w-6 h-6 ml-3" />
-                </Button>
-              </Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="border-2 border-white/80 text-gray-700 hover:bg-white hover:text-gray-900 px-10 py-4 text-xl font-bold rounded-xl backdrop-blur-sm shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                onClick={handlePostJobClick}
+                disabled={loading}
+              >
+                <Briefcase className="w-6 h-6 mr-3" />
+                Post a Job
+                <ArrowRight className="w-6 h-6 ml-3" />
+              </Button>
+              <Button
+                size="lg"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-10 py-4 text-xl font-bold rounded-xl shadow-2xl hover:shadow-3xl transform hover:scale-105 transition-all duration-300"
+                onClick={handlePostProjectClick}
+                disabled={loading}
+              >
+                <Code className="w-6 h-6 mr-3" />
+                Post a Project
+                <ArrowRight className="w-6 h-6 ml-3" />
+              </Button>
             </div>
+
+            {/* Debug Panel - Only in development */}
+            {/* {process.env.NODE_ENV === 'development' && (
+              <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg text-xs max-w-sm z-50">
+                <div className="font-bold mb-2">Auth Debug:</div>
+                <div>Authenticated: {String(isAuthenticated)}</div>
+                <div>Loading: {String(loading)}</div>
+                <div>User ID: {user?._id || 'None'}</div>
+                <div>Role: {user?.role || 'None'}</div>
+                <div>Email: {user?.email || 'None'}</div>
+                <div className="mt-2 font-bold">LocalStorage:</div>
+                <div>token: {!!localStorage.getItem('token') ? 'Yes' : 'No'}</div>
+                <div>authToken: {!!localStorage.getItem('authToken') ? 'Yes' : 'No'}</div>
+                <div>user: {!!localStorage.getItem('user') ? 'Yes' : 'No'}</div>
+                <div>userRole: {localStorage.getItem('userRole') || 'None'}</div>
+              </div>
+            )} */}
           </div>
         </div>
-        
       </div>
 
       <LiveFeedsSection />
-      <WhyChooseUs/> 
-      <HowItWorks/>
+      <WhyChooseUs />
+      <HowItWorks />
       <BlogSection />
       <SocialMediaSection />
-      <Testimonials/> 
-      <CTA/>
+      <Testimonials />
+      <CTA />
       <Footer />
       <FloatingActionButtons />
     </div>

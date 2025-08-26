@@ -21,9 +21,13 @@ interface Applicant {
   _id: string;
   name: string;
   email: string;
+  phone?: string; // Added phone field
   position: string;
   appliedDate: string;
   testScore?: number;
+  expectedSalary?: number; // Added expected salary
+  coverLetter?: string; // Added cover letter
+  location?: string; // Added job location
   status: string;
 }
 
@@ -98,6 +102,10 @@ const RecruiterDashboardDynamic = () => {
 
       // Fetch real jobs for this recruiter
       let realJobs: JobPost[] = [];
+      let realApplications: Applicant[] = [];
+      let totalApplicationsCount = 0;
+      let pendingApplicationsCount = 0;
+
       try {
         const jobsResponse = await recruiterDashboardsApi.getJobs(user._id, 1, 10);
         console.log('🏢 Jobs fetched:', jobsResponse);
@@ -105,36 +113,159 @@ const RecruiterDashboardDynamic = () => {
         // Handle the expected response structure
         const jobsArray = jobsResponse?.jobs || [];
 
-        realJobs = Array.isArray(jobsArray)
-          ? jobsArray.map(job => ({
-              _id: job._id,
-              title: job.title,
-              company: job.department || 'TechCorp Inc.',
-              location: job.location,
-              postedDate: new Date(job.created_at).toISOString().split('T')[0],
-              applicants: 0, // Will be updated with real application count later
-              status: job.status === 'active' ? 'Active' : 'Inactive',
-            }))
-          : [];
+        if (Array.isArray(jobsArray)) {
+          // First map jobs without applicant count
+          realJobs = jobsArray.map(job => ({
+            _id: job._id,
+            title: job.title,
+            company: job.company_name || 'Company',
+            location: job.location,
+            postedDate: new Date(job.created_at).toISOString().split('T')[0],
+            applicants: 0, // Will be updated below
+            status: job.status === 'active' ? 'Active' : 'Inactive',
+          }));
+
+          // Fetch applicant counts for each job
+          const jobsWithApplicants = await Promise.allSettled(
+            realJobs.map(async job => {
+              try {
+                const applicationsResponse = await recruiterDashboardsApi.getApplicationsByJob(
+                  job._id,
+                  1,
+                  1
+                );
+                console.log(`📊 Full response for job ${job.title}:`, applicationsResponse);
+                
+                // Handle both possible response structures
+                const total = applicationsResponse?.total || 
+                             applicationsResponse?.data?.total || 
+                             (Array.isArray(applicationsResponse?.applications) ? applicationsResponse.applications.length : 0);
+                
+                console.log(`📊 Applications count for job ${job.title}:`, total);
+                
+                return {
+                  ...job,
+                  applicants: total,
+                };
+              } catch (error) {
+                console.warn(`⚠️ Could not fetch applications for job ${job.title} (${job._id}):`, error);
+                return job; // Return job with 0 applicants if error
+              }
+            })
+          );
+
+          realJobs = jobsWithApplicants
+            .map(result => {
+              if (result.status === 'fulfilled') {
+                return result.value;
+              } else {
+                console.warn('Job application count failed:', result.reason);
+                // Find the original job from the failed attempt
+                const failedJob = realJobs.find(job => job._id);
+                return failedJob || realJobs[0];
+              }
+            })
+            .filter(Boolean);
+        }
       } catch (jobError) {
         console.error('❌ Error fetching jobs:', jobError);
         // Continue with empty jobs array
+      }
+
+      // Fetch recent applications
+      try {
+        const applicationsResponse = await recruiterDashboardsApi.getApplications(user._id, 1, 10);
+        console.log('📋 Applications fetched successfully:', applicationsResponse);
+
+        // Updated to use the correct response structure
+        const applicationsArray = applicationsResponse?.data || []; // Changed from applications to data
+        totalApplicationsCount = applicationsResponse?.total || 0;
+
+        console.log(
+          `📊 Found ${totalApplicationsCount} total applications, showing ${applicationsArray.length} recent ones`
+        );
+
+        if (Array.isArray(applicationsArray)) {
+          console.log('📋 Processing applications data:', applicationsArray);
+
+          realApplications = applicationsArray.map((application, index) => {
+            console.log(`📝 Processing application ${index + 1}:`, application);
+
+            // Handle the actual API response structure
+            const applicantName = application.applicant_id?.full_name || 'Unknown Applicant';
+            const applicantEmail = application.applicant_id?.email || 'No email';
+            const applicantPhone = application.applicant_id?.phone || '';
+            const jobTitle = application.job_id?.title || 'Unknown Position';
+            const jobCompany = application.job_id?.company_name || 'Unknown Company';
+            const jobLocation = application.job_id?.location || '';
+
+            const processedApplication = {
+              _id: application._id,
+              name: applicantName,
+              email: applicantEmail,
+              phone: applicantPhone,
+              position: `${jobTitle} at ${jobCompany}`,
+              appliedDate: new Date(application.applied_at).toISOString().split('T')[0],
+              testScore: application.test_score,
+              expectedSalary: application.expected_salary,
+              coverLetter: application.cover_letter,
+              location: jobLocation,
+              status:
+                application.status === 'applied'
+                  ? 'Applied'
+                  : application.status === 'reviewed'
+                    ? 'Under Review'
+                    : application.status === 'shortlisted'
+                      ? 'Shortlisted'
+                      : application.status === 'interview_scheduled'
+                        ? 'Interview Scheduled'
+                        : application.status === 'interviewed'
+                          ? 'Interviewed'
+                          : application.status === 'selected'
+                            ? 'Selected'
+                            : application.status === 'rejected'
+                              ? 'Rejected'
+                              : 'Applied',
+            };
+
+            console.log(`✅ Processed application:`, processedApplication);
+            return processedApplication;
+          });
+
+          // Count pending applications (applied, reviewed, shortlisted, interview_scheduled)
+          pendingApplicationsCount = applicationsArray.filter(app =>
+            ['applied', 'reviewed', 'shortlisted', 'interview_scheduled'].includes(app.status)
+          ).length;
+
+          console.log('✅ Final processed applications:', realApplications);
+          console.log(
+            `📊 Pending applications: ${pendingApplicationsCount} out of ${totalApplicationsCount} total`
+          );
+        }
+      } catch (applicationError) {
+        console.warn(
+          '⚠️ Could not fetch applications (continuing with mock data):',
+          applicationError
+        );
+        // Continue with empty applications array - dashboard will show empty state
       }
 
       // Create a properly formatted dashboard object
       const dashboardData: RecruiterDashboard = {
         _id: dashboardId,
         dashboard_name: `${user.full_name}'s Dashboard`,
-        totalJobs: userDashboard.totalJobs || 0,
-        activeJobs: userDashboard.activeJobs || 0,
-        totalApplications: userDashboard.totalApplications || 0,
-        pendingApplications: userDashboard.pendingApplications || 0,
+        totalJobs: userDashboard.totalJobs || realJobs.length || 0,
+        activeJobs:
+          userDashboard.activeJobs || realJobs.filter(job => job.status === 'Active').length || 0,
+        totalApplications: userDashboard.totalApplications || totalApplicationsCount || 0,
+        pendingApplications: userDashboard.pendingApplications || pendingApplicationsCount || 0,
         stats: {
-          totalJobs: userDashboard.totalJobs || 0,
-          activeJobs: userDashboard.activeJobs || 0,
-          totalApplications: userDashboard.totalApplications || 0,
-          pendingApplications: userDashboard.pendingApplications || 0,
-          applications: userDashboard.totalApplications || 0,
+          totalJobs: userDashboard.totalJobs || realJobs.length || 0,
+          activeJobs:
+            userDashboard.activeJobs || realJobs.filter(job => job.status === 'Active').length || 0,
+          totalApplications: userDashboard.totalApplications || totalApplicationsCount || 0,
+          pendingApplications: userDashboard.pendingApplications || pendingApplicationsCount || 0,
+          applications: userDashboard.totalApplications || totalApplicationsCount || 0,
           testsCreated: 5, // Mock data
           interviewsScheduled: 12, // Mock data
         },
@@ -142,49 +273,8 @@ const RecruiterDashboardDynamic = () => {
           recentJobs: [],
           recentApplications: [],
           analyticsData: [],
-          jobPosts:
-            realJobs.length > 0
-              ? realJobs
-              : [
-                  {
-                    _id: '1',
-                    title: 'Senior Frontend Developer',
-                    company: 'TechCorp Inc.',
-                    location: 'Remote',
-                    postedDate: '2024-01-15',
-                    applicants: 24,
-                    status: 'Active',
-                  },
-                  {
-                    _id: '2',
-                    title: 'Backend Engineer',
-                    company: 'TechCorp Inc.',
-                    location: 'New York',
-                    postedDate: '2024-01-12',
-                    applicants: 18,
-                    status: 'Active',
-                  },
-                ],
-          applicants: [
-            {
-              _id: '1',
-              name: 'John Doe',
-              email: 'john@example.com',
-              position: 'Frontend Developer',
-              appliedDate: '2024-01-20',
-              testScore: 85,
-              status: 'Interview Scheduled',
-            },
-            {
-              _id: '2',
-              name: 'Jane Smith',
-              email: 'jane@example.com',
-              position: 'Backend Engineer',
-              appliedDate: '2024-01-18',
-              testScore: 92,
-              status: 'Shortlisted',
-            },
-          ],
+          jobPosts: realJobs.length > 0 ? realJobs : [], // Changed: don't fall back to mock data
+          applicants: realApplications, // Changed: always use real applications, even if empty
           testResults: [
             {
               _id: '1',
@@ -201,6 +291,9 @@ const RecruiterDashboardDynamic = () => {
       };
 
       console.log('✅ Dashboard loaded successfully:', dashboardData);
+      console.log(
+        `📊 Summary: ${realJobs.length} jobs, ${totalApplicationsCount} total applications, ${realApplications.length} recent applications`
+      );
       setDashboard(dashboardData);
     } catch (err) {
       console.error('💥 Error loading dashboard:', err);
@@ -331,7 +424,9 @@ const RecruiterDashboardDynamic = () => {
               {dashboard.dashboard_name}
             </h1>
             <div className="flex items-center space-x-3 md:space-x-4">
-              <span className="text-sm md:text-base text-gray-600">Welcome back, {user.full_name}</span>
+              <span className="text-sm md:text-base text-gray-600">
+                Welcome back, {user.full_name}
+              </span>
               <Button variant="outline" size="sm" className="text-xs md:text-sm">
                 Profile
               </Button>
@@ -396,41 +491,54 @@ const RecruiterDashboardDynamic = () => {
                 <CardTitle className="flex items-center justify-between">
                   <span>Recent Job Posts</span>
                   <Link to="/recruiter/jobs">
-                    <Button size="sm">
-                      
-                     View all posting
-                    </Button>
+                    <Button size="sm">View All Posts</Button>
                   </Link>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.jobPosts.map(job => (
-                    <div
-                      key={job._id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-medium">{job.title}</h3>
-                        <p className="text-sm text-gray-600">
-                          {job.company} • {job.location}
-                        </p>
-                        <p className="text-xs text-gray-500">Posted: {job.postedDate}</p>
+                  {dashboard.mockData.jobPosts.length > 0 ? (
+                    dashboard.mockData.jobPosts.map(job => (
+                      <div
+                        key={job._id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div>
+                          <h3 className="font-medium">{job.title}</h3>
+                          <p className="text-sm text-gray-600">
+                            {job.company} • {job.location}
+                          </p>
+                          <p className="text-xs text-gray-500">Posted: {job.postedDate}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-medium">{job.applicants} applicants</p>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              job.status === 'Active'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {job.status}
+                          </span>
+                        </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-medium">{job.applicants} applicants</p>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            job.status === 'Active'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">No job posts yet</p>
+                      <p className="text-sm text-gray-400 mb-4">
+                        Start by creating your first job posting
+                      </p>
+                      <Link to="/recruiter/post-job">
+                        <Button size="sm">
+                          <Plus className="h-4 w-4 mr-2" />
+                          Post Your First Job
+                        </Button>
+                      </Link>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -438,43 +546,90 @@ const RecruiterDashboardDynamic = () => {
             {/* Recent Applicants */}
             <Card>
               <CardHeader>
-                <CardTitle>Recent Applicants</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Recent Applicants</span>
+                  <Link to="/recruiter/applications">
+                    <Button size="sm">View All Applications</Button>
+                  </Link>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.applicants.map(applicant => (
-                    <div
-                      key={applicant._id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-medium">{applicant.name}</h3>
-                        <p className="text-sm text-gray-600">{applicant.email}</p>
-                        <p className="text-xs text-gray-500">Applied for: {applicant.position}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm">{applicant.appliedDate}</p>
-                        {applicant.testScore && (
-                          <p className="text-xs text-blue-600">
-                            Test Score: {applicant.testScore}%
+                  {dashboard.mockData.applicants.length > 0 ? (
+                    dashboard.mockData.applicants.map(applicant => (
+                      <div
+                        key={applicant._id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-medium text-gray-900">{applicant.name}</h3>
+                          <p className="text-sm text-gray-600">{applicant.email}</p>
+                          {applicant.phone && (
+                            <p className="text-xs text-gray-500">📞 {applicant.phone}</p>
+                          )}
+                          <p className="text-xs text-gray-500 mt-1">
+                            Applied for: {applicant.position}
                           </p>
-                        )}
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full ${
-                            applicant.status === 'Interview Scheduled'
-                              ? 'bg-blue-100 text-blue-800'
-                              : applicant.status === 'Shortlisted'
-                                ? 'bg-green-100 text-green-800'
-                                : applicant.status === 'Under Review'
-                                  ? 'bg-yellow-100 text-yellow-800'
-                                  : 'bg-gray-100 text-gray-800'
-                          }`}
-                        >
-                          {applicant.status}
-                        </span>
+                          {applicant.location && (
+                            <p className="text-xs text-gray-400">📍 {applicant.location}</p>
+                          )}
+                          {applicant.expectedSalary && (
+                            <p className="text-xs text-green-600 mt-1">
+                              💰 Expected: ₹{applicant.expectedSalary.toLocaleString()}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right ml-4">
+                          <p className="text-sm font-medium text-gray-900">
+                            {applicant.appliedDate}
+                          </p>
+                          {applicant.testScore && (
+                            <p className="text-xs text-blue-600 mt-1">
+                              📊 Test Score: {applicant.testScore}%
+                            </p>
+                          )}
+                          <span
+                            className={`inline-block text-xs px-2 py-1 rounded-full mt-2 ${
+                              applicant.status === 'Interview Scheduled'
+                                ? 'bg-blue-100 text-blue-800'
+                                : applicant.status === 'Shortlisted'
+                                  ? 'bg-green-100 text-green-800'
+                                  : applicant.status === 'Under Review'
+                                    ? 'bg-yellow-100 text-yellow-800'
+                                    : applicant.status === 'Applied'
+                                      ? 'bg-purple-100 text-purple-800'
+                                      : applicant.status === 'Selected'
+                                        ? 'bg-emerald-100 text-emerald-800'
+                                        : applicant.status === 'Rejected'
+                                          ? 'bg-red-100 text-red-800'
+                                          : 'bg-gray-100 text-gray-800'
+                            }`}
+                          >
+                            {applicant.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2">No applications yet</p>
+                      <p className="text-sm text-gray-400 mb-4">
+                        Applications will appear here once candidates start applying to your jobs
+                      </p>
+                      <div className="space-y-2">
+                        <Link to="/recruiter/post-job">
+                          <Button size="sm" variant="outline">
+                            <Plus className="h-4 w-4 mr-2" />
+                            Post a Job
+                          </Button>
+                        </Link>
+                        <p className="text-xs text-gray-400">
+                          Start receiving applications by posting your first job
+                        </p>
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
