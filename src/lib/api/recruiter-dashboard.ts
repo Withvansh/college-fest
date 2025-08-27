@@ -61,19 +61,36 @@ export interface Job {
   updated_at: Date;
 }
 
+export interface JobRef {
+  _id: string;
+  title: string;
+  company_name: string;
+  location?: string;
+  job_type?: string;
+}
+
+export interface ApplicantRef {
+  _id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+}
+
+export type ApplicationStatus =
+  | "applied"
+  | "reviewed"
+  | "shortlisted"
+  | "interview_scheduled"
+  | "interviewed"
+  | "selected"
+  | "rejected"
+  | "withdrawn";
+
 export interface JobApplication {
   _id: string;
-  job_id: string | {
-    _id: string;
-    title: string;
-    company_name: string;
-  };
-  applicant_id: string | {
-    _id: string;
-    full_name: string;
-    email: string;
-  };
-  status: 'applied' | 'reviewed' | 'shortlisted' | 'interview_scheduled' | 'interviewed' | 'selected' | 'rejected' | 'withdrawn';
+  job_id: string | JobRef;
+  applicant_id: string | ApplicantRef;
+  status: ApplicationStatus;
   cover_letter?: string;
   resume_url?: string;
   portfolio_url?: string;
@@ -88,6 +105,7 @@ export interface JobApplication {
   created_at: Date;
   updated_at: Date;
 }
+
 
 export interface AssessmentTest {
   _id: string;
@@ -188,14 +206,14 @@ class RecruiterDashboardAPI extends BackendAPI {
   }
 
   // Job Application endpoints
-  async getApplications(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ applications: JobApplication[], total: number, pagination: any }> {
+  async getApplications(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ applications:any, total: number, pagination: any }> {
     const endpoint = `/job-applications/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
     
     try {
       const fullResponse: any = await this.get(endpoint);
       
       return {
-        applications: fullResponse.data || [],
+        applications: fullResponse || [],
         total: fullResponse.total || 0,
         pagination: fullResponse.pagination || {}
       };
@@ -210,9 +228,13 @@ class RecruiterDashboardAPI extends BackendAPI {
     
     try {
       const fullResponse: any = await this.get(endpoint);
-      
+      console.log(".....................................................................")
+          console.log(".....................................................................")
+      console.log(fullResponse);
+      console.log("..........................................................................")
+          console.log(".....................................................................")
       return {
-        applications: fullResponse.data || [],
+        applications: fullResponse || [],
         total: fullResponse.total || 0,
         pagination: fullResponse.pagination || {}
       };

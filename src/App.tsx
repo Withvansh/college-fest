@@ -104,6 +104,7 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import HirePage from './pages/HirePage';
 import JobPostings from './pages/recruiter/AllJobs';
 import ViewPosting from './pages/recruiter/ViewPosting';
+import AllApplications from './pages/recruiter/AllApplications';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -225,6 +226,15 @@ const App = () => {
                       </UnifiedProtectedRoute>
                     }
                   />
+                  <Route
+                    path="/recruiter/applications"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                        <AllApplications />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  
                   <Route
                     path="/recruiter/dashboard/:dashboardId"
                     element={

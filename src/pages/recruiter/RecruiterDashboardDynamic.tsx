@@ -138,7 +138,7 @@ const RecruiterDashboardDynamic = () => {
                 
                 // Handle both possible response structures
                 const total = applicationsResponse?.total || 
-                             applicationsResponse?.data?.total || 
+                             applicationsResponse?.total || 
                              (Array.isArray(applicationsResponse?.applications) ? applicationsResponse.applications.length : 0);
                 
                 console.log(`📊 Applications count for job ${job.title}:`, total);
@@ -178,12 +178,12 @@ const RecruiterDashboardDynamic = () => {
         console.log('📋 Applications fetched successfully:', applicationsResponse);
 
         // Updated to use the correct response structure
-        const applicationsArray = applicationsResponse?.data || []; // Changed from applications to data
+        const applicationsArray = applicationsResponse.applications|| []; 
         totalApplicationsCount = applicationsResponse?.total || 0;
 
-        console.log(
-          `📊 Found ${totalApplicationsCount} total applications, showing ${applicationsArray.length} recent ones`
-        );
+        // console.log(
+        //   `📊 Found ${totalApplicationsCount} total applications, showing ${applicationsArray?.length} recent ones`
+        // );
 
         if (Array.isArray(applicationsArray)) {
           console.log('📋 Processing applications data:', applicationsArray);
@@ -192,12 +192,12 @@ const RecruiterDashboardDynamic = () => {
             console.log(`📝 Processing application ${index + 1}:`, application);
 
             // Handle the actual API response structure
-            const applicantName = application.applicant_id?.full_name || 'Unknown Applicant';
-            const applicantEmail = application.applicant_id?.email || 'No email';
-            const applicantPhone = application.applicant_id?.phone || '';
-            const jobTitle = application.job_id?.title || 'Unknown Position';
-            const jobCompany = application.job_id?.company_name || 'Unknown Company';
-            const jobLocation = application.job_id?.location || '';
+            const applicantName = application?.applicant_id?.full_name || 'Unknown Applicant';
+            const applicantEmail = application?.applicant_id?.email || 'No email';
+            const applicantPhone = application?.applican_id?.phone || '';
+            const jobTitle = application?.job_id?.title || 'Unknown Position';
+            const jobCompany = application?.job_id?.company_name || 'Unknown Company';
+            const jobLocation = application?.job_id?.location || '';
 
             const processedApplication = {
               _id: application._id,
