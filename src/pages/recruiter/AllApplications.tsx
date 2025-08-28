@@ -78,7 +78,7 @@ const navigate = useNavigate();
 
   const handleStatusChange = async (applicationId: string, newStatus: ApplicationStatus) => {
     try {
-      // Call API to update status
+      
       await recruiterApi.updateApplicationStatus(applicationId, newStatus);
       
       // Update local state
