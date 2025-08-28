@@ -1,15 +1,14 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
-import { 
-  Users, 
-  Building2, 
-  GraduationCap, 
-  TrendingUp, 
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import {
+  Users,
+  Building2,
+  GraduationCap,
+  TrendingUp,
   Calendar,
   MapPin,
   Clock,
@@ -19,69 +18,85 @@ import {
   BarChart3,
   FileText,
   Star,
-  Trophy
-} from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+  Trophy,
+} from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  placementDriveAPI,
+  PlacementDrive,
+  DashboardStats,
+  Company,
+} from '@/lib/api/placementDrives';
+import { toast } from 'sonner';
 
 const CollegeDashboard = () => {
   const navigate = useNavigate();
-  const [selectedTab, setSelectedTab] = useState("drives");
+  const [selectedTab, setSelectedTab] = useState('drives');
+  const [loading, setLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<{
+    stats: DashboardStats;
+    upcomingDrives: PlacementDrive[];
+    topCompanies: Company[];
+  } | null>(null);
 
-  // Mock data for placement drives
-  const placementDrives = [
-    {
-      id: 1,
-      company: "Google Inc.",
-      role: "Software Engineer",
-      date: "Jan 15, 2025",
-      time: "10:00 AM",
-      eligibility: "CSE, IT - 7.5+ CGPA",
-      registrations: 156,
-      status: "Registration Open",
-      location: "Virtual Meeting Room",
-      package: "₹25-35 LPA",
-      description: "Looking for talented software engineers to join our team. The role involves working on cutting-edge technologies and building products used by millions of users worldwide.",
-      requirements: "Strong programming skills in Java/Python, Data Structures & Algorithms, System Design knowledge"
-    },
-    {
-      id: 2,
-      company: "Microsoft",
-      role: "Product Manager",
-      date: "Jan 22, 2025",
-      time: "2:00 PM",
-      eligibility: "All Branches - 8.0+ CGPA",
-      registrations: 89,
-      status: "Registration Open",
-      location: "Main Auditorium",
-      package: "₹30-40 LPA",
-      description: "Seeking product managers for innovative projects. You'll be responsible for driving product strategy and working with cross-functional teams.",
-      requirements: "Leadership skills, technical background, excellent communication skills"
+  // For now, using a mock college ID - replace with actual college ID from auth context
+  const collegeId = '507f1f77bcf86cd799439011'; // Replace with actual college ID
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const data = await placementDriveAPI.getCollegeDashboardStats(collegeId);
+      setDashboardData(data);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+      toast.error('Failed to load dashboard data');
+      // Fallback to mock data for development
+      setDashboardData({
+        stats: {
+          totalDrives: 0,
+          activeDrives: 0,
+          totalRegistrations: 0,
+          totalPlacements: 0,
+          averagePackage: 0,
+        },
+        upcomingDrives: [],
+        topCompanies: [],
+      });
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
-  // Mock data for students
+  // Mock data for students - this can be fetched from a separate API later
   const studentStats = [
-    { branch: "Computer Science", total: 120, placed: 95, percentage: 79 },
-    { branch: "Information Technology", total: 80, placed: 68, percentage: 85 },
-    { branch: "Electronics", total: 90, placed: 72, percentage: 80 },
-    { branch: "Mechanical", total: 100, placed: 75, percentage: 75 }
+    { branch: 'Computer Science', total: 120, placed: 95, percentage: 79 },
+    { branch: 'Information Technology', total: 80, placed: 68, percentage: 85 },
+    { branch: 'Electronics', total: 90, placed: 72, percentage: 80 },
+    { branch: 'Mechanical', total: 100, placed: 75, percentage: 75 },
   ];
 
-  // Mock data for top companies
-  const topCompanies = [
-    { name: "Google", hires: 15, package: "₹25-35 LPA" },
-    { name: "Microsoft", hires: 12, package: "₹30-40 LPA" },
-    { name: "Amazon", hires: 18, package: "₹22-28 LPA" },
-    { name: "TCS", hires: 25, package: "₹3.5-7 LPA" }
-  ];
-
-  const handleViewDetails = (driveId: number) => {
+  const handleViewDetails = (driveId: number | string) => {
     navigate(`/college/placement-drives/${driveId}/view`);
   };
 
-  const handleManage = (driveId: number) => {
+  const handleManage = (driveId: number | string) => {
     navigate(`/college/placement-drives/${driveId}/manage`);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
@@ -91,7 +106,7 @@ const CollegeDashboard = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">College Dashboard</h1>
             <div className="flex items-center space-x-4">
-              <Button 
+              <Button
                 className="bg-orange-600 hover:bg-orange-700"
                 onClick={() => navigate('/college/placement-drives')}
               >
@@ -121,26 +136,28 @@ const CollegeDashboard = () => {
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium opacity-90">Partner Companies</CardTitle>
+              <CardTitle className="text-sm font-medium opacity-90">Active Drives</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">85</div>
+              <div className="text-3xl font-bold">{dashboardData?.stats?.activeDrives || 0}</div>
               <div className="flex items-center mt-2">
                 <Building2 className="h-4 w-4 mr-1" />
-                <span className="text-sm opacity-90">Recruiting Partners</span>
+                <span className="text-sm opacity-90">Open for Registration</span>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium opacity-90">Placements This Year</CardTitle>
+              <CardTitle className="text-sm font-medium opacity-90">Total Registrations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">320</div>
+              <div className="text-3xl font-bold">
+                {dashboardData?.stats?.totalRegistrations || 0}
+              </div>
               <div className="flex items-center mt-2">
                 <GraduationCap className="h-4 w-4 mr-1" />
-                <span className="text-sm opacity-90">Students Placed</span>
+                <span className="text-sm opacity-90">This Year</span>
               </div>
             </CardContent>
           </Card>
@@ -150,7 +167,9 @@ const CollegeDashboard = () => {
               <CardTitle className="text-sm font-medium opacity-90">Average Package</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">₹8.5L</div>
+              <div className="text-3xl font-bold">
+                ₹{dashboardData?.stats?.averagePackage || 0}L
+              </div>
               <div className="flex items-center mt-2">
                 <TrendingUp className="h-4 w-4 mr-1" />
                 <span className="text-sm opacity-90">Per Annum</span>
@@ -176,75 +195,94 @@ const CollegeDashboard = () => {
                 <div className="flex items-center justify-between">
                   <CardTitle>Active Placement Drives</CardTitle>
                   <Link to="/college/placement-drives">
-                    <Button variant="outline">
-                      View All Drives
-                    </Button>
+                    <Button variant="outline">View All Drives</Button>
                   </Link>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {placementDrives.map((drive) => (
-                  <div key={drive.id} className="border rounded-lg p-4 bg-white/50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center mb-2">
-                          <Building2 className="h-5 w-5 mr-2 text-gray-600" />
-                          <h3 className="text-lg font-semibold">{drive.company}</h3>
-                          <Badge className="ml-3 bg-green-100 text-green-700">
-                            {drive.status}
-                          </Badge>
-                        </div>
-                        <p className="text-gray-600 mb-2">{drive.role}</p>
-                        
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <span className="font-medium">Date</span>
-                            <div className="flex items-center mt-1">
-                              <Calendar className="h-4 w-4 mr-1 text-gray-500" />
-                              {drive.date}
+                {dashboardData?.upcomingDrives && dashboardData.upcomingDrives.length > 0 ? (
+                  dashboardData.upcomingDrives.map(drive => (
+                    <div key={drive._id || drive.id} className="border rounded-lg p-4 bg-white/50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center mb-2">
+                            <Building2 className="h-5 w-5 mr-2 text-gray-600" />
+                            <h3 className="text-lg font-semibold">{drive.company}</h3>
+                            <Badge
+                              className={`ml-3 ${placementDriveAPI.getStatusColor(drive.status)}`}
+                            >
+                              {drive.status === 'Open' ? 'Registration Open' : drive.status}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 mb-2">{drive.role}</p>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">Date</span>
+                              <div className="flex items-center mt-1">
+                                <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                                {placementDriveAPI.formatDate(drive.drive_date)}
+                              </div>
+                            </div>
+
+                            <div>
+                              <span className="font-medium">Eligibility</span>
+                              <p className="text-gray-600 mt-1">{drive.eligibility_criteria}</p>
+                            </div>
+
+                            <div>
+                              <span className="font-medium">Registrations</span>
+                              <p className="text-orange-600 font-semibold mt-1">
+                                {drive.registrations || 0} students
+                              </p>
+                            </div>
+
+                            <div>
+                              <span className="font-medium">Package</span>
+                              <p className="text-green-600 font-semibold mt-1">
+                                {drive.salary_package || 'Not specified'}
+                              </p>
                             </div>
                           </div>
-                          
-                          <div>
-                            <span className="font-medium">Eligibility</span>
-                            <p className="text-gray-600 mt-1">{drive.eligibility}</p>
-                          </div>
-                          
-                          <div>
-                            <span className="font-medium">Registrations</span>
-                            <p className="text-orange-600 font-semibold mt-1">
-                              {drive.registrations} students
-                            </p>
-                          </div>
+                        </div>
 
-                          <div>
-                            <span className="font-medium">Package</span>
-                            <p className="text-green-600 font-semibold mt-1">{drive.package}</p>
-                          </div>
+                        <div className="flex space-x-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewDetails(drive._id || drive.id || '')}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            View Details
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="bg-orange-600 hover:bg-orange-700"
+                            onClick={() => handleManage(drive._id || drive.id || '')}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Manage
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex space-x-2 ml-4">
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewDetails(drive.id)}
-                        >
-                          <Eye className="h-4 w-4 mr-1" />
-                          View Details
-                        </Button>
-                        <Button 
-                          size="sm"
-                          className="bg-orange-600 hover:bg-orange-700"
-                          onClick={() => handleManage(drive.id)}
-                        >
-                          <Edit className="h-4 w-4 mr-1" />
-                          Manage
-                        </Button>
-                      </div>
                     </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8">
+                    <Building2 className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                    <h3 className="text-lg font-medium text-gray-600 mb-2">No Active Drives</h3>
+                    <p className="text-gray-500 mb-4">
+                      Create your first placement drive to get started
+                    </p>
+                    <Button
+                      className="bg-orange-600 hover:bg-orange-700"
+                      onClick={() => navigate('/college/placement-drives')}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Drive
+                    </Button>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -277,12 +315,20 @@ const CollegeDashboard = () => {
                 </CardHeader>
                 <CardContent className="space-y-3">
                   {[
-                    { name: "Rajesh Kumar", company: "Google", package: "₹32 LPA", branch: "CSE" },
-                    { name: "Priya Sharma", company: "Microsoft", package: "₹28 LPA", branch: "IT" },
-                    { name: "Amit Patel", company: "Amazon", package: "₹25 LPA", branch: "CSE" },
-                    { name: "Sneha Singh", company: "Adobe", package: "₹30 LPA", branch: "IT" }
+                    { name: 'Rajesh Kumar', company: 'Google', package: '₹32 LPA', branch: 'CSE' },
+                    {
+                      name: 'Priya Sharma',
+                      company: 'Microsoft',
+                      package: '₹28 LPA',
+                      branch: 'IT',
+                    },
+                    { name: 'Amit Patel', company: 'Amazon', package: '₹25 LPA', branch: 'CSE' },
+                    { name: 'Sneha Singh', company: 'Adobe', package: '₹30 LPA', branch: 'IT' },
                   ].map((placement, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-white/50 rounded-lg">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-white/50 rounded-lg"
+                    >
                       <div>
                         <p className="font-medium">{placement.name}</p>
                         <p className="text-sm text-gray-600">{placement.branch}</p>
@@ -306,22 +352,38 @@ const CollegeDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {topCompanies.map((company, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 bg-white/50 rounded-lg">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-                          <Building2 className="h-5 w-5 text-orange-600" />
+                  {dashboardData?.topCompanies && dashboardData.topCompanies.length > 0 ? (
+                    dashboardData.topCompanies.map((company, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-4 bg-white/50 rounded-lg"
+                      >
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
+                            <Building2 className="h-5 w-5 text-orange-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{company.name}</p>
+                            <p className="text-sm text-gray-600">{company.hires} hires</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium">{company.name}</p>
-                          <p className="text-sm text-gray-600">{company.hires} hires</p>
+                        <div className="text-right">
+                          <p className="font-medium text-green-600">{company.package}</p>
+                          {company.totalDrives && (
+                            <p className="text-sm text-gray-600">{company.totalDrives} drives</p>
+                          )}
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-green-600">{company.package}</p>
-                      </div>
+                    ))
+                  ) : (
+                    <div className="col-span-2 text-center py-8">
+                      <Building2 className="h-12 w-12 mx-auto text-gray-400 mb-3" />
+                      <h3 className="text-lg font-medium text-gray-600 mb-2">No Company Data</h3>
+                      <p className="text-gray-500">
+                        Company statistics will appear here once placement drives are created
+                      </p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -334,12 +396,14 @@ const CollegeDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <BarChart3 className="h-5 w-5 mr-2" />
-                    Placement Rate
+                    Total Drives
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-green-600">78%</div>
-                  <p className="text-sm text-gray-600 mt-2">Overall placement rate this year</p>
+                  <div className="text-3xl font-bold text-blue-600">
+                    {dashboardData?.stats?.totalDrives || 0}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">Placement drives created</p>
                 </CardContent>
               </Card>
 
@@ -347,12 +411,14 @@ const CollegeDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Trophy className="h-5 w-5 mr-2" />
-                    Highest Package
+                    Total Placements
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-3xl font-bold text-purple-600">₹45L</div>
-                  <p className="text-sm text-gray-600 mt-2">Highest package offered</p>
+                  <div className="text-3xl font-bold text-green-600">
+                    {dashboardData?.stats?.totalPlacements || 0}
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">Students placed successfully</p>
                 </CardContent>
               </Card>
 
@@ -360,12 +426,14 @@ const CollegeDashboard = () => {
                 <CardHeader>
                   <CardTitle className="flex items-center">
                     <Star className="h-5 w-5 mr-2" />
-                    Top Performer
+                    Average Package
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-lg font-bold text-blue-600">CSE Branch</div>
-                  <p className="text-sm text-gray-600 mt-2">85% placement rate</p>
+                  <div className="text-3xl font-bold text-purple-600">
+                    ₹{dashboardData?.stats?.averagePackage || 0}L
+                  </div>
+                  <p className="text-sm text-gray-600 mt-2">Average salary package</p>
                 </CardContent>
               </Card>
             </div>

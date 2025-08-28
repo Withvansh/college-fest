@@ -1,21 +1,39 @@
-
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { Link, useNavigate } from "react-router-dom";
-import { 
-  Plus, 
-  Calendar, 
-  Building2, 
-  Users, 
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Plus,
+  Calendar,
+  Building2,
+  Users,
   Filter,
   Download,
   Edit,
@@ -25,83 +43,17 @@ import {
   Trash2,
   Clock,
   MapPin,
-  GraduationCap
-} from "lucide-react";
-
-interface PlacementDrive {
-  id: number;
-  title: string;
-  company: string;
-  role: string;
-  date: string;
-  time: string;
-  eligibility: string;
-  mode: string;
-  registrations: number;
-  status: string;
-  lastDate: string;
-  description?: string;
-  location?: string;
-  package?: string;
-  requirements?: string;
-}
+  GraduationCap,
+} from 'lucide-react';
+import { placementDriveAPI } from '@/lib/api/placementDrives';
+import { PlacementDrive, CreatePlacementDriveRequest } from '@/lib/api/placementDrives';
 
 const PlacementDrives = () => {
   const navigate = useNavigate();
-  const [drives, setDrives] = useState<PlacementDrive[]>([
-    {
-      id: 1,
-      title: "Google Software Engineer Drive",
-      company: "Google Inc.",
-      role: "Software Engineer",
-      date: "2025-01-15",
-      time: "10:00",
-      eligibility: "CSE, IT - 7.5+ CGPA",
-      mode: "Online",
-      registrations: 156,
-      status: "Open",
-      lastDate: "2025-01-10",
-      description: "Looking for talented software engineers to join our team.",
-      location: "Virtual Meeting Room",
-      package: "₹25-35 LPA",
-      requirements: "Strong programming skills in Java/Python"
-    },
-    {
-      id: 2,
-      title: "Microsoft Product Manager Drive",
-      company: "Microsoft",
-      role: "Product Manager",
-      date: "2025-01-22",
-      time: "14:00",
-      eligibility: "All Branches - 8.0+ CGPA",
-      mode: "Offline",
-      registrations: 89,
-      status: "Open",
-      lastDate: "2025-01-18",
-      description: "Seeking product managers for innovative projects.",
-      location: "Main Auditorium",
-      package: "₹30-40 LPA",
-      requirements: "Leadership skills and technical background"
-    },
-    {
-      id: 3,
-      title: "Amazon SDE Drive",
-      company: "Amazon",
-      role: "Software Development Engineer",
-      date: "2025-01-08",
-      time: "11:00",
-      eligibility: "CSE, IT - 7.0+ CGPA",
-      mode: "Hybrid",
-      registrations: 203,
-      status: "Closed",
-      lastDate: "2025-01-05",
-      description: "Join Amazon's engineering team.",
-      location: "Conference Hall A",
-      package: "₹22-28 LPA",
-      requirements: "DSA knowledge and system design"
-    }
-  ]);
+  const collegeId = '507f1f77bcf86cd799439011'; // Replace with actual college ID
 
+  const [drives, setDrives] = useState<PlacementDrive[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -111,40 +63,62 @@ const PlacementDrives = () => {
     title: '',
     company: '',
     role: '',
-    date: '',
-    time: '',
-    eligibility: '',
-    mode: 'Online',
-    lastDate: '',
+    drive_date: '',
+    drive_time: '',
+    eligibility_criteria: '',
+    mode: 'Online' as 'Online' | 'Offline' | 'Hybrid',
+    registration_deadline: '',
     description: '',
     location: '',
-    package: '',
-    requirements: ''
+    salary_package: '',
+    requirements: '',
+    positions_available: 1,
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  // Fetch drives on component mount
+  useEffect(() => {
+    fetchDrives();
+  }, [collegeId]);
+
+  const fetchDrives = async () => {
+    if (!collegeId) return;
+
+    setIsLoading(true);
+    try {
+      const response = await placementDriveAPI.getPlacementDrives(collegeId);
+      setDrives(response.drives || []);
+    } catch (error) {
+      console.error('Error fetching drives:', error);
+      toast.error('Failed to load placement drives');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const resetFormData = () => {
     setFormData({
       title: '',
       company: '',
       role: '',
-      date: '',
-      time: '',
-      eligibility: '',
+      drive_date: '',
+      drive_time: '',
+      eligibility_criteria: '',
       mode: 'Online',
-      lastDate: '',
+      registration_deadline: '',
       description: '',
       location: '',
-      package: '',
-      requirements: ''
+      salary_package: '',
+      requirements: '',
+      positions_available: 1,
     });
     setFormErrors({});
   };
 
   const validateForm = () => {
     const errors: Record<string, string> = {};
-    
+
     if (!formData.title || formData.title.length < 3) {
       errors.title = 'Drive title must be at least 3 characters';
     }
@@ -154,17 +128,20 @@ const PlacementDrives = () => {
     if (!formData.role || formData.role.length < 2) {
       errors.role = 'Role must be at least 2 characters';
     }
-    if (!formData.date) {
-      errors.date = 'Drive date is required';
+    if (!formData.drive_date) {
+      errors.drive_date = 'Drive date is required';
     }
-    if (!formData.time) {
-      errors.time = 'Drive time is required';
+    if (!formData.drive_time) {
+      errors.drive_time = 'Drive time is required';
     }
-    if (!formData.eligibility) {
-      errors.eligibility = 'Eligibility criteria is required';
+    if (!formData.eligibility_criteria) {
+      errors.eligibility_criteria = 'Eligibility criteria is required';
     }
-    if (!formData.lastDate) {
-      errors.lastDate = 'Last registration date is required';
+    if (!formData.registration_deadline) {
+      errors.registration_deadline = 'Last registration date is required';
+    }
+    if (!formData.positions_available || formData.positions_available < 1) {
+      errors.positions_available = 'Positions available must be at least 1';
     }
 
     setFormErrors(errors);
@@ -173,53 +150,77 @@ const PlacementDrives = () => {
 
   const handleCreateDrive = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
-      toast.error("Please fix the form errors");
+      toast.error('Please fix the form errors');
       return;
     }
 
     setIsSubmitting(true);
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    const newDrive: PlacementDrive = {
-      id: Math.max(...drives.map(d => d.id), 0) + 1,
-      ...formData,
-      registrations: 0,
-      status: 'Open'
-    };
+    try {
+      const createData: CreatePlacementDriveRequest = {
+        ...formData,
+        college_id: collegeId,
+      };
 
-    setDrives([newDrive, ...drives]);
-    setIsCreateModalOpen(false);
-    resetFormData();
-    setIsSubmitting(false);
-    
-    toast.success("✅ Drive scheduled successfully!");
+      await placementDriveAPI.createPlacementDrive(collegeId, createData);
+
+      // Refresh the drives list
+      await fetchDrives();
+
+      setIsCreateModalOpen(false);
+      resetFormData();
+      toast.success('✅ Drive scheduled successfully!');
+    } catch (error) {
+      console.error('Error creating drive:', error);
+      toast.error('Failed to create drive. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const handleDeleteDrive = (driveId: number) => {
-    const updatedDrives = drives.filter(drive => drive.id !== driveId);
-    setDrives(updatedDrives);
-    toast.success("Drive deleted successfully!");
+  const handleDeleteDrive = async (driveId: string) => {
+    try {
+      await placementDriveAPI.deletePlacementDrive(driveId);
+
+      // Refresh the drives list
+      await fetchDrives();
+
+      toast.success('Drive deleted successfully!');
+    } catch (error) {
+      console.error('Error deleting drive:', error);
+      toast.error('Failed to delete drive. Please try again.');
+    }
   };
 
   const handleExportData = () => {
     const csvContent = [
-      ['Drive Title', 'Company', 'Role', 'Date', 'Time', 'Mode', 'Registrations', 'Status', 'Package'],
+      [
+        'Drive Title',
+        'Company',
+        'Role',
+        'Date',
+        'Time',
+        'Mode',
+        'Registrations',
+        'Status',
+        'Package',
+      ],
       ...filteredDrives.map(drive => [
         drive.title,
         drive.company,
         drive.role,
-        drive.date,
-        drive.time,
+        drive.drive_date,
+        drive.drive_time,
         drive.mode,
-        drive.registrations,
+        drive.registrations || 0,
         drive.status,
-        drive.package || 'N/A'
-      ])
-    ].map(row => row.join(',')).join('\n');
+        drive.salary_package || 'N/A',
+      ]),
+    ]
+      .map(row => row.join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -227,26 +228,32 @@ const PlacementDrives = () => {
     a.href = url;
     a.download = 'placement-drives.csv';
     a.click();
-    
-    toast.success("Drive data exported successfully!");
+
+    toast.success('Drive data exported successfully!');
   };
 
   const filteredDrives = drives.filter(drive => {
-    const matchesSearch = drive.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         drive.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         drive.role.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesFilter = filterStatus === 'all' || drive.status.toLowerCase() === filterStatus.toLowerCase();
-    
+    const matchesSearch =
+      drive.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      drive.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      drive.role.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesFilter =
+      filterStatus === 'all' || drive.status.toLowerCase() === filterStatus.toLowerCase();
+
     return matchesSearch && matchesFilter;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Open': return 'bg-green-100 text-green-700';
-      case 'Closed': return 'bg-red-100 text-red-700';
-      case 'Upcoming': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Open':
+        return 'bg-green-100 text-green-700';
+      case 'Closed':
+        return 'bg-red-100 text-red-700';
+      case 'Upcoming':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -266,7 +273,10 @@ const PlacementDrives = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/college/dashboard" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Link
+                to="/college/dashboard"
+                className="flex items-center text-gray-600 hover:text-gray-900"
+              >
                 <ArrowLeft className="h-5 w-5 mr-2" />
                 Back to Dashboard
               </Link>
@@ -295,68 +305,106 @@ const PlacementDrives = () => {
                         <Input
                           id="title"
                           value={formData.title}
-                          onChange={(e) => setFormData({...formData, title: e.target.value})}
+                          onChange={e => setFormData({ ...formData, title: e.target.value })}
                           placeholder="e.g., Google Software Engineer Drive"
                           className={formErrors.title ? 'border-red-500' : ''}
                         />
-                        {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
+                        {formErrors.title && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="company">Company Name *</Label>
                         <Input
                           id="company"
                           value={formData.company}
-                          onChange={(e) => setFormData({...formData, company: e.target.value})}
+                          onChange={e => setFormData({ ...formData, company: e.target.value })}
                           placeholder="e.g., Google Inc."
                           className={formErrors.company ? 'border-red-500' : ''}
                         />
-                        {formErrors.company && <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>}
+                        {formErrors.company && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.company}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="role">Role *</Label>
                         <Input
                           id="role"
                           value={formData.role}
-                          onChange={(e) => setFormData({...formData, role: e.target.value})}
+                          onChange={e => setFormData({ ...formData, role: e.target.value })}
                           placeholder="e.g., Software Engineer"
                           className={formErrors.role ? 'border-red-500' : ''}
                         />
-                        {formErrors.role && <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>}
+                        {formErrors.role && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.role}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="package">Package Range</Label>
                         <Input
                           id="package"
-                          value={formData.package}
-                          onChange={(e) => setFormData({...formData, package: e.target.value})}
+                          value={formData.salary_package}
+                          onChange={e =>
+                            setFormData({ ...formData, salary_package: e.target.value })
+                          }
                           placeholder="e.g., ₹25-35 LPA"
                         />
+                      </div>
+                      <div>
+                        <Label htmlFor="positions">Positions Available *</Label>
+                        <Input
+                          id="positions"
+                          type="number"
+                          min="1"
+                          value={formData.positions_available}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              positions_available: parseInt(e.target.value) || 1,
+                            })
+                          }
+                          className={formErrors.positions_available ? 'border-red-500' : ''}
+                        />
+                        {formErrors.positions_available && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {formErrors.positions_available}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="date">Drive Date *</Label>
                         <Input
                           id="date"
                           type="date"
-                          value={formData.date}
-                          onChange={(e) => setFormData({...formData, date: e.target.value})}
-                          className={formErrors.date ? 'border-red-500' : ''}
+                          value={formData.drive_date}
+                          onChange={e => setFormData({ ...formData, drive_date: e.target.value })}
+                          className={formErrors.drive_date ? 'border-red-500' : ''}
                         />
-                        {formErrors.date && <p className="text-red-500 text-sm mt-1">{formErrors.date}</p>}
+                        {formErrors.drive_date && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.drive_date}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="time">Time *</Label>
                         <Input
                           id="time"
                           type="time"
-                          value={formData.time}
-                          onChange={(e) => setFormData({...formData, time: e.target.value})}
+                          value={formData.drive_time}
+                          onChange={e => setFormData({ ...formData, drive_time: e.target.value })}
                           className={formErrors.time ? 'border-red-500' : ''}
                         />
-                        {formErrors.time && <p className="text-red-500 text-sm mt-1">{formErrors.time}</p>}
+                        {formErrors.time && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.time}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="mode">Mode</Label>
-                        <Select value={formData.mode} onValueChange={(value) => setFormData({...formData, mode: value})}>
+                        <Select
+                          value={formData.mode}
+                          onValueChange={(value: 'Online' | 'Offline' | 'Hybrid') =>
+                            setFormData({ ...formData, mode: value })
+                          }
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -372,7 +420,7 @@ const PlacementDrives = () => {
                         <Input
                           id="location"
                           value={formData.location}
-                          onChange={(e) => setFormData({...formData, location: e.target.value})}
+                          onChange={e => setFormData({ ...formData, location: e.target.value })}
                           placeholder="e.g., Main Auditorium, Block B"
                         />
                       </div>
@@ -380,23 +428,31 @@ const PlacementDrives = () => {
                         <Label htmlFor="eligibility">Eligibility Criteria *</Label>
                         <Input
                           id="eligibility"
-                          value={formData.eligibility}
-                          onChange={(e) => setFormData({...formData, eligibility: e.target.value})}
+                          value={formData.eligibility_criteria}
+                          onChange={e =>
+                            setFormData({ ...formData, eligibility_criteria: e.target.value })
+                          }
                           placeholder="e.g., CSE, IT - 7.5+ CGPA"
                           className={formErrors.eligibility ? 'border-red-500' : ''}
                         />
-                        {formErrors.eligibility && <p className="text-red-500 text-sm mt-1">{formErrors.eligibility}</p>}
+                        {formErrors.eligibility && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.eligibility}</p>
+                        )}
                       </div>
                       <div>
                         <Label htmlFor="lastDate">Last Date of Registration *</Label>
                         <Input
                           id="lastDate"
                           type="date"
-                          value={formData.lastDate}
-                          onChange={(e) => setFormData({...formData, lastDate: e.target.value})}
+                          value={formData.registration_deadline}
+                          onChange={e =>
+                            setFormData({ ...formData, registration_deadline: e.target.value })
+                          }
                           className={formErrors.lastDate ? 'border-red-500' : ''}
                         />
-                        {formErrors.lastDate && <p className="text-red-500 text-sm mt-1">{formErrors.lastDate}</p>}
+                        {formErrors.lastDate && (
+                          <p className="text-red-500 text-sm mt-1">{formErrors.lastDate}</p>
+                        )}
                       </div>
                     </div>
                     <div>
@@ -404,7 +460,7 @@ const PlacementDrives = () => {
                       <Textarea
                         id="requirements"
                         value={formData.requirements}
-                        onChange={(e) => setFormData({...formData, requirements: e.target.value})}
+                        onChange={e => setFormData({ ...formData, requirements: e.target.value })}
                         placeholder="e.g., Strong programming skills in Java/Python, Data Structures & Algorithms"
                         rows={3}
                       />
@@ -414,15 +470,15 @@ const PlacementDrives = () => {
                       <Textarea
                         id="description"
                         value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        onChange={e => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Additional details about the drive, selection process, benefits..."
                         rows={4}
                       />
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <Button 
-                        type="button" 
-                        variant="outline" 
+                      <Button
+                        type="button"
+                        variant="outline"
                         onClick={() => {
                           setIsCreateModalOpen(false);
                           resetFormData();
@@ -431,8 +487,8 @@ const PlacementDrives = () => {
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         className="bg-orange-600 hover:bg-orange-700"
                         disabled={isSubmitting}
                       >
@@ -500,7 +556,7 @@ const PlacementDrives = () => {
                 <Input
                   placeholder="Search drives..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 w-64"
                 />
               </div>
@@ -538,88 +594,111 @@ const PlacementDrives = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredDrives.map((drive) => (
-                  <TableRow key={drive.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{drive.title}</p>
-                        {drive.package && (
-                          <Badge variant="outline" className="mt-1 font-mono text-xs">
-                            {drive.package}
-                          </Badge>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Building2 className="h-4 w-4 mr-2 text-gray-500" />
-                        <div>
-                          <p className="font-medium">{drive.company}</p>
-                          <p className="text-sm text-gray-600">{drive.role}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <div className="flex items-center">
-                          <Calendar className="h-4 w-4 mr-1 text-gray-500" />
-                          {drive.date}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <Clock className="h-3 w-3 mr-1" />
-                          {formatTime(drive.time)}
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600 mt-1">
-                          <MapPin className="h-3 w-3 mr-1" />
-                          {drive.mode}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <GraduationCap className="h-4 w-4 mr-1 text-gray-500" />
-                        <p className="text-sm">{drive.eligibility}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-gray-500" />
-                        {drive.registrations}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(drive.status)}>
-                        {drive.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => navigate(`/college/placement-drives/${drive.id}/view`)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => navigate(`/college/placement-drives/${drive.id}/manage`)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          size="sm" 
-                          variant="outline" 
-                          onClick={() => handleDeleteDrive(drive.id)}
-                          className="text-red-600 hover:text-red-700"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                        <span className="ml-2">Loading placement drives...</span>
                       </div>
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : filteredDrives.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="text-gray-500">
+                        <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                        <p className="text-lg font-medium mb-2">No placement drives found</p>
+                        <p className="text-sm">Create your first placement drive to get started</p>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredDrives.map(drive => (
+                    <TableRow key={drive._id || drive.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{drive.title}</p>
+                          {drive.salary_package && (
+                            <Badge variant="outline" className="mt-1 font-mono text-xs">
+                              {drive.salary_package}
+                            </Badge>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Building2 className="h-4 w-4 mr-2 text-gray-500" />
+                          <div>
+                            <p className="font-medium">{drive.company}</p>
+                            <p className="text-sm text-gray-600">{drive.role}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <div className="flex items-center">
+                            <Calendar className="h-4 w-4 mr-1 text-gray-500" />
+                            {drive.drive_date}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600 mt-1">
+                            <Clock className="h-3 w-3 mr-1" />
+                            {formatTime(drive.drive_time)}
+                          </div>
+                          <div className="flex items-center text-sm text-gray-600 mt-1">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {drive.mode}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <GraduationCap className="h-4 w-4 mr-1 text-gray-500" />
+                          <p className="text-sm">{drive.eligibility_criteria}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <Users className="h-4 w-4 mr-1 text-gray-500" />
+                          {drive.registrations}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={getStatusColor(drive.status)}>{drive.status}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              navigate(`/college/placement-drives/${drive._id || drive.id}/view`)
+                            }
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              navigate(`/college/placement-drives/${drive._id || drive.id}/manage`)
+                            }
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDrive(drive._id || drive.id!)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </CardContent>
