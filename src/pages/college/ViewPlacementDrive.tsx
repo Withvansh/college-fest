@@ -1,149 +1,63 @@
-
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "sonner";
-import { 
-  ArrowLeft, 
-  Building2, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  GraduationCap, 
-  Users, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { toast } from 'sonner';
+import {
+  ArrowLeft,
+  Building2,
+  Calendar,
+  Clock,
+  MapPin,
+  GraduationCap,
+  Users,
   Download,
   Phone,
   Mail,
-  Edit
-} from "lucide-react";
-
-interface PlacementDrive {
-  id: number;
-  title: string;
-  company: string;
-  role: string;
-  date: string;
-  time: string;
-  eligibility: string;
-  mode: string;
-  registrations: number;
-  status: string;
-  lastDate: string;
-  description?: string;
-  location?: string;
-  package?: string;
-  requirements?: string;
-}
-
-interface RegisteredStudent {
-  id: number;
-  name: string;
-  rollNumber: string;
-  branch: string;
-  cgpa: number;
-  email: string;
-  phone: string;
-  registrationDate: string;
-}
+  Edit,
+} from 'lucide-react';
+import { placementDriveAPI } from '@/lib/api/placementDrives';
+import { PlacementDrive, PlacementRegistration } from '@/lib/api/placementDrives';
 
 const ViewPlacementDrive = () => {
   const { driveId } = useParams();
   const navigate = useNavigate();
-  const [drive, setDrive] = useState<PlacementDrive | null>(null);
-  const [registeredStudents] = useState<RegisteredStudent[]>([
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      rollNumber: "21CSE001",
-      branch: "CSE",
-      cgpa: 8.5,
-      email: "rahul.sharma@college.edu",
-      phone: "+91 9876543210",
-      registrationDate: "2024-12-20"
-    },
-    {
-      id: 2,
-      name: "Priya Patel",
-      rollNumber: "21IT002",
-      branch: "IT",
-      cgpa: 9.1,
-      email: "priya.patel@college.edu",
-      phone: "+91 9876543211",
-      registrationDate: "2024-12-21"
-    },
-    {
-      id: 3,
-      name: "Amit Kumar",
-      rollNumber: "21CSE003",
-      branch: "CSE",
-      cgpa: 7.8,
-      email: "amit.kumar@college.edu",
-      phone: "+91 9876543212",
-      registrationDate: "2024-12-22"
-    }
-  ]);
 
-  // Mock data for drives
-  const mockDrives = [
-    {
-      id: 1,
-      title: "Google Software Engineer Drive",
-      company: "Google Inc.",
-      role: "Software Engineer",
-      date: "2025-01-15",
-      time: "10:00",
-      eligibility: "CSE, IT - 7.5+ CGPA",
-      mode: "Online",
-      registrations: 156,
-      status: "Open",
-      lastDate: "2025-01-10",
-      description: "Looking for talented software engineers to join our team.",
-      location: "Virtual Meeting Room",
-      package: "₹25-35 LPA",
-      requirements: "Strong programming skills in Java/Python"
-    },
-    {
-      id: 2,
-      title: "Microsoft Product Manager Drive",
-      company: "Microsoft",
-      role: "Product Manager",
-      date: "2025-01-22",
-      time: "14:00",
-      eligibility: "All Branches - 8.0+ CGPA",
-      mode: "Offline",
-      registrations: 89,
-      status: "Open",
-      lastDate: "2025-01-18",
-      description: "Seeking product managers for innovative projects.",
-      location: "Main Auditorium",
-      package: "₹30-40 LPA",
-      requirements: "Leadership skills and technical background"
-    },
-    {
-      id: 3,
-      title: "Amazon SDE Drive",
-      company: "Amazon",
-      role: "Software Development Engineer",
-      date: "2025-01-08",
-      time: "11:00",
-      eligibility: "CSE, IT - 7.0+ CGPA",
-      mode: "Hybrid",
-      registrations: 203,
-      status: "Closed",
-      lastDate: "2025-01-05",
-      description: "Join Amazon's engineering team.",
-      location: "Conference Hall A",
-      package: "₹22-28 LPA",
-      requirements: "DSA knowledge and system design"
-    }
-  ];
+  const [drive, setDrive] = useState<PlacementDrive | null>(null);
+  const [registrations, setRegistrations] = useState<PlacementRegistration[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const foundDrive = mockDrives.find(d => d.id === parseInt(driveId || '0'));
-    setDrive(foundDrive || null);
+    const fetchDriveData = async () => {
+      if (!driveId) return;
+
+      setIsLoading(true);
+      try {
+        // Fetch drive details
+        const driveData = await placementDriveAPI.getPlacementDriveById(driveId);
+        setDrive(driveData);
+
+        // Fetch registrations for this drive
+        const registrationsData = await placementDriveAPI.getDriveRegistrations(driveId);
+        setRegistrations(registrationsData.registrations);
+      } catch (error) {
+        console.error('Error fetching drive data:', error);
+        toast.error('Failed to load drive details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDriveData();
   }, [driveId]);
 
   const formatTime = (time: string) => {
@@ -160,32 +74,38 @@ const ViewPlacementDrive = () => {
     return date.toLocaleDateString('en-IN', {
       day: '2-digit',
       month: 'short',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Open': return 'bg-green-100 text-green-700';
-      case 'Closed': return 'bg-red-100 text-red-700';
-      case 'Upcoming': return 'bg-blue-100 text-blue-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Open':
+        return 'bg-green-100 text-green-700';
+      case 'Closed':
+        return 'bg-red-100 text-red-700';
+      case 'Upcoming':
+        return 'bg-blue-100 text-blue-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
   const handleExportRegistrations = () => {
     const csvContent = [
       ['Name', 'Roll Number', 'Branch', 'CGPA', 'Email', 'Phone', 'Registration Date'],
-      ...registeredStudents.map(student => [
-        student.name,
-        student.rollNumber,
-        student.branch,
-        student.cgpa,
-        student.email,
-        student.phone,
-        student.registrationDate
-      ])
-    ].map(row => row.join(',')).join('\n');
+      ...registrations.map(registration => [
+        registration.student_name || 'N/A',
+        registration.roll_number || 'N/A',
+        registration.branch || 'N/A',
+        registration.cgpa || 'N/A',
+        registration.email || 'N/A',
+        registration.phone || 'N/A',
+        new Date(registration.registration_date).toLocaleDateString(),
+      ]),
+    ]
+      .map(row => row.join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -193,9 +113,19 @@ const ViewPlacementDrive = () => {
     a.href = url;
     a.download = `${drive?.title.replace(/\s+/g, '_')}_registrations.csv`;
     a.click();
-    
-    toast.success("Registration list exported successfully!");
+
+    toast.success('Registration list exported successfully!');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Loading drive details...</h1>
+        </div>
+      </div>
+    );
+  }
 
   if (!drive) {
     return (
@@ -220,7 +150,10 @@ const ViewPlacementDrive = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/college/placement-drives" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Link
+                to="/college/placement-drives"
+                className="flex items-center text-gray-600 hover:text-gray-900"
+              >
                 <ArrowLeft className="h-5 w-5 mr-2" />
                 Back to All Drives
               </Link>
@@ -231,7 +164,7 @@ const ViewPlacementDrive = () => {
                 <Download className="h-4 w-4 mr-2" />
                 Export Registrations
               </Button>
-              <Button 
+              <Button
                 className="bg-orange-600 hover:bg-orange-700"
                 onClick={() => navigate(`/college/placement-drives/${drive.id}/manage`)}
               >
@@ -271,11 +204,11 @@ const ViewPlacementDrive = () => {
                         <span className="font-medium w-24">Role:</span>
                         <span>{drive.role}</span>
                       </div>
-                      {drive.package && (
+                      {drive.salary_package && (
                         <div className="flex items-center">
                           <span className="font-medium w-24">Package:</span>
                           <Badge variant="outline" className="font-mono">
-                            {drive.package}
+                            {drive.salary_package}
                           </Badge>
                         </div>
                       )}
@@ -296,15 +229,17 @@ const ViewPlacementDrive = () => {
                     <div className="space-y-3">
                       <div className="flex items-center">
                         <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{formatDate(drive.date)}</span>
+                        <span>{formatDate(drive.drive_date)}</span>
                       </div>
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{formatTime(drive.time)}</span>
+                        <span>{formatTime(drive.drive_time)}</span>
                       </div>
                       <div className="flex items-center">
                         <span className="font-medium">Last Date:</span>
-                        <span className="ml-2 text-red-600">{formatDate(drive.lastDate)}</span>
+                        <span className="ml-2 text-red-600">
+                          {formatDate(drive.registration_deadline)}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -314,7 +249,7 @@ const ViewPlacementDrive = () => {
                   <h3 className="font-semibold text-gray-900 mb-3">Eligibility Criteria</h3>
                   <div className="flex items-center">
                     <GraduationCap className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{drive.eligibility}</span>
+                    <span>{drive.eligibility_criteria}</span>
                   </div>
                 </div>
 
@@ -370,7 +305,7 @@ const ViewPlacementDrive = () => {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle>Registered Students ({registeredStudents.length})</CardTitle>
+              <CardTitle>Registered Students ({registrations.length})</CardTitle>
               <Button variant="outline" onClick={handleExportRegistrations}>
                 <Download className="h-4 w-4 mr-2" />
                 Export List
@@ -388,35 +323,33 @@ const ViewPlacementDrive = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {registeredStudents.map((student) => (
-                  <TableRow key={student.id}>
+                {registrations.map(registration => (
+                  <TableRow key={registration._id}>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{student.name}</p>
-                        <p className="text-sm text-gray-600">{student.rollNumber}</p>
+                        <p className="font-medium">{registration.student_name}</p>
+                        <p className="text-sm text-gray-600">{registration.roll_number}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-medium">{student.branch}</p>
-                        <p className="text-sm text-gray-600">CGPA: {student.cgpa}</p>
+                        <p className="font-medium">{registration.branch}</p>
+                        <p className="text-sm text-gray-600">CGPA: {registration.cgpa}</p>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-center text-sm">
                           <Mail className="h-3 w-3 mr-1" />
-                          {student.email}
+                          {registration.email}
                         </div>
                         <div className="flex items-center text-sm">
                           <Phone className="h-3 w-3 mr-1" />
-                          {student.phone}
+                          {registration.phone}
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {formatDate(student.registrationDate)}
-                    </TableCell>
+                    <TableCell>{formatDate(registration.registration_date)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
