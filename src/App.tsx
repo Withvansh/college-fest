@@ -94,6 +94,7 @@ import AdminLogin from './pages/admin/AdminLogin';
 import BlogManagement from './pages/admin/BlogManagement';
 import RecruiterDashboardDynamic from './pages/recruiter/RecruiterDashboardDynamic';
 import ProfilePage from './pages/ProfilePage';
+import ProfileRedirect from './components/ProfileRedirect';
 import DigitalProducts from '@/pages/DigitalProducts';
 import ProductManagement from './pages/admin/ProductManagement';
 import BlogDetailPage from '@/pages/BlogDetailPage';
@@ -234,7 +235,7 @@ const App = () => {
                       </UnifiedProtectedRoute>
                     }
                   />
-                  
+
                   <Route
                     path="/recruiter/dashboard/:dashboardId"
                     element={
@@ -503,7 +504,7 @@ const App = () => {
                           'student',
                         ]}
                       >
-                        <ProfilePage />
+                        <ProfileRedirect />
                       </UnifiedProtectedRoute>
                     }
                   />
