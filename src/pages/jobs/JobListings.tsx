@@ -8,6 +8,8 @@ import JobFilterTags from '@/components/jobs/JobFilterTags';
 import JobSidebar from '@/components/jobs/JobSidebar';
 import JobCard from '@/components/jobs/JobCard';
 import { Building2 } from 'lucide-react';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
+import Footer from '@/components/Footer';
 
 interface Job {
   _id: string;
@@ -166,6 +168,8 @@ const JobListings = () => {
           )}
         </main>
       </div>
+       {/* <Footer />
+      <FloatingActionButtons /> */}
     </div>
   );
 };

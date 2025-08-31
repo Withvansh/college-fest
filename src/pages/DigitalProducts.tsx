@@ -22,6 +22,8 @@ import {
   DialogDescription,
   DialogFooter,
 } from '@/components/ui/dialog';
+import Footer from '@/components/Footer';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
 
 interface DigitalProduct {
   _id: string;
@@ -364,6 +366,8 @@ const DigitalProducts = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+       {/* <Footer />
+      <FloatingActionButtons /> */}
     </div>
   );
 };

@@ -3,14 +3,6 @@ import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { ArrowRight, Search, Star, Users, Code, Briefcase, Clock } from 'lucide-react';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-  DropdownMenuLabel,
-} from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import Footer from '@/components/Footer';
 import LiveFeedsSection from '@/components/LiveFeedsSection';
@@ -276,23 +268,6 @@ const LandingPage = () => {
                 <ArrowRight className="w-6 h-6 ml-3" />
               </Button>
             </div>
-
-            {/* Debug Panel - Only in development */}
-            {/* {process.env.NODE_ENV === 'development' && (
-              <div className="fixed bottom-4 right-4 bg-black/90 text-white p-4 rounded-lg text-xs max-w-sm z-50">
-                <div className="font-bold mb-2">Auth Debug:</div>
-                <div>Authenticated: {String(isAuthenticated)}</div>
-                <div>Loading: {String(loading)}</div>
-                <div>User ID: {user?._id || 'None'}</div>
-                <div>Role: {user?.role || 'None'}</div>
-                <div>Email: {user?.email || 'None'}</div>
-                <div className="mt-2 font-bold">LocalStorage:</div>
-                <div>token: {!!localStorage.getItem('token') ? 'Yes' : 'No'}</div>
-                <div>authToken: {!!localStorage.getItem('authToken') ? 'Yes' : 'No'}</div>
-                <div>user: {!!localStorage.getItem('user') ? 'Yes' : 'No'}</div>
-                <div>userRole: {localStorage.getItem('userRole') || 'None'}</div>
-              </div>
-            )} */}
           </div>
         </div>
       </div>

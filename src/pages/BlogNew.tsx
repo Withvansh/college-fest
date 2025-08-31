@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Calendar, ArrowRight, Search, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { blogApi, BlogPost } from '@/lib/api/blog';
 
@@ -91,7 +92,7 @@ const Blog = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* <Navbar /> */}
+      <Navbar />
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16">

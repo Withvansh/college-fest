@@ -4,42 +4,37 @@ import { Calendar, ArrowLeft, Clock, Tag, Share } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-
+import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { blogApi, BlogPost } from '@/lib/api/blog';
-import { useAuth } from '@/hooks/useAuth';
 
 const BlogDetailPage = () => {
-  const { slug, id } = useParams<{ slug?: string; id?: string }>();
+  const { slug } = useParams<{ slug: string }>();
   const [post, setPost] = useState<BlogPost | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [relatedPosts, setRelatedPosts] = useState<BlogPost[]>([]);
-  const { user } = useAuth();
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        let foundPost: BlogPost | null = null;
-
         if (slug) {
-          foundPost = await blogApi.getPostBySlug(slug);
-        } else if (id) {
-          foundPost = await blogApi.getPostById(id);
-        }
-
-        if (foundPost) {
-          setPost(foundPost);
-          // Fetch related posts based on tags
-          if (foundPost.tags && foundPost.tags.length > 0) {
-            const allPosts = await blogApi.getPublishedPosts(1, 20);
-            const related = allPosts
-              .filter(
-                p => p.id !== foundPost.id && p.tags?.some(tag => foundPost.tags?.includes(tag))
-              )
-              .slice(0, 3);
-            setRelatedPosts(related);
+          const foundPost = await blogApi.getPostBySlug(slug);
+          if (foundPost) {
+            setPost(foundPost);
+            // Fetch related posts based on tags
+            if (foundPost.tags && foundPost.tags.length > 0) {
+              const allPosts = await blogApi.getPublishedPosts(1, 20);
+              const related = allPosts
+                .filter(
+                  p => p.id !== foundPost.id && p.tags?.some(tag => foundPost.tags?.includes(tag))
+                )
+                .slice(0, 3);
+              setRelatedPosts(related);
+            }
+          } else {
+            setNotFound(true);
           }
         } else {
           setNotFound(true);
@@ -81,7 +76,7 @@ const BlogDetailPage = () => {
   if (loading) {
     return (
       <>
-        {/* <Navbar /> */}
+        <Navbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
@@ -96,7 +91,7 @@ const BlogDetailPage = () => {
   if (notFound || !post) {
     return (
       <>
-        {/* <Navbar /> */}
+        <Navbar />
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">404 - Article Not Found</h1>
@@ -122,7 +117,7 @@ const BlogDetailPage = () => {
   return (
     <>
       <div className="min-h-screen bg-gray-50">
-        {/* <Navbar /> */}
+        <Navbar />
 
         <article className="container mx-auto px-4 py-12 max-w-4xl">
           {/* Back Button */}
@@ -255,20 +250,18 @@ const BlogDetailPage = () => {
             </section>
           )}
 
-          {/* Call to Action - Only show when user is not logged in */}
-          {!user && (
-            <section className="mt-16 text-center bg-blue-600 text-white p-8 rounded-lg">
-              <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
-              <p className="text-blue-100 mb-6">
-                Join thousands of companies using MinuteHire for their hiring needs.
-              </p>
-              <Link to="/auth?tab=signup&type=recruiter">
-                <Button variant="secondary" size="lg">
-                  Start Hiring Today
-                </Button>
-              </Link>
-            </section>
-          )}
+          {/* Call to Action */}
+          <section className="mt-16 text-center bg-blue-600 text-white p-8 rounded-lg">
+            <h2 className="text-2xl font-bold mb-4">Ready to Get Started?</h2>
+            <p className="text-blue-100 mb-6">
+              Join thousands of companies using MinuteHire for their hiring needs.
+            </p>
+            <Link to="/auth?tab=signup&type=recruiter">
+              <Button variant="secondary" size="lg">
+                Start Hiring Today
+              </Button>
+            </Link>
+          </section>
         </article>
 
         <Footer />
