@@ -83,6 +83,7 @@ const ProductDetail = lazy(() => import('@/pages/ProductDetail'));
 
 // Blog
 const Blog = lazy(() => import('@/pages/Blog'));
+const BlogDetailPage = lazy(() => import('@/pages/BlogDetailPage'));
 
 // Profile
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
@@ -223,6 +224,14 @@ export const routes: RouteObject[] = [
   {
     path: '/blog',
     element: <Blog />,
+  },
+  {
+    path: '/blog/:slug',
+    element: <BlogDetailPage />,
+  },
+  {
+    path: '/blog/post/:id',
+    element: <BlogDetailPage />,
   },
   {
     path: '/profile',

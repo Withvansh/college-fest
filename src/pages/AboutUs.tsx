@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import Footer from "@/components/Footer";
+import FloatingActionButtons from "@/components/FloatingActionButtons";
 
 const AboutUs = () => {
   const [counters, setCounters] = useState({
@@ -658,6 +660,9 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
+
+       <Footer />
+      <FloatingActionButtons />
     </div>
   );
 };

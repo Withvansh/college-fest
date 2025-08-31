@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import CategoryModal from '@/components/hire/CategoryModal';
 import ListYourselfModal from '@/components/hire/ListYourselfModal';
+import FloatingActionButtons from '@/components/FloatingActionButtons';
+import Footer from '@/components/Footer';
 
 const iconMap: Record<string, React.ComponentType<any>> = {
   Laptop,
@@ -252,6 +254,8 @@ const HirePage = () => {
           onSubmit={handleListYourself}
         /> */}
       </div>
+       {/* <Footer />
+      <FloatingActionButtons /> */}
     </div>
   );
 };
