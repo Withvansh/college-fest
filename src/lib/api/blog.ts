@@ -1,4 +1,4 @@
-
+import axiosInstance from "../utils/axios";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -64,42 +64,14 @@ export interface TagResponse {
   data: Array<{ tag: string; count: number }>;
 }
 
-// Helper function to get auth token
-const getAuthToken = (): string | null => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken');
-};
-
-// Helper function to create headers
-const createHeaders = (includeAuth: boolean = true): HeadersInit => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-
-  if (includeAuth) {
-    const token = getAuthToken();
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-  }
-
-  return headers;
-};
-
 export const blogApi = {
   // Public API methods (no authentication required)
   async getPublishedPosts(page: number = 1, limit: number = 20): Promise<BlogPost[]> {
     try {
       console.log('Fetching published blog posts...');
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/public?page=${page}&limit=${limit}`, {
-        method: 'GET',
-        headers: createHeaders(false),
-      });
+      const response = await axiosInstance.get(`/admin/blog/public?page=${page}&limit=${limit}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogListResponse = await response.json();
+      const result: BlogListResponse = response.data;
       console.log('Fetched published posts:', result.data.blogs);
       return result.data.blogs;
     } catch (error) {
@@ -141,23 +113,16 @@ export const blogApi = {
   async getPostBySlug(slug: string): Promise<BlogPost | null> {
     try {
       console.log('Fetching blog post by slug:', slug);
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/public/slug/${slug}`, {
-        method: 'GET',
-        headers: createHeaders(false),
-      });
+      const response = await axiosInstance.get(`/admin/blog/public/slug/${slug}`);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogResponse = await response.json();
+      const result: BlogResponse = response.data;
       console.log('Fetched blog post:', result.data);
       return result.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching blog post by slug:', error);
+      if (error.response?.status === 404) {
+        return null;
+      }
       return null;
     }
   },
@@ -165,16 +130,9 @@ export const blogApi = {
   async getPopularTags(limit: number = 10): Promise<Array<{ tag: string; count: number }>> {
     try {
       console.log('Fetching popular tags...');
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/tags?limit=${limit}`, {
-        method: 'GET',
-        headers: createHeaders(false),
-      });
+      const response = await axiosInstance.get(`/admin/blog/tags?limit=${limit}`);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: TagResponse = await response.json();
+      const result: TagResponse = response.data;
       console.log('Fetched popular tags:', result.data);
       return result.data;
     } catch (error) {
@@ -192,26 +150,19 @@ export const blogApi = {
   }): Promise<BlogListResponse['data']> {
     try {
       console.log('Fetching all blog posts...');
-      const queryParams = new URLSearchParams({
+      const params: any = {
         page: page.toString(),
         limit: limit.toString(),
-      });
+      };
 
-      if (filters?.status) queryParams.set('status', filters.status);
-      if (filters?.author_id) queryParams.set('author_id', filters.author_id);
-      if (filters?.tags) queryParams.set('tags', filters.tags);
-      if (filters?.search) queryParams.set('search', filters.search);
+      if (filters?.status) params.status = filters.status;
+      if (filters?.author_id) params.author_id = filters.author_id;
+      if (filters?.tags) params.tags = filters.tags;
+      if (filters?.search) params.search = filters.search;
 
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog?${queryParams}`, {
-        method: 'GET',
-        headers: createHeaders(true),
-      });
+      const response = await axiosInstance.get('/admin/blog', { params });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogListResponse = await response.json();
+      const result: BlogListResponse = response.data;
       console.log('Fetched all blog posts:', result.data);
       return result.data;
     } catch (error) {
@@ -244,18 +195,9 @@ export const blogApi = {
   async createPost(post: BlogCreateData): Promise<BlogPost> {
     try {
       console.log('Creating blog post:', post);
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog`, {
-        method: 'POST',
-        headers: createHeaders(true),
-        body: JSON.stringify(post),
-      });
+      const response = await axiosInstance.post('/admin/blog', { post });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogResponse = await response.json();
+      const result: BlogResponse = response.data;
       console.log('Created blog post:', result.data);
       return result.data;
     } catch (error) {
@@ -267,21 +209,12 @@ export const blogApi = {
   async updatePost(id: string, updates: BlogUpdateData): Promise<BlogPost> {
     try {
       console.log('Updating blog post:', id, updates);
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/${id}`, {
-        method: 'PUT',
-        headers: createHeaders(true),
-        body: JSON.stringify(updates),
-      });
+      const response = await axiosInstance.put(`/admin/blog/${id}`, updates);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogResponse = await response.json();
+      const result: BlogResponse = response.data;
       console.log('Updated blog post:', result.data);
       return result.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating blog post:', error);
       throw error;
     }
@@ -290,18 +223,9 @@ export const blogApi = {
   async deletePost(id: string): Promise<void> {
     try {
       console.log('Deleting blog post:', id);
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/${id}`, {
-        method: 'DELETE',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
+      await axiosInstance.delete(`/admin/blog/${id}`);
       console.log('Deleted blog post:', id);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting blog post:', error);
       throw error;
     }
@@ -310,25 +234,16 @@ export const blogApi = {
   async getPostById(id: string): Promise<BlogPost | null> {
     try {
       console.log('Fetching blog post by ID:', id);
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/public/id/${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      const response = await axiosInstance.get(`/admin/blog/public/id/${id}`);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogResponse = await response.json();
+      const result: BlogResponse = response.data;
       console.log('Fetched blog post by ID:', result.data);
       return result.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching blog post by ID:', error);
+      if (error.response?.status === 404) {
+        return null;
+      }
       return null;
     }
   },
@@ -336,16 +251,9 @@ export const blogApi = {
   async getBlogStats(): Promise<BlogStatsResponse['data']> {
     try {
       console.log('Fetching blog statistics...');
-      const response = await fetch(`${API_BASE_URL}/api/admin/blog/stats`, {
-        method: 'GET',
-        headers: createHeaders(true),
-      });
+      const response = await axiosInstance.get('/admin/blog/stats');
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: BlogStatsResponse = await response.json();
+      const result: BlogStatsResponse = response.data;
       console.log('Fetched blog stats:', result.data);
       return result.data;
     } catch (error) {

@@ -50,7 +50,7 @@ import { PlacementDrive, CreatePlacementDriveRequest } from '@/lib/api/placement
 
 const PlacementDrives = () => {
   const navigate = useNavigate();
-  const collegeId = '507f1f77bcf86cd799439011'; // Replace with actual college ID
+  const collegeId = localStorage.getItem("user_id"); 
 
   const [drives, setDrives] = useState<PlacementDrive[]>([]);
   const [isLoading, setIsLoading] = useState(true);
