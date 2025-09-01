@@ -135,20 +135,26 @@ const RecruiterDashboardDynamic = () => {
                   1
                 );
                 console.log(`📊 Full response for job ${job.title}:`, applicationsResponse);
-                
+
                 // Handle both possible response structures
-                const total = applicationsResponse?.total || 
-                             applicationsResponse?.total || 
-                             (Array.isArray(applicationsResponse?.applications) ? applicationsResponse.applications.length : 0);
-                
+                const total =
+                  applicationsResponse?.total ||
+                  applicationsResponse?.total ||
+                  (Array.isArray(applicationsResponse?.applications)
+                    ? applicationsResponse.applications.length
+                    : 0);
+
                 console.log(`📊 Applications count for job ${job.title}:`, total);
-                
+
                 return {
                   ...job,
                   applicants: total,
                 };
               } catch (error) {
-                console.warn(`⚠️ Could not fetch applications for job ${job.title} (${job._id}):`, error);
+                console.warn(
+                  `⚠️ Could not fetch applications for job ${job.title} (${job._id}):`,
+                  error
+                );
                 return job; // Return job with 0 applicants if error
               }
             })
@@ -178,7 +184,7 @@ const RecruiterDashboardDynamic = () => {
         console.log('📋 Applications fetched successfully:', applicationsResponse);
 
         // Updated to use the correct response structure
-        const applicationsArray = applicationsResponse.applications|| []; 
+        const applicationsArray = applicationsResponse.applications || [];
         totalApplicationsCount = applicationsResponse?.total || 0;
 
         // console.log(
@@ -427,8 +433,8 @@ const RecruiterDashboardDynamic = () => {
               <span className="text-sm md:text-base text-gray-600">
                 Welcome back, {user.full_name}
               </span>
-              <Button variant="outline" size="sm" className="text-xs md:text-sm">
-                Profile
+              <Button variant="outline" size="sm" className="text-xs md:text-sm" asChild>
+                <Link to="/recruiter/profile">Profile</Link>
               </Button>
             </div>
           </div>

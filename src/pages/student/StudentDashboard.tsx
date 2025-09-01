@@ -1,16 +1,15 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Link, useNavigate } from "react-router-dom";
-import { 
-  User, 
-  Calendar, 
-  FileText, 
-  TrendingUp, 
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  User,
+  Calendar,
+  FileText,
+  TrendingUp,
   Building2,
   Clock,
   CheckCircle,
@@ -23,15 +22,15 @@ import {
   Edit,
   ChevronRight,
   Bell,
-  Star
-} from "lucide-react";
-import { toast } from "sonner";
-import ApplyDriveModal from "@/components/student/ApplyDriveModal";
-import ApplicationDetailsModal from "@/components/student/ApplicationDetailsModal";
-import ScheduleInterviewModal from "@/components/student/ScheduleInterviewModal";
-import UploadResumeModal from "@/components/student/UploadResumeModal";
-import EditProfileModal from "@/components/student/EditProfileModal";
-import CalendarView from "@/components/student/CalendarView";
+  Star,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import ApplyDriveModal from '@/components/student/ApplyDriveModal';
+import ApplicationDetailsModal from '@/components/student/ApplicationDetailsModal';
+import ScheduleInterviewModal from '@/components/student/ScheduleInterviewModal';
+import UploadResumeModal from '@/components/student/UploadResumeModal';
+import EditProfileModal from '@/components/student/EditProfileModal';
+import CalendarView from '@/components/student/CalendarView';
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -43,89 +42,91 @@ const StudentDashboard = () => {
   const [editProfileModalOpen, setEditProfileModalOpen] = useState(false);
   const [selectedDrive, setSelectedDrive] = useState(null);
   const [selectedApplication, setSelectedApplication] = useState(null);
-  const [selectedCompany, setSelectedCompany] = useState("");
-  const [activeTab, setActiveTab] = useState("drives");
+  const [selectedCompany, setSelectedCompany] = useState('');
+  const [activeTab, setActiveTab] = useState('drives');
 
   const upcomingDrives = [
     {
       id: 1,
-      company: "Google Inc.",
-      role: "Software Engineer",
-      date: "Jan 15, 2025",
-      deadline: "Jan 10, 2025",
-      package: "₹25 LPA",
-      eligibility: "CSE, IT - 7.5+ CGPA",
-      status: "Open",
-      urgent: true
+      company: 'Google Inc.',
+      role: 'Software Engineer',
+      date: 'Jan 15, 2025',
+      deadline: 'Jan 10, 2025',
+      package: '₹25 LPA',
+      eligibility: 'CSE, IT - 7.5+ CGPA',
+      status: 'Open',
+      urgent: true,
     },
     {
       id: 2,
-      company: "Microsoft",
-      role: "Product Manager",
-      date: "Jan 22, 2025",
-      deadline: "Jan 18, 2025",
-      package: "₹22 LPA",
-      eligibility: "All Branches - 8.0+ CGPA",
-      status: "Open",
-      urgent: false
-    }
+      company: 'Microsoft',
+      role: 'Product Manager',
+      date: 'Jan 22, 2025',
+      deadline: 'Jan 18, 2025',
+      package: '₹22 LPA',
+      eligibility: 'All Branches - 8.0+ CGPA',
+      status: 'Open',
+      urgent: false,
+    },
   ];
 
   const appliedDrives = [
     {
       id: 1,
-      company: "Amazon",
-      role: "SDE-1",
-      appliedDate: "Dec 15, 2024",
-      status: "Test Completed",
-      testScore: "85%",
-      nextRound: "Technical Interview"
+      company: 'Amazon',
+      role: 'SDE-1',
+      appliedDate: 'Dec 15, 2024',
+      status: 'Test Completed',
+      testScore: '85%',
+      nextRound: 'Technical Interview',
     },
     {
       id: 2,
-      company: "Flipkart",
-      role: "Data Analyst",
-      appliedDate: "Dec 10, 2024",
-      status: "Selected",
-      testScore: "92%",
-      nextRound: "HR Interview"
-    }
+      company: 'Flipkart',
+      role: 'Data Analyst',
+      appliedDate: 'Dec 10, 2024',
+      status: 'Selected',
+      testScore: '92%',
+      nextRound: 'HR Interview',
+    },
   ];
 
-  const handleApplyClick = (drive) => {
+  const handleApplyClick = drive => {
     setSelectedDrive(drive);
     setApplyModalOpen(true);
-    toast.success("Opening application form...");
+    toast.success('Opening application form...');
   };
 
-  const handleViewDetails = (application) => {
+  const handleViewDetails = application => {
     setSelectedApplication(application);
     setDetailsModalOpen(true);
   };
 
-  const handleScheduleInterview = (company) => {
+  const handleScheduleInterview = company => {
     setSelectedCompany(company);
     setScheduleModalOpen(true);
   };
 
   const handleDownloadReport = () => {
-    toast.success("Application report download started!");
+    toast.success('Application report download started!');
     setTimeout(() => {
       const element = document.createElement('a');
-      element.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(
-        `Student Application Report\n\nName: Rahul Sharma\nCollege: MIT College of Engineering\nApplications: ${appliedDrives.length}\nAverage Score: 87%\n\nDetailed History:\n${appliedDrives.map(app => `${app.company} - ${app.status} - ${app.testScore}`).join('\n')}`
-      );
+      element.href =
+        'data:text/plain;charset=utf-8,' +
+        encodeURIComponent(
+          `Student Application Report\n\nName: Rahul Sharma\nCollege: MIT College of Engineering\nApplications: ${appliedDrives.length}\nAverage Score: 87%\n\nDetailed History:\n${appliedDrives.map(app => `${app.company} - ${app.status} - ${app.testScore}`).join('\n')}`
+        );
       element.download = 'application-report.txt';
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
-      toast.success("Report downloaded successfully!");
+      toast.success('Report downloaded successfully!');
     }, 1000);
   };
 
   const handleViewAnalytics = () => {
     navigate('/student/analytics');
-    toast.info("Loading analytics...");
+    toast.info('Loading analytics...');
   };
 
   if (showCalendarView) {
@@ -135,10 +136,13 @@ const StudentDashboard = () => {
           <div className="container mx-auto px-6 py-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                  <img 
-                    src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png" 
-                    alt="MinuteHire Logo" 
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                >
+                  <img
+                    src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
+                    alt="MinuteHire Logo"
                     className="h-8 w-auto"
                   />
                   <span className="text-lg font-bold text-gray-800">MinuteHire</span>
@@ -148,13 +152,24 @@ const StudentDashboard = () => {
                 </Badge>
               </div>
               <div className="flex items-center space-x-4">
-                <Button variant="outline" size="sm" onClick={() => setUploadModalOpen(true)} className="hover:scale-105 transition-transform">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setUploadModalOpen(true)}
+                  className="hover:scale-105 transition-transform"
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Resume
                 </Button>
-                <Button size="sm" className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all" onClick={() => setEditProfileModalOpen(true)}>
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
+                <Button
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all"
+                  asChild
+                >
+                  <Link to="/student/profile">
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </Link>
                 </Button>
               </div>
             </div>
@@ -175,10 +190,13 @@ const StudentDashboard = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <img 
-                  src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png" 
-                  alt="MinuteHire Logo" 
+              <Link
+                to="/"
+                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+              >
+                <img
+                  src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
+                  alt="MinuteHire Logo"
                   className="h-8 w-auto"
                 />
                 <span className="text-lg font-bold text-gray-800">MinuteHire</span>
@@ -192,13 +210,24 @@ const StudentDashboard = () => {
                 <Bell className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 h-3 w-3 bg-red-500 rounded-full animate-pulse"></span>
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setUploadModalOpen(true)} className="hover:scale-105 transition-transform">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setUploadModalOpen(true)}
+                className="hover:scale-105 transition-transform"
+              >
                 <Download className="h-4 w-4 mr-2" />
                 Resume
               </Button>
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all" onClick={() => setEditProfileModalOpen(true)}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
+              <Button
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all"
+                asChild
+              >
+                <Link to="/student/profile">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
               </Button>
             </div>
           </div>
@@ -214,7 +243,9 @@ const StudentDashboard = () => {
                 <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   Welcome back, Rahul! 👋
                 </h1>
-                <p className="text-gray-600 text-lg">CSE Final Year • MIT College of Engineering • CGPA: 8.5</p>
+                <p className="text-gray-600 text-lg">
+                  CSE Final Year • MIT College of Engineering • CGPA: 8.5
+                </p>
               </div>
               <div className="hidden md:block">
                 <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-full">
@@ -295,19 +326,34 @@ const StudentDashboard = () => {
           {/* Enhanced Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm border">
-              <TabsTrigger value="drives" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all">
+              <TabsTrigger
+                value="drives"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
                 Available Drives
               </TabsTrigger>
-              <TabsTrigger value="applied" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all">
+              <TabsTrigger
+                value="applied"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
                 Applications
               </TabsTrigger>
-              <TabsTrigger value="tests" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all">
+              <TabsTrigger
+                value="tests"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
                 Test History
               </TabsTrigger>
-              <TabsTrigger value="profile" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all">
+              <TabsTrigger
+                value="profile"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
                 Profile
               </TabsTrigger>
-              <TabsTrigger value="analytics" className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all">
+              <TabsTrigger
+                value="analytics"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+              >
                 Analytics
               </TabsTrigger>
             </TabsList>
@@ -317,7 +363,11 @@ const StudentDashboard = () => {
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Available Placement Drives</h2>
                 <div className="flex space-x-3">
-                  <Button variant="outline" onClick={() => setShowCalendarView(true)} className="hover:scale-105 transition-transform">
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowCalendarView(true)}
+                    className="hover:scale-105 transition-transform"
+                  >
                     <Calendar className="h-4 w-4 mr-2" />
                     Calendar View
                   </Button>
@@ -327,11 +377,15 @@ const StudentDashboard = () => {
                   </Button>
                 </div>
               </div>
-              
+
               <ScrollArea className="h-[600px] pr-4">
                 <div className="space-y-4">
                   {upcomingDrives.map((drive, index) => (
-                    <Card key={drive.id} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-purple-500" style={{ animationDelay: `${index * 100}ms` }}>
+                    <Card
+                      key={drive.id}
+                      className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-l-4 border-l-purple-500"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
@@ -341,7 +395,11 @@ const StudentDashboard = () => {
                             <div>
                               <CardTitle className="text-lg flex items-center">
                                 {drive.company}
-                                {drive.urgent && <Badge variant="destructive" className="ml-2 animate-pulse">Urgent</Badge>}
+                                {drive.urgent && (
+                                  <Badge variant="destructive" className="ml-2 animate-pulse">
+                                    Urgent
+                                  </Badge>
+                                )}
                               </CardTitle>
                               <CardDescription className="text-base">{drive.role}</CardDescription>
                             </div>
@@ -375,7 +433,7 @@ const StudentDashboard = () => {
                             <p className="font-semibold text-sm">{drive.eligibility}</p>
                           </div>
                           <div className="flex justify-end">
-                            <Button 
+                            <Button
                               className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all shadow-lg"
                               onClick={() => handleApplyClick(drive)}
                             >
@@ -395,7 +453,11 @@ const StudentDashboard = () => {
             <TabsContent value="applied" className="space-y-6 animate-fade-in">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">My Applications</h2>
-                <Button variant="outline" onClick={handleDownloadReport} className="hover:scale-105 transition-transform shadow-sm">
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadReport}
+                  className="hover:scale-105 transition-transform shadow-sm"
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   Download Report
                 </Button>
@@ -404,7 +466,11 @@ const StudentDashboard = () => {
               <ScrollArea className="h-[600px] pr-4">
                 <div className="space-y-4">
                   {appliedDrives.map((application, index) => (
-                    <Card key={application.id} className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1" style={{ animationDelay: `${index * 100}ms` }}>
+                    <Card
+                      key={application.id}
+                      className="hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
                       <CardHeader>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-3">
@@ -416,9 +482,9 @@ const StudentDashboard = () => {
                               <CardDescription>{application.role}</CardDescription>
                             </div>
                           </div>
-                          <Badge 
-                            variant={application.status === "Selected" ? "secondary" : "outline"}
-                            className={`${application.status === "Selected" ? "bg-green-100 text-green-700 animate-pulse" : "bg-yellow-100 text-yellow-700"} font-semibold`}
+                          <Badge
+                            variant={application.status === 'Selected' ? 'secondary' : 'outline'}
+                            className={`${application.status === 'Selected' ? 'bg-green-100 text-green-700 animate-pulse' : 'bg-yellow-100 text-yellow-700'} font-semibold`}
                           >
                             {application.status}
                           </Badge>
@@ -434,12 +500,14 @@ const StudentDashboard = () => {
                             <p className="text-sm text-gray-600 mb-1">Test Score</p>
                             <div className="flex items-center space-x-2">
                               <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div 
+                                <div
                                   className="h-full bg-gradient-to-r from-purple-500 to-purple-600 transition-all duration-1000"
                                   style={{ width: application.testScore }}
                                 ></div>
                               </div>
-                              <p className="font-semibold text-purple-600">{application.testScore}</p>
+                              <p className="font-semibold text-purple-600">
+                                {application.testScore}
+                              </p>
                             </div>
                           </div>
                           <div>
@@ -447,17 +515,17 @@ const StudentDashboard = () => {
                             <p className="font-semibold text-sm">{application.nextRound}</p>
                           </div>
                           <div className="flex justify-end space-x-2">
-                            <Button 
-                              size="sm" 
+                            <Button
+                              size="sm"
                               variant="outline"
                               onClick={() => handleViewDetails(application)}
                               className="hover:scale-105 transition-transform"
                             >
                               View Details
                             </Button>
-                            {application.status === "Test Completed" && (
-                              <Button 
-                                size="sm" 
+                            {application.status === 'Test Completed' && (
+                              <Button
+                                size="sm"
                                 className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all"
                                 onClick={() => handleScheduleInterview(application.company)}
                               >
@@ -478,8 +546,12 @@ const StudentDashboard = () => {
             <TabsContent value="tests" className="space-y-6 animate-fade-in">
               <div className="text-center py-12">
                 <FileText className="h-20 w-20 text-gray-400 mx-auto mb-6 animate-bounce" />
-                <h3 className="text-2xl font-semibold text-gray-900 mb-4">Test Performance Dashboard</h3>
-                <p className="text-gray-600 mb-8 text-lg">Track your assessment journey and performance metrics</p>
+                <h3 className="text-2xl font-semibold text-gray-900 mb-4">
+                  Test Performance Dashboard
+                </h3>
+                <p className="text-gray-600 mb-8 text-lg">
+                  Track your assessment journey and performance metrics
+                </p>
                 <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
                   <Card className="hover:scale-105 transition-all duration-300 shadow-lg">
                     <CardContent className="p-8 text-center">
@@ -522,7 +594,9 @@ const StudentDashboard = () => {
                 <CardContent className="space-y-8">
                   <div className="grid md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">Academic Information</h4>
+                      <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">
+                        Academic Information
+                      </h4>
                       <div className="space-y-3">
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">College:</span>
@@ -543,10 +617,25 @@ const StudentDashboard = () => {
                       </div>
                     </div>
                     <div className="space-y-4">
-                      <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">Skills & Expertise</h4>
+                      <h4 className="font-semibold text-lg text-gray-800 border-b pb-2">
+                        Skills & Expertise
+                      </h4>
                       <div className="flex flex-wrap gap-3">
-                        {["Java", "Python", "React.js", "Node.js", "MongoDB", "AWS", "Docker", "Kubernetes"].map((skill) => (
-                          <Badge key={skill} variant="secondary" className="px-3 py-1 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer">
+                        {[
+                          'Java',
+                          'Python',
+                          'React.js',
+                          'Node.js',
+                          'MongoDB',
+                          'AWS',
+                          'Docker',
+                          'Kubernetes',
+                        ].map(skill => (
+                          <Badge
+                            key={skill}
+                            variant="secondary"
+                            className="px-3 py-1 bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors cursor-pointer"
+                          >
                             {skill}
                           </Badge>
                         ))}
@@ -554,11 +643,19 @@ const StudentDashboard = () => {
                     </div>
                   </div>
                   <div className="flex space-x-4 pt-4 border-t">
-                    <Button variant="outline" onClick={() => setUploadModalOpen(true)} className="hover:scale-105 transition-transform">
+                    <Button
+                      variant="outline"
+                      onClick={() => setUploadModalOpen(true)}
+                      className="hover:scale-105 transition-transform"
+                    >
                       <Upload className="h-4 w-4 mr-2" />
                       Upload Resume
                     </Button>
-                    <Button variant="outline" onClick={() => setEditProfileModalOpen(true)} className="hover:scale-105 transition-transform">
+                    <Button
+                      variant="outline"
+                      onClick={() => setEditProfileModalOpen(true)}
+                      className="hover:scale-105 transition-transform"
+                    >
                       <Edit className="h-4 w-4 mr-2" />
                       Edit Profile
                     </Button>
@@ -573,10 +670,11 @@ const StudentDashboard = () => {
                 <BarChart3 className="h-24 w-24 text-gray-400 mx-auto mb-6 animate-pulse" />
                 <h3 className="text-2xl font-semibold text-gray-900 mb-4">Performance Analytics</h3>
                 <p className="text-gray-600 mb-8 text-lg max-w-2xl mx-auto">
-                  Get detailed insights into your placement journey, performance trends, and improvement recommendations
+                  Get detailed insights into your placement journey, performance trends, and
+                  improvement recommendations
                 </p>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all shadow-lg px-8 py-3"
                   onClick={handleViewAnalytics}
                 >
@@ -590,30 +688,27 @@ const StudentDashboard = () => {
       </ScrollArea>
 
       {/* Modals */}
-      <ApplyDriveModal 
+      <ApplyDriveModal
         isOpen={applyModalOpen}
         onClose={() => setApplyModalOpen(false)}
         drive={selectedDrive}
       />
 
-      <ApplicationDetailsModal 
+      <ApplicationDetailsModal
         isOpen={detailsModalOpen}
         onClose={() => setDetailsModalOpen(false)}
         application={selectedApplication}
       />
 
-      <ScheduleInterviewModal 
+      <ScheduleInterviewModal
         isOpen={scheduleModalOpen}
         onClose={() => setScheduleModalOpen(false)}
         companyName={selectedCompany}
       />
 
-      <UploadResumeModal 
-        isOpen={uploadModalOpen}
-        onClose={() => setUploadModalOpen(false)}
-      />
+      <UploadResumeModal isOpen={uploadModalOpen} onClose={() => setUploadModalOpen(false)} />
 
-      <EditProfileModal 
+      <EditProfileModal
         isOpen={editProfileModalOpen}
         onClose={() => setEditProfileModalOpen(false)}
       />

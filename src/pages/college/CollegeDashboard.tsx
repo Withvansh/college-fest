@@ -19,6 +19,7 @@ import {
   FileText,
   Star,
   Trophy,
+  User,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -106,6 +107,12 @@ const CollegeDashboard = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">College Dashboard</h1>
             <div className="flex items-center space-x-4">
+              <Button variant="outline" asChild>
+                <Link to="/college/profile">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </Button>
               <Button
                 className="bg-orange-600 hover:bg-orange-700"
                 onClick={() => navigate('/college/placement-drives')}

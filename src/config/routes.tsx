@@ -46,6 +46,7 @@ const TestDetails = lazy(() => import('@/pages/jobseeker/TestDetails'));
 
 const RecruiterDashboard = lazy(() => import('@/pages/recruiter/RecruiterDashboard'));
 const RecruiterDashboardDynamic = lazy(() => import('@/pages/recruiter/RecruiterDashboardDynamic'));
+const RecruiterProfile = lazy(() => import('@/pages/recruiter/RecruiterProfile'));
 const PostJob = lazy(() => import('@/pages/recruiter/PostJob'));
 const CreateTest = lazy(() => import('@/pages/recruiter/CreateTest'));
 
@@ -57,15 +58,18 @@ const FreelancerEarnings = lazy(() => import('@/pages/freelancer/FreelancerEarni
 const GigDetails = lazy(() => import('@/pages/freelancer/GigDetails'));
 
 const ClientDashboard = lazy(() => import('@/pages/client/ClientDashboard'));
+const ClientProfile = lazy(() => import('@/pages/client/ClientProfile'));
 const PostGig = lazy(() => import('@/pages/client/PostGig'));
 const BrowseFreelancers = lazy(() => import('@/pages/client/BrowseFreelancers'));
 const GigDetail = lazy(() => import('@/pages/client/GigDetail'));
 const ClientChat = lazy(() => import('@/pages/client/ClientChat'));
 
 const StudentDashboard = lazy(() => import('@/pages/student/StudentDashboard'));
+const StudentProfile = lazy(() => import('@/pages/student/StudentProfile'));
 const StudentAnalytics = lazy(() => import('@/pages/student/StudentAnalytics'));
 
 const CollegeDashboard = lazy(() => import('@/pages/college/CollegeDashboard'));
+const CollegeProfile = lazy(() => import('@/pages/college/CollegeProfile'));
 const Students = lazy(() => import('@/pages/college/Students'));
 const Companies = lazy(() => import('@/pages/college/Companies'));
 const PlacementDrives = lazy(() => import('@/pages/college/PlacementDrives'));
@@ -93,6 +97,7 @@ const ProfileSetup = lazy(() => import('@/components/profile/ProfileSetup'));
 const AdminAccess = lazy(() => import('@/pages/AdminAccess'));
 const AdminLogin = lazy(() => import('@/pages/admin/AdminLogin'));
 const AdminDashboard = lazy(() => import('@/pages/admin/AdminDashboard'));
+const AdminProfile = lazy(() => import('@/pages/admin/AdminProfile'));
 const ManageUsers = lazy(() => import('@/pages/admin/ManageUsers'));
 const ManageJobs = lazy(() => import('@/pages/admin/ManageJobs'));
 const ManageTests = lazy(() => import('@/pages/admin/ManageTests'));
@@ -318,6 +323,10 @@ export const routes: RouteObject[] = [
     element: <RecruiterDashboard />,
   },
   {
+    path: '/recruiter/profile',
+    element: <RecruiterProfile />,
+  },
+  {
     path: '/recruiter/post-job',
     element: <PostJob />,
   },
@@ -358,6 +367,10 @@ export const routes: RouteObject[] = [
     element: <ClientDashboard />,
   },
   {
+    path: '/client/profile',
+    element: <ClientProfile />,
+  },
+  {
     path: '/client/post-gig',
     element: <PostGig />,
   },
@@ -380,6 +393,10 @@ export const routes: RouteObject[] = [
     element: <StudentDashboard />,
   },
   {
+    path: '/student/profile',
+    element: <StudentProfile />,
+  },
+  {
     path: '/student/analytics',
     element: <StudentAnalytics />,
   },
@@ -388,6 +405,10 @@ export const routes: RouteObject[] = [
   {
     path: '/college/dashboard',
     element: <CollegeDashboard />,
+  },
+  {
+    path: '/college/profile',
+    element: <CollegeProfile />,
   },
   {
     path: '/college/students',
@@ -426,6 +447,10 @@ export const routes: RouteObject[] = [
   {
     path: '/admin',
     element: <AdminDashboard />,
+  },
+  {
+    path: '/admin/profile',
+    element: <AdminProfile />,
   },
   {
     path: '/admin/users',
