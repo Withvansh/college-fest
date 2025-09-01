@@ -1,19 +1,18 @@
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Link, useNavigate } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
-import { useToast } from "@/hooks/use-toast";
-import FreelancerProfileModal from "@/components/client/FreelancerProfileModal";
-import { 
-  DollarSign, 
-  Star, 
-  Clock, 
-  Briefcase, 
-  TrendingUp, 
+import { useToast } from '@/hooks/use-toast';
+import FreelancerProfileModal from '@/components/client/FreelancerProfileModal';
+import {
+  DollarSign,
+  Star,
+  Clock,
+  Briefcase,
+  TrendingUp,
   Eye,
   MessageSquare,
   FileText,
@@ -24,8 +23,9 @@ import {
   CheckCircle,
   Search,
   Users,
-  Filter
-} from "lucide-react";
+  Filter,
+  User,
+} from 'lucide-react';
 
 const ClientDashboard = () => {
   const navigate = useNavigate();
@@ -37,84 +37,86 @@ const ClientDashboard = () => {
   const activeProjects = [
     {
       id: 1,
-      title: "E-commerce Website Development",
-      freelancer: "Alex Johnson",
-      budget: "₹2,10,000",
-      deadline: "Dec 30, 2024",
+      title: 'E-commerce Website Development',
+      freelancer: 'Alex Johnson',
+      budget: '₹2,10,000',
+      deadline: 'Dec 30, 2024',
       progress: 75,
-      status: "In Progress",
+      status: 'In Progress',
       milestones: 3,
-      completedMilestones: 2
+      completedMilestones: 2,
     },
     {
       id: 2,
-      title: "Mobile App UI/UX Design",
-      freelancer: "Sarah Wilson",
-      budget: "₹1,51,000",
-      deadline: "Jan 15, 2025",
+      title: 'Mobile App UI/UX Design',
+      freelancer: 'Sarah Wilson',
+      budget: '₹1,51,000',
+      deadline: 'Jan 15, 2025',
       progress: 40,
-      status: "In Progress",
+      status: 'In Progress',
       milestones: 4,
-      completedMilestones: 1
-    }
+      completedMilestones: 1,
+    },
   ];
 
   const receivedProposals = [
     {
       id: 1,
-      projectTitle: "React.js Dashboard Development",
+      projectTitle: 'React.js Dashboard Development',
       freelancer: {
         id: 1,
-        name: "Mike Chen",
-        avatar: "/api/placeholder/100/100",
-        title: "Senior React Developer",
+        name: 'Mike Chen',
+        avatar: '/api/placeholder/100/100',
+        title: 'Senior React Developer',
         rating: 4.8,
         reviews: 127,
         hourlyRate: 85,
-        skills: ["React", "TypeScript", "Node.js", "MongoDB", "GraphQL"],
-        bio: "Experienced full-stack developer with 8+ years of expertise in React, Node.js, and modern web technologies. I specialize in building scalable web applications and have worked with 50+ clients worldwide.",
+        skills: ['React', 'TypeScript', 'Node.js', 'MongoDB', 'GraphQL'],
+        bio: 'Experienced full-stack developer with 8+ years of expertise in React, Node.js, and modern web technologies. I specialize in building scalable web applications and have worked with 50+ clients worldwide.',
         completedProjects: 89,
         successRate: 98,
-        location: "San Francisco, CA"
+        location: 'San Francisco, CA',
       },
-      bidAmount: "₹1,00,000",
+      bidAmount: '₹1,00,000',
       proposals: 12,
-      coverLetter: "I have 5+ years of experience in React.js development and have built numerous dashboards for enterprise clients. I can deliver this project within 2 weeks with clean, maintainable code.",
-      timeline: "2 weeks"
+      coverLetter:
+        'I have 5+ years of experience in React.js development and have built numerous dashboards for enterprise clients. I can deliver this project within 2 weeks with clean, maintainable code.',
+      timeline: '2 weeks',
     },
     {
       id: 2,
-      projectTitle: "Logo Design for Startup",
+      projectTitle: 'Logo Design for Startup',
       freelancer: {
         id: 2,
-        name: "Emma Davis",
-        avatar: "/api/placeholder/100/100",
-        title: "Creative Designer & Brand Strategist",
+        name: 'Emma Davis',
+        avatar: '/api/placeholder/100/100',
+        title: 'Creative Designer & Brand Strategist',
         rating: 4.9,
         reviews: 203,
         hourlyRate: 65,
-        skills: ["Logo Design", "Branding", "Illustrator", "Photoshop", "Figma"],
+        skills: ['Logo Design', 'Branding', 'Illustrator', 'Photoshop', 'Figma'],
         bio: "Award-winning designer with 6+ years of experience creating memorable brand identities. I've helped 100+ startups and established companies build their visual presence.",
         completedProjects: 156,
         successRate: 99,
-        location: "New York, NY"
+        location: 'New York, NY',
       },
-      bidAmount: "₹37,600",
+      bidAmount: '₹37,600',
       proposals: 8,
-      coverLetter: "I specialize in minimalist logo designs that capture brand essence. My approach involves thorough research and multiple concept iterations to ensure the perfect fit for your startup.",
-      timeline: "5 days"
-    }
+      coverLetter:
+        'I specialize in minimalist logo designs that capture brand essence. My approach involves thorough research and multiple concept iterations to ensure the perfect fit for your startup.',
+      timeline: '5 days',
+    },
   ];
 
   const handleAcceptProposal = (proposalId, freelancerName) => {
     setAcceptedProposals(prev => new Set([...prev, proposalId]));
     toast({
-      title: "Proposal Accepted!",
+      title: 'Proposal Accepted!',
       description: `You have successfully hired ${freelancerName}. They will be notified and can start working on your project.`,
     });
   };
 
-  const handleViewProfile = (freelancer) => {
+  const handleViewProfile = freelancer => {
     setSelectedFreelancer(freelancer);
     setIsProfileModalOpen(true);
   };
@@ -127,9 +129,9 @@ const ClientDashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link to="/" className="flex items-center space-x-3">
-                <img 
-                  src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png" 
-                  alt="MinuteHire Logo" 
+                <img
+                  src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
+                  alt="MinuteHire Logo"
                   className="h-8 w-auto"
                 />
                 <span className="text-lg font-bold text-gray-800">MinuteHire</span>
@@ -139,16 +141,18 @@ const ClientDashboard = () => {
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => navigate('/client/chat')}
-              >
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/client/profile">
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => navigate('/client/chat')}>
                 <MessageSquare className="h-4 w-4 mr-2" />
                 Messages
               </Button>
-              <Button 
-                size="sm" 
+              <Button
+                size="sm"
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => navigate('/client/post-gig')}
               >
@@ -240,9 +244,9 @@ const ClientDashboard = () => {
                 View All
               </Button>
             </div>
-            
+
             <div className="grid gap-6">
-              {activeProjects.map((project) => (
+              {activeProjects.map(project => (
                 <Card key={project.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -267,14 +271,16 @@ const ClientDashboard = () => {
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Milestones</p>
-                        <p className="font-semibold">{project.completedMilestones}/{project.milestones}</p>
+                        <p className="font-semibold">
+                          {project.completedMilestones}/{project.milestones}
+                        </p>
                       </div>
                       <div>
                         <p className="text-sm text-gray-600">Progress</p>
                         <div className="flex items-center space-x-2">
                           <div className="flex-1 bg-gray-200 rounded-full h-2">
-                            <div 
-                              className="bg-blue-600 h-2 rounded-full" 
+                            <div
+                              className="bg-blue-600 h-2 rounded-full"
                               style={{ width: `${project.progress}%` }}
                             ></div>
                           </div>
@@ -282,16 +288,16 @@ const ClientDashboard = () => {
                         </div>
                       </div>
                       <div className="flex space-x-2">
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => navigate('/client/chat')}
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Chat
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           className="bg-blue-600 hover:bg-blue-700"
                           onClick={() => navigate(`/client/gig/${project.id}`)}
                         >
@@ -317,7 +323,7 @@ const ClientDashboard = () => {
             </div>
 
             <div className="grid gap-6">
-              {receivedProposals.map((proposal) => (
+              {receivedProposals.map(proposal => (
                 <Card key={proposal.id} className="hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <div className="flex items-center justify-between">
@@ -336,7 +342,9 @@ const ClientDashboard = () => {
                       <div className="grid md:grid-cols-3 gap-4">
                         <div>
                           <p className="text-sm text-gray-600">Bid Amount</p>
-                          <p className="font-semibold text-green-600 text-lg">{proposal.bidAmount}</p>
+                          <p className="font-semibold text-green-600 text-lg">
+                            {proposal.bidAmount}
+                          </p>
                         </div>
                         <div>
                           <p className="text-sm text-gray-600">Timeline</p>
@@ -347,7 +355,7 @@ const ClientDashboard = () => {
                           <p className="font-semibold">{proposal.proposals} received</p>
                         </div>
                       </div>
-                      
+
                       <div>
                         <p className="text-sm text-gray-600 mb-2">Cover Letter</p>
                         <p className="text-gray-700 italic">{proposal.coverLetter}</p>
@@ -355,30 +363,36 @@ const ClientDashboard = () => {
 
                       <div className="flex space-x-3">
                         {acceptedProposals.has(proposal.id) ? (
-                          <Button size="sm" disabled className="bg-green-100 text-green-800 border-green-200">
+                          <Button
+                            size="sm"
+                            disabled
+                            className="bg-green-100 text-green-800 border-green-200"
+                          >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Accepted
                           </Button>
                         ) : (
-                          <Button 
-                            size="sm" 
+                          <Button
+                            size="sm"
                             className="bg-green-600 hover:bg-green-700"
-                            onClick={() => handleAcceptProposal(proposal.id, proposal.freelancer.name)}
+                            onClick={() =>
+                              handleAcceptProposal(proposal.id, proposal.freelancer.name)
+                            }
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
                             Accept
                           </Button>
                         )}
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => navigate('/client/chat')}
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Message
                         </Button>
-                        <Button 
-                          size="sm" 
+                        <Button
+                          size="sm"
                           variant="outline"
                           onClick={() => handleViewProfile(proposal.freelancer)}
                         >
@@ -399,8 +413,8 @@ const ClientDashboard = () => {
               <Briefcase className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Manage Your Gigs</h3>
               <p className="text-gray-600 mb-6">Create and manage your project postings</p>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => navigate('/client/post-gig')}
               >
@@ -416,8 +430,8 @@ const ClientDashboard = () => {
               <Users className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Find Freelancers</h3>
               <p className="text-gray-600 mb-6">Browse and hire talented freelancers</p>
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
                 onClick={() => navigate('/client/browse-freelancers')}
               >
@@ -431,7 +445,7 @@ const ClientDashboard = () => {
 
       {/* Freelancer Profile Modal */}
       {selectedFreelancer && (
-        <FreelancerProfileModal 
+        <FreelancerProfileModal
           isOpen={isProfileModalOpen}
           onClose={() => {
             setIsProfileModalOpen(false);

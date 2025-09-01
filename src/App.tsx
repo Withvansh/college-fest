@@ -39,6 +39,7 @@ import JobDetailsPage from './pages/jobs/JobDetailsPage';
 import JobListings from './pages/jobs/JobListings';
 import TestDetails from './pages/jobseeker/TestDetails';
 import RecruiterDashboard from './pages/recruiter/RecruiterDashboard';
+import RecruiterProfile from './pages/recruiter/RecruiterProfile';
 import PostJob from './pages/recruiter/PostJob';
 import CreateTest from './pages/recruiter/CreateTest';
 import HRMSLayout from './components/hrms/HRMSLayout';
@@ -62,11 +63,13 @@ import FreelancerPortfolio from './pages/freelancer/FreelancerPortfolio';
 import FreelancerEarnings from './pages/freelancer/FreelancerEarnings';
 import GigDetails from './pages/freelancer/GigDetails';
 import ClientDashboard from './pages/client/ClientDashboard';
+import ClientProfile from './pages/client/ClientProfile';
 import PostGig from './pages/client/PostGig';
 import ClientChat from './pages/client/ClientChat';
 import GigDetail from './pages/client/GigDetail';
 import BrowseFreelancers from './pages/client/BrowseFreelancers';
 import CollegeDashboard from './pages/college/CollegeDashboard';
+import CollegeProfile from './pages/college/CollegeProfile';
 import PlacementDrives from './pages/college/PlacementDrives';
 import ViewPlacementDrive from './pages/college/ViewPlacementDrive';
 import ManagePlacementDrive from './pages/college/ManagePlacementDrive';
@@ -74,8 +77,10 @@ import Students from './pages/college/Students';
 import Companies from './pages/college/Companies';
 import Reports from './pages/college/Reports';
 import StudentDashboard from './pages/student/StudentDashboard';
+import StudentProfile from './pages/student/StudentProfile';
 import StudentAnalytics from './pages/student/StudentAnalytics';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProfile from './pages/admin/AdminProfile';
 import ManageUsers from './pages/admin/ManageUsers';
 import ManageJobs from './pages/admin/ManageJobs';
 import ManageTests from './pages/admin/ManageTests';
@@ -106,6 +111,7 @@ import HirePage from './pages/HirePage';
 import JobPostings from './pages/recruiter/AllJobs';
 import ViewPosting from './pages/recruiter/ViewPosting';
 import AllApplications from './pages/recruiter/AllApplications';
+import UniversalProfile from './components/profile/UniversalProfile';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -241,6 +247,15 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['recruiter']}>
                         <RecruiterDashboardDynamic />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/recruiter/profile"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                        <RecruiterProfile />
+                        
                       </UnifiedProtectedRoute>
                     }
                   />
@@ -383,6 +398,14 @@ const App = () => {
                     }
                   />
                   <Route
+                    path="/client/profile"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['client']}>
+                        <ClientProfile />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/client/post-gig"
                     element={
                       <UnifiedProtectedRoute allowedRoles={['client']}>
@@ -421,6 +444,14 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['college']}>
                         <CollegeDashboard />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/college/profile"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['college']}>
+                        <CollegeProfile />
                       </UnifiedProtectedRoute>
                     }
                   />
@@ -483,6 +514,14 @@ const App = () => {
                     }
                   />
                   <Route
+                    path="/student/profile"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['student']}>
+                        <StudentProfile />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
                     path="/student/analytics"
                     element={
                       <UnifiedProtectedRoute allowedRoles={['student']}>
@@ -521,6 +560,7 @@ const App = () => {
                     }
                   >
                     <Route path="dashboard" element={<AdminDashboard />} />
+                    <Route path="profile" element={<AdminProfile />} />
                     <Route path="users" element={<ManageUsers />} />
                     <Route path="jobs" element={<ManageJobs />} />
                     <Route path="tests" element={<ManageTests />} />
