@@ -20,6 +20,7 @@ import {
   Star,
   Trophy,
   Upload,
+  User,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -147,6 +148,16 @@ const CollegeDashboard = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">College Dashboard</h1>
             <div className="flex items-center space-x-4">
+              {/* Profile Button */}
+              <Button
+                variant="outline"
+                onClick={() => navigate('/college/profile')}
+                className="border-gray-300 text-gray-700 hover:bg-gray-50"
+              >
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </Button>
+
               {/* Excel Upload Button */}
               <div className="relative">
                 <input
