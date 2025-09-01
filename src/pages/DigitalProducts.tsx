@@ -26,7 +26,7 @@ import Footer from '@/components/Footer';
 import FloatingActionButtons from '@/components/FloatingActionButtons';
 
 interface DigitalProduct {
-  _id: string;
+  id: string;
   title: string;
   short_description?: string;
   benefits?: string[];
@@ -144,7 +144,7 @@ const DigitalProducts = () => {
       }
 
       const { data } = await axios.put(
-        `/digitalproducts/purchaseproduct/${product._id}`,
+        `/digitalproducts/purchaseproduct/${product.id}`,
         { userId },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -261,7 +261,7 @@ const DigitalProducts = () => {
 
               return (
                 <Card
-                  key={product._id}
+                  key={product.id}
                   className="h-full flex flex-col hover:shadow-lg transition-shadow"
                 >
                   <CardHeader className="flex-shrink-0">
@@ -313,7 +313,7 @@ const DigitalProducts = () => {
                   <CardFooter className="flex-shrink-0">
                     <div className="w-full space-y-2">
                       {!isPurchased ? (
-                        <PhonePePayment productId={product._id} className="w-full">
+                        <PhonePePayment productId={product.id} className="w-full">
                           <ShoppingCart className="h-4 w-4 mr-2" />
                           Buy Now - ₹{product.price}
                         </PhonePePayment>
