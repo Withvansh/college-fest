@@ -8,14 +8,14 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  ArrowLeft, 
-  User, 
-  Phone, 
-  MapPin, 
-  Edit, 
-  Save, 
-  X, 
+import {
+  ArrowLeft,
+  User,
+  Phone,
+  MapPin,
+  Edit,
+  Save,
+  X,
   Plus,
   Upload,
   Briefcase,
@@ -25,7 +25,13 @@ import {
   Building2,
   Code,
   DollarSign,
-  GraduationCap
+  GraduationCap,
+  FileText,
+  Hash,
+  School,
+  Users,
+  Building,
+  Mail,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -44,13 +50,44 @@ interface UserProfile {
   bio: string;
   skills: string[];
   avatarUrl?: string;
-  // Role-specific fields
-  hourlyRate?: number;
+
+  // JobSeeker specific
+  resume_url?: string;
+  experience?: number;
+
+  // College specific
+  college_name?: string;
+  institute_code?: string;
+  university_affiliation?: string;
+  city?: string;
+  state?: string;
+  accreditation?: string;
+  tpo_name?: string;
+  tpo_email?: string;
+  tpo_mobile?: string;
+  course_branch?: string;
+  total_students?: number;
+
+  // Student specific
+  enrollment_no?: string;
+  course?: string;
+  year?: number;
+  department?: string;
+  college_id?: string;
+
+  // Client specific
+  company_name?: string;
+  industry?: string;
+
+  // Freelancer specific
+  portfolio_url?: string;
+  hourly_rate?: number;
+
+  // Recruiter specific (base user with company info)
   companyName?: string;
   website?: string;
-  collegeName?: string;
-  degree?: string;
-  graduationYear?: string;
+
+  // Common additional fields
   publicProfile?: boolean;
 }
 
@@ -70,7 +107,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       setLoading(true);
       const res = await axios.get(`/user/${user._id}`);
       const data = res.data.user;
-      
+
       setProfile({
         id: data._id,
         name: data.full_name,
@@ -78,14 +115,45 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         phone: data.phone || '',
         location: data.location || '',
         bio: data.bio || '',
-        skills: data.skills || [],
+        skills: ['jobseeker', 'freelancer'].includes(userRole) ? data.skills || [] : [],
         avatarUrl: data.avatar_url || '',
-        hourlyRate: data.hourlyRate || 0,
+
+        // JobSeeker specific
+        resume_url: data.resume_url || '',
+        experience: data.experience || 0,
+
+        // College specific
+        college_name: data.college_name || '',
+        institute_code: data.institute_code || '',
+        university_affiliation: data.university_affiliation || '',
+        city: data.city || '',
+        state: data.state || '',
+        accreditation: data.accreditation || '',
+        tpo_name: data.tpo_name || '',
+        tpo_email: data.tpo_email || '',
+        tpo_mobile: data.tpo_mobile || '',
+        course_branch: data.course_branch || '',
+        total_students: data.total_students || 0,
+
+        // Student specific
+        enrollment_no: data.enrollment_no || '',
+        course: data.course || '',
+        year: data.year || 0,
+        department: data.department || '',
+        college_id: data.college_id || '',
+
+        // Client specific
+        company_name: data.company_name || '',
+        industry: data.industry || '',
+
+        // Freelancer specific
+        portfolio_url: data.portfolio_url || '',
+        hourly_rate: data.hourly_rate || 0,
+
+        // Recruiter specific (using base user fields)
         companyName: data.companyName || '',
         website: data.website || '',
-        collegeName: data.collegeName || '',
-        degree: data.degree || '',
-        graduationYear: data.graduationYear || '',
+
         publicProfile: data.publicProfile ?? true,
       });
     } catch (error) {
@@ -112,15 +180,47 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         phone: profile.phone,
         location: profile.location,
         bio: profile.bio,
-        skills: profile.skills,
         avatar_url: profile.avatarUrl,
         publicProfile: profile.publicProfile,
-        hourlyRate: profile.hourlyRate,
+
+        // Only include skills for JobSeeker and Freelancer
+        ...(['jobseeker', 'freelancer'].includes(userRole) && { skills: profile.skills }),
+
+        // JobSeeker specific
+        resume_url: profile.resume_url,
+        experience: profile.experience,
+
+        // College specific
+        college_name: profile.college_name,
+        institute_code: profile.institute_code,
+        university_affiliation: profile.university_affiliation,
+        city: profile.city,
+        state: profile.state,
+        accreditation: profile.accreditation,
+        tpo_name: profile.tpo_name,
+        tpo_email: profile.tpo_email,
+        tpo_mobile: profile.tpo_mobile,
+        course_branch: profile.course_branch,
+        total_students: profile.total_students,
+
+        // Student specific
+        enrollment_no: profile.enrollment_no,
+        course: profile.course,
+        year: profile.year,
+        department: profile.department,
+        college_id: profile.college_id,
+
+        // Client specific
+        company_name: profile.company_name,
+        industry: profile.industry,
+
+        // Freelancer specific
+        portfolio_url: profile.portfolio_url,
+        hourly_rate: profile.hourly_rate,
+
+        // Recruiter specific
         companyName: profile.companyName,
         website: profile.website,
-        collegeName: profile.collegeName,
-        degree: profile.degree,
-        graduationYear: profile.graduationYear,
       };
       await axios.put(`/user/${user._id}`, payload);
       toast.success('Profile updated successfully!');
@@ -133,50 +233,64 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   };
 
   const handleAddSkill = () => {
-    if (!newSkill.trim() || !profile) return;
+    if (!newSkill.trim() || !profile || !['jobseeker', 'freelancer'].includes(userRole)) return;
 
     if (profile.skills.includes(newSkill.trim())) {
       toast.error('Skill already exists');
       return;
     }
 
-    setProfile(prev =>
-      prev ? { ...prev, skills: [...prev.skills, newSkill.trim()] } : null
-    );
+    setProfile(prev => (prev ? { ...prev, skills: [...prev.skills, newSkill.trim()] } : null));
     setNewSkill('');
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
+    if (!['jobseeker', 'freelancer'].includes(userRole)) return;
+
     setProfile(prev =>
-      prev
-        ? { ...prev, skills: prev.skills.filter(skill => skill !== skillToRemove) }
-        : null
+      prev ? { ...prev, skills: prev.skills.filter(skill => skill !== skillToRemove) } : null
     );
   };
 
   const getDashboardPath = () => {
     switch (userRole) {
-      case 'jobseeker': return '/jobseeker/dashboard';
-      case 'recruiter': return '/recruiter/dashboard';
-      case 'freelancer': return '/freelancer/dashboard';
-      case 'client': return '/client/dashboard';
-      case 'college': return '/college/dashboard';
-      case 'student': return '/student/dashboard';
-      case 'admin': return '/admin/dashboard';
-      default: return '/dashboard';
+      case 'jobseeker':
+        return '/jobseeker/dashboard';
+      case 'recruiter':
+        return '/recruiter/dashboard';
+      case 'freelancer':
+        return '/freelancer/dashboard';
+      case 'client':
+        return '/client/dashboard';
+      case 'college':
+        return '/college/dashboard';
+      case 'student':
+        return '/student/dashboard';
+      case 'admin':
+        return '/admin/dashboard';
+      default:
+        return '/dashboard';
     }
   };
 
   const getRoleDisplayName = () => {
     switch (userRole) {
-      case 'jobseeker': return 'Job Seeker';
-      case 'recruiter': return 'Recruiter';
-      case 'freelancer': return 'Freelancer';
-      case 'client': return 'Client';
-      case 'college': return 'College';
-      case 'student': return 'Student';
-      case 'admin': return 'Admin';
-      default: return 'User';
+      case 'jobseeker':
+        return 'Job Seeker';
+      case 'recruiter':
+        return 'Recruiter';
+      case 'freelancer':
+        return 'Freelancer';
+      case 'client':
+        return 'Client';
+      case 'college':
+        return 'College';
+      case 'student':
+        return 'Student';
+      case 'admin':
+        return 'Admin';
+      default:
+        return 'User';
     }
   };
 
@@ -184,23 +298,64 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     if (!isEditing) return null;
 
     switch (userRole) {
+      case 'jobseeker':
+        return (
+          <>
+            <div>
+              <Label htmlFor="experience">Years of Experience</Label>
+              <Input
+                id="experience"
+                type="number"
+                value={profile?.experience || 0}
+                onChange={e =>
+                  setProfile(prev =>
+                    prev ? { ...prev, experience: parseInt(e.target.value) || 0 } : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="resume_url">Resume URL</Label>
+              <Input
+                id="resume_url"
+                value={profile?.resume_url || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, resume_url: e.target.value } : null))
+                }
+              />
+            </div>
+          </>
+        );
+
       case 'freelancer':
         return (
-          <div>
-            <Label htmlFor="hourlyRate">Hourly Rate (₹)</Label>
-            <Input
-              id="hourlyRate"
-              type="number"
-              value={profile?.hourlyRate || 0}
-              onChange={e =>
-                setProfile(prev => 
-                  prev ? { ...prev, hourlyRate: parseInt(e.target.value) || 0 } : null
-                )
-              }
-            />
-          </div>
+          <>
+            <div>
+              <Label htmlFor="hourly_rate">Hourly Rate (₹)</Label>
+              <Input
+                id="hourly_rate"
+                type="number"
+                value={profile?.hourly_rate || 0}
+                onChange={e =>
+                  setProfile(prev =>
+                    prev ? { ...prev, hourly_rate: parseInt(e.target.value) || 0 } : null
+                  )
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="portfolio_url">Portfolio URL</Label>
+              <Input
+                id="portfolio_url"
+                value={profile?.portfolio_url || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, portfolio_url: e.target.value } : null))
+                }
+              />
+            </div>
+          </>
         );
-      
+
       case 'recruiter':
         return (
           <>
@@ -210,9 +365,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 id="companyName"
                 value={profile?.companyName || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, companyName: e.target.value } : null
-                  )
+                  setProfile(prev => (prev ? { ...prev, companyName: e.target.value } : null))
                 }
               />
             </div>
@@ -222,9 +375,33 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 id="website"
                 value={profile?.website || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, website: e.target.value } : null
-                  )
+                  setProfile(prev => (prev ? { ...prev, website: e.target.value } : null))
+                }
+              />
+            </div>
+          </>
+        );
+
+      case 'client':
+        return (
+          <>
+            <div>
+              <Label htmlFor="company_name">Company Name</Label>
+              <Input
+                id="company_name"
+                value={profile?.company_name || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, company_name: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="industry">Industry</Label>
+              <Input
+                id="industry"
+                value={profile?.industry || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, industry: e.target.value } : null))
                 }
               />
             </div>
@@ -235,25 +412,67 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="collegeName">College Name</Label>
+              <Label htmlFor="college_name">College Name</Label>
               <Input
-                id="collegeName"
-                value={profile?.collegeName || ''}
+                id="college_name"
+                value={profile?.college_name || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, collegeName: e.target.value } : null
+                  setProfile(prev => (prev ? { ...prev, college_name: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="institute_code">Institute Code</Label>
+              <Input
+                id="institute_code"
+                value={profile?.institute_code || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, institute_code: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="university_affiliation">University Affiliation</Label>
+              <Input
+                id="university_affiliation"
+                value={profile?.university_affiliation || ''}
+                onChange={e =>
+                  setProfile(prev =>
+                    prev ? { ...prev, university_affiliation: e.target.value } : null
                   )
                 }
               />
             </div>
             <div>
-              <Label htmlFor="website">College Website</Label>
+              <Label htmlFor="tpo_name">TPO Name</Label>
               <Input
-                id="website"
-                value={profile?.website || ''}
+                id="tpo_name"
+                value={profile?.tpo_name || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, website: e.target.value } : null
+                  setProfile(prev => (prev ? { ...prev, tpo_name: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="tpo_email">TPO Email</Label>
+              <Input
+                id="tpo_email"
+                type="email"
+                value={profile?.tpo_email || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, tpo_email: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="total_students">Total Students</Label>
+              <Input
+                id="total_students"
+                type="number"
+                value={profile?.total_students || 0}
+                onChange={e =>
+                  setProfile(prev =>
+                    prev ? { ...prev, total_students: parseInt(e.target.value) || 0 } : null
                   )
                 }
               />
@@ -265,38 +484,45 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="collegeName">College Name</Label>
+              <Label htmlFor="enrollment_no">Enrollment Number</Label>
               <Input
-                id="collegeName"
-                value={profile?.collegeName || ''}
+                id="enrollment_no"
+                value={profile?.enrollment_no || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, collegeName: e.target.value } : null
+                  setProfile(prev => (prev ? { ...prev, enrollment_no: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="course">Course</Label>
+              <Input
+                id="course"
+                value={profile?.course || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, course: e.target.value } : null))
+                }
+              />
+            </div>
+            <div>
+              <Label htmlFor="year">Year</Label>
+              <Input
+                id="year"
+                type="number"
+                value={profile?.year || 0}
+                onChange={e =>
+                  setProfile(prev =>
+                    prev ? { ...prev, year: parseInt(e.target.value) || 0 } : null
                   )
                 }
               />
             </div>
             <div>
-              <Label htmlFor="degree">Degree</Label>
+              <Label htmlFor="department">Department</Label>
               <Input
-                id="degree"
-                value={profile?.degree || ''}
+                id="department"
+                value={profile?.department || ''}
                 onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, degree: e.target.value } : null
-                  )
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="graduationYear">Graduation Year</Label>
-              <Input
-                id="graduationYear"
-                value={profile?.graduationYear || ''}
-                onChange={e =>
-                  setProfile(prev => 
-                    prev ? { ...prev, graduationYear: e.target.value } : null
-                  )
+                  setProfile(prev => (prev ? { ...prev, department: e.target.value } : null))
                 }
               />
             </div>
@@ -312,14 +538,56 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     if (isEditing) return null;
 
     switch (userRole) {
+      case 'jobseeker':
+        return (
+          <>
+            {profile?.experience !== undefined && profile.experience > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Award className="h-4 w-4 mr-2" />
+                <span>{profile.experience} years experience</span>
+              </div>
+            )}
+            {profile?.resume_url && (
+              <div className="flex items-center text-sm text-gray-600">
+                <FileText className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.resume_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Resume
+                </a>
+              </div>
+            )}
+          </>
+        );
+
       case 'freelancer':
-        return profile?.hourlyRate ? (
-          <div className="flex items-center text-sm text-gray-600">
-            <DollarSign className="h-4 w-4 mr-2" />
-            <span>₹{profile.hourlyRate}/hour</span>
-          </div>
-        ) : null;
-      
+        return (
+          <>
+            {profile?.hourly_rate && profile.hourly_rate > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <DollarSign className="h-4 w-4 mr-2" />
+                <span>₹{profile.hourly_rate}/hour</span>
+              </div>
+            )}
+            {profile?.portfolio_url && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Code className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.portfolio_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  View Portfolio
+                </a>
+              </div>
+            )}
+          </>
+        );
+
       case 'recruiter':
         return (
           <>
@@ -332,7 +600,32 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
             {profile?.website && (
               <div className="flex items-center text-sm text-gray-600">
                 <Code className="h-4 w-4 mr-2" />
-                <span>{profile.website}</span>
+                <a
+                  href={profile.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {profile.website}
+                </a>
+              </div>
+            )}
+          </>
+        );
+
+      case 'client':
+        return (
+          <>
+            {profile?.company_name && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Building2 className="h-4 w-4 mr-2" />
+                <span>{profile.company_name}</span>
+              </div>
+            )}
+            {profile?.industry && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase className="h-4 w-4 mr-2" />
+                <span>{profile.industry}</span>
               </div>
             )}
           </>
@@ -341,16 +634,34 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'college':
         return (
           <>
-            {profile?.collegeName && (
+            {profile?.college_name && (
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap className="h-4 w-4 mr-2" />
-                <span>{profile.collegeName}</span>
+                <span>{profile.college_name}</span>
               </div>
             )}
-            {profile?.website && (
+            {profile?.institute_code && (
               <div className="flex items-center text-sm text-gray-600">
-                <Code className="h-4 w-4 mr-2" />
-                <span>{profile.website}</span>
+                <Hash className="h-4 w-4 mr-2" />
+                <span>Code: {profile.institute_code}</span>
+              </div>
+            )}
+            {profile?.university_affiliation && (
+              <div className="flex items-center text-sm text-gray-600">
+                <School className="h-4 w-4 mr-2" />
+                <span>{profile.university_affiliation}</span>
+              </div>
+            )}
+            {profile?.tpo_name && (
+              <div className="flex items-center text-sm text-gray-600">
+                <User className="h-4 w-4 mr-2" />
+                <span>TPO: {profile.tpo_name}</span>
+              </div>
+            )}
+            {profile?.total_students && profile.total_students > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Users className="h-4 w-4 mr-2" />
+                <span>{profile.total_students} students</span>
               </div>
             )}
           </>
@@ -359,22 +670,28 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'student':
         return (
           <>
-            {profile?.collegeName && (
+            {profile?.enrollment_no && (
               <div className="flex items-center text-sm text-gray-600">
-                <GraduationCap className="h-4 w-4 mr-2" />
-                <span>{profile.collegeName}</span>
+                <Hash className="h-4 w-4 mr-2" />
+                <span>Enrollment: {profile.enrollment_no}</span>
               </div>
             )}
-            {profile?.degree && (
+            {profile?.course && (
               <div className="flex items-center text-sm text-gray-600">
                 <BookOpen className="h-4 w-4 mr-2" />
-                <span>{profile.degree}</span>
+                <span>{profile.course}</span>
               </div>
             )}
-            {profile?.graduationYear && (
+            {profile?.year && (
               <div className="flex items-center text-sm text-gray-600">
                 <Award className="h-4 w-4 mr-2" />
-                <span>Class of {profile.graduationYear}</span>
+                <span>Year {profile.year}</span>
+              </div>
+            )}
+            {profile?.department && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Building className="h-4 w-4 mr-2" />
+                <span>{profile.department}</span>
               </div>
             )}
           </>
@@ -456,7 +773,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
                 <p className="text-gray-600 mb-2">{profile.email}</p>
-                <Badge variant="secondary" className="mb-4">{getRoleDisplayName()}</Badge>
+                <Badge variant="secondary" className="mb-4">
+                  {getRoleDisplayName()}
+                </Badge>
 
                 <div className="space-y-2 text-sm text-left">
                   {profile.phone && (
@@ -487,10 +806,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       />
                     </div>
                     <p className="text-xs text-gray-500">
-                      {userRole === 'jobseeker' 
+                      {userRole === 'jobseeker'
                         ? 'Allow recruiters to find your profile'
-                        : 'Allow clients to find your profile'
-                      }
+                        : 'Allow clients to find your profile'}
                     </p>
                   </div>
                 )}
@@ -571,43 +889,45 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               </CardContent>
             </Card>
 
-            {/* Skills */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Skills</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {profile.skills.map(skill => (
-                    <Badge key={skill} variant="secondary" className="relative group">
-                      {skill}
-                      {isEditing && (
-                        <button
-                          onClick={() => handleRemoveSkill(skill)}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-
-                {isEditing && (
-                  <div className="flex space-x-2">
-                    <Input
-                      placeholder="Add a skill"
-                      value={newSkill}
-                      onChange={e => setNewSkill(e.target.value)}
-                      onKeyPress={e => e.key === 'Enter' && handleAddSkill()}
-                    />
-                    <Button onClick={handleAddSkill} size="sm">
-                      <Plus className="h-4 w-4" />
-                    </Button>
+            {/* Skills - Only for JobSeeker and Freelancer */}
+            {(userRole === 'jobseeker' || userRole === 'freelancer') && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Skills</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {profile.skills.map(skill => (
+                      <Badge key={skill} variant="secondary" className="relative group">
+                        {skill}
+                        {isEditing && (
+                          <button
+                            onClick={() => handleRemoveSkill(skill)}
+                            className="ml-2 text-red-500 hover:text-red-700"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </Badge>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+
+                  {isEditing && (
+                    <div className="flex space-x-2">
+                      <Input
+                        placeholder="Add a skill"
+                        value={newSkill}
+                        onChange={e => setNewSkill(e.target.value)}
+                        onKeyPress={e => e.key === 'Enter' && handleAddSkill()}
+                      />
+                      <Button onClick={handleAddSkill} size="sm">
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

@@ -57,7 +57,7 @@ const ManagePlacementDrive = () => {
   const [loading, setLoading] = useState(true);
 
   // For now, using a mock college ID - replace with actual college ID from auth context
-  const collegeId = '507f1f77bcf86cd799439011'; // Replace with actual college ID
+  const collegeId = localStorage.getItem("user_id"); // Replace with actual college ID
 
   const [formData, setFormData] = useState<FormData>({
     title: '',

@@ -22,15 +22,16 @@ import {
   Edit,
   ChevronRight,
   Bell,
-  Star,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import ApplyDriveModal from '@/components/student/ApplyDriveModal';
-import ApplicationDetailsModal from '@/components/student/ApplicationDetailsModal';
-import ScheduleInterviewModal from '@/components/student/ScheduleInterviewModal';
-import UploadResumeModal from '@/components/student/UploadResumeModal';
-import EditProfileModal from '@/components/student/EditProfileModal';
-import CalendarView from '@/components/student/CalendarView';
+  Star
+} from "lucide-react";
+import { toast } from "sonner";
+import ApplyDriveModal from "@/components/student/ApplyDriveModal";
+import ApplicationDetailsModal from "@/components/student/ApplicationDetailsModal";
+import ScheduleInterviewModal from "@/components/student/ScheduleInterviewModal";
+import UploadResumeModal from "@/components/student/UploadResumeModal";
+import EditProfileModal from "@/components/student/EditProfileModal";
+import CalendarView from "@/components/student/CalendarView";
+import axiosInstance from "@/lib/utils/axios";
 
 const StudentDashboard = () => {
   const navigate = useNavigate();
@@ -123,7 +124,15 @@ const StudentDashboard = () => {
       toast.success('Report downloaded successfully!');
     }, 1000);
   };
+const fecthDrives=async ()=>{
+  try {
+    const response= await axiosInstance.get('/student/drives');
+    // setAppliedDrives(response.data);
 
+  } catch (error:any) {
+    console.log(error)
+  }
+}
   const handleViewAnalytics = () => {
     navigate('/student/analytics');
     toast.info('Loading analytics...');

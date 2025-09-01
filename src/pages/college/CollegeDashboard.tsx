@@ -19,7 +19,7 @@ import {
   FileText,
   Star,
   Trophy,
-  User,
+  Upload,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -34,6 +34,7 @@ const CollegeDashboard = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('drives');
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [dashboardData, setDashboardData] = useState<{
     stats: DashboardStats;
     upcomingDrives: PlacementDrive[];
@@ -41,7 +42,7 @@ const CollegeDashboard = () => {
   } | null>(null);
 
   // For now, using a mock college ID - replace with actual college ID from auth context
-  const collegeId = '507f1f77bcf86cd799439011'; // Replace with actual college ID
+  const collegeId = localStorage.getItem("user_id"); // Replace with actual college ID
 
   useEffect(() => {
     fetchDashboardData();
@@ -69,6 +70,45 @@ const CollegeDashboard = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Handle Excel file upload
+  const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      toast.error('Please upload an Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:3001/upload-students', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      toast.success(`Successfully uploaded ${result.count} students`);
+      
+      // Reset file input
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload students. Please try again.');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -107,12 +147,37 @@ const CollegeDashboard = () => {
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">College Dashboard</h1>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" asChild>
-                <Link to="/college/profile">
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
-                </Link>
-              </Button>
+              {/* Excel Upload Button */}
+              <div className="relative">
+                <input
+                  type="file"
+                  id="excel-upload"
+                  accept=".xlsx,.xls"
+                  onChange={handleExcelUpload}
+                  className=""
+                  disabled={uploading}
+                />
+                <label htmlFor="excel-upload">
+                  <Button
+                    variant="outline"
+                    className="border-orange-600 text-orange-600 hover:bg-orange-50"
+                    disabled={uploading}
+                  >
+                    {uploading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-orange-600 mr-2"></div>
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Students
+                      </>
+                    )}
+                  </Button>
+                </label>
+              </div>
+              
               <Button
                 className="bg-orange-600 hover:bg-orange-700"
                 onClick={() => navigate('/college/placement-drives')}

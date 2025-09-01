@@ -111,6 +111,7 @@ import HirePage from './pages/HirePage';
 import JobPostings from './pages/recruiter/AllJobs';
 import ViewPosting from './pages/recruiter/ViewPosting';
 import AllApplications from './pages/recruiter/AllApplications';
+import UniversalProfile from './components/profile/UniversalProfile';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -254,6 +255,7 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['recruiter']}>
                         <RecruiterProfile />
+                        
                       </UnifiedProtectedRoute>
                     }
                   />
