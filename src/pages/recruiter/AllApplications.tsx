@@ -144,7 +144,7 @@ const navigate = useNavigate();
     );
   }
  const goBack = () => {
-    navigate(-1); // Go back to previous page
+    navigate(-1);
   };
   return (
     <div className="p-6 max-w-7xl mx-auto">
