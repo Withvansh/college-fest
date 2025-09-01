@@ -3,61 +3,97 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Briefcase, Plus, Search, Filter, Eye, Edit, Trash2, CheckCircle, XCircle } from 'lucide-react';
-import { jobsApi } from '@/lib/api/jobs';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Briefcase,
+  Plus,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  Trash2,
+  CheckCircle,
+  XCircle,
+} from 'lucide-react';
+import { jobsApi, Job } from '@/lib/api/jobs';
 import { useToast } from '@/hooks/use-toast';
 
-interface JobWithProfile {
-  id: string;
-  title: string;
-  company_name: string;
-  location: string;
-  job_type: string;
-  status: string;
-  created_at: string;
-  min_salary?: number;
-  max_salary?: number;
-  currency?: string;
-  profiles?: {
-    full_name?: string;
-    company_name?: string;
-  };
-  job_applications?: { count: number }[];
+interface JobStats {
+  total: number;
+  active: number;
+  pending: number;
+  closed: number;
+  totalApplications: number;
 }
 
 const ManageJobs = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [jobs, setJobs] = useState<JobWithProfile[]>([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [stats, setStats] = useState<JobStats>({
+    total: 0,
+    active: 0,
+    pending: 0,
+    closed: 0,
+    totalApplications: 0,
+  });
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchJobs();
+    loadJobs();
+    loadStats();
   }, []);
 
-  const fetchJobs = async () => {
+  const loadJobs = async () => {
     try {
+      setLoading(true);
+      console.log('Loading jobs...');
       const data = await jobsApi.getAllJobs();
+      console.log('Loaded jobs:', data);
       setJobs(data || []);
     } catch (error) {
       console.error('Error fetching jobs:', error);
       toast({
         title: 'Error',
         description: 'Failed to fetch jobs',
-        variant: 'destructive'
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
     }
   };
 
+  const loadStats = async () => {
+    try {
+      const statsData = await jobsApi.getJobStats();
+      setStats(statsData);
+    } catch (error) {
+      console.error('Error fetching job stats:', error);
+    }
+  };
+
+  const fetchJobs = loadJobs; // For backward compatibility
+
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.location?.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      job.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.location?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || job.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
@@ -75,7 +111,7 @@ const ManageJobs = () => {
     }
   };
 
-  const getApplicationCount = (job: JobWithProfile) => {
+  const getApplicationCount = (job: Job) => {
     return job.job_applications?.[0]?.count || 0;
   };
 
@@ -83,19 +119,47 @@ const ManageJobs = () => {
     try {
       const newStatus = currentStatus === 'active' ? 'closed' : 'active';
       await jobsApi.updateJob(jobId, { status: newStatus });
-      
+
       toast({
         title: 'Success',
-        description: `Job ${newStatus === 'active' ? 'activated' : 'closed'} successfully`
+        description: `Job ${newStatus === 'active' ? 'activated' : 'closed'} successfully`,
       });
-      
-      fetchJobs();
+
+      loadJobs();
+      loadStats();
     } catch (error) {
       console.error('Error updating job status:', error);
       toast({
         title: 'Error',
         description: 'Failed to update job status',
-        variant: 'destructive'
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    if (
+      !window.confirm('Are you sure you want to delete this job? This action cannot be undone.')
+    ) {
+      return;
+    }
+
+    try {
+      await jobsApi.deleteJob(jobId);
+
+      toast({
+        title: 'Success',
+        description: 'Job deleted successfully',
+      });
+
+      loadJobs();
+      loadStats();
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete job',
+        variant: 'destructive',
       });
     }
   };
@@ -129,43 +193,37 @@ const ManageJobs = () => {
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{jobs.length}</div>
+            <div className="text-2xl font-bold">{stats.total}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {jobs.filter(j => j.status === 'active').length}
-            </div>
+            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
             <XCircle className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-orange-600">
-              {jobs.filter(j => j.status === 'pending').length}
-            </div>
+            <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
             <Eye className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-blue-600">
-              {jobs.reduce((total, job) => total + getApplicationCount(job), 0)}
-            </div>
+            <div className="text-2xl font-bold text-blue-600">{stats.totalApplications}</div>
           </CardContent>
         </Card>
       </div>
@@ -183,7 +241,7 @@ const ManageJobs = () => {
                 <Input
                   placeholder="Search jobs by title or company..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -216,20 +274,19 @@ const ManageJobs = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredJobs.map((job) => (
+              {filteredJobs.map(job => (
                 <TableRow key={job.id}>
                   <TableCell className="font-medium">{job.title}</TableCell>
                   <TableCell>{job.company_name}</TableCell>
                   <TableCell>{job.location}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Badge variant={getStatusBadgeVariant(job.status)}>
-                        {job.status}
-                      </Badge>
+                      <Badge variant={getStatusBadgeVariant(job.status)}>{job.status}</Badge>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStatusToggle(job.id, job.status)}
+                        title={job.status === 'active' ? 'Close job' : 'Activate job'}
                       >
                         {job.status === 'active' ? (
                           <XCircle className="h-4 w-4 text-red-500" />
@@ -242,22 +299,23 @@ const ManageJobs = () => {
                   <TableCell>
                     <span className="font-medium">{getApplicationCount(job)}</span>
                   </TableCell>
-                  <TableCell>
-                    {job.profiles?.full_name || 'Unknown'}
-                  </TableCell>
-                  <TableCell>
-                    {new Date(job.created_at).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{job.profiles?.full_name || 'Unknown'}</TableCell>
+                  <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="View job">
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" title="Edit job">
                         <Edit className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteJob(job.id)}
+                        title="Delete job"
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
                     </div>
                   </TableCell>
