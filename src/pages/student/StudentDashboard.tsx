@@ -515,9 +515,10 @@ ${applications
                               </div>
                             )}
                             <div className="flex justify-between items-center pt-3">
+                              <Link to={`/student/drive/${drive._id}`}>
                               <Button variant="outline" size="sm">
                                 View Details
-                              </Button>
+                              </Button></Link>
                               <Button
                                 size="sm"
                                 className="bg-purple-600 hover:bg-purple-700"
