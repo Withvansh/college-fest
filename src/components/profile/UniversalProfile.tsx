@@ -32,10 +32,23 @@ import {
   Users,
   Building,
   Mail,
+  Calendar,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from '@/lib/utils/axios';
+
+interface PlacementDrive {
+  _id: string;
+  company_name: string;
+  job_role: string;
+  location: string;
+  drive_date: string;
+  package: number;
+  eligibility_criteria?: string;
+  description?: string;
+  status: string;
+}
 
 interface UniversalProfileProps {
   userRole: string;
@@ -48,7 +61,7 @@ interface UserProfile {
   phone: string;
   location: string;
   bio: string;
-  skills: string[];
+  skills?: string[];
   avatarUrl?: string;
 
   // JobSeeker specific
@@ -68,19 +81,33 @@ interface UserProfile {
   course_branch?: string;
   total_students?: number;
 
-  // Student specific
+  // Student specific (all fields from User model)
   enrollment_no?: string;
   course?: string;
   year?: number;
   department?: string;
   college_id?: string;
+  cgpa?: number;
+  linkedin_url?: string;
+  github_url?: string;
+  portfolio_url?: string;
+  date_of_birth?: Date;
+  address?: string;
+  pincode?: string;
+  father_name?: string;
+  mother_name?: string;
+  emergency_contact?: string;
+  blood_group?: string;
+  profile_complete?: boolean;
+  tenth_percentage?: number;
+  twelfth_percentage?: number;
+  graduation_percentage?: number;
 
   // Client specific
   company_name?: string;
   industry?: string;
 
   // Freelancer specific
-  portfolio_url?: string;
   hourly_rate?: number;
 
   // Recruiter specific (base user with company info)
@@ -99,6 +126,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newSkill, setNewSkill] = useState('');
+  const [placementDrives, setPlacementDrives] = useState<PlacementDrive[]>([]);
 
   const loadProfile = useCallback(async () => {
     if (!user?._id) return;
@@ -115,7 +143,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         phone: data.phone || '',
         location: data.location || '',
         bio: data.bio || '',
-        skills: ['jobseeker', 'freelancer'].includes(userRole) ? data.skills || [] : [],
+        skills: ['jobseeker', 'freelancer', 'student'].includes(userRole) ? data.skills || [] : [],
         avatarUrl: data.avatar_url || '',
 
         // JobSeeker specific
@@ -135,19 +163,33 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         course_branch: data.course_branch || '',
         total_students: data.total_students || 0,
 
-        // Student specific
+        // Student specific (all fields from User model)
         enrollment_no: data.enrollment_no || '',
         course: data.course || '',
         year: data.year || 0,
         department: data.department || '',
         college_id: data.college_id || '',
+        cgpa: data.cgpa || 0,
+        linkedin_url: data.linkedin_url || '',
+        github_url: data.github_url || '',
+        portfolio_url: data.portfolio_url || '',
+        date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
+        address: data.address || '',
+        pincode: data.pincode || '',
+        father_name: data.father_name || '',
+        mother_name: data.mother_name || '',
+        emergency_contact: data.emergency_contact || '',
+        blood_group: data.blood_group || '',
+        profile_complete: data.profile_complete ?? false,
+        tenth_percentage: data.tenth_percentage || 0,
+        twelfth_percentage: data.twelfth_percentage || 0,
+        graduation_percentage: data.graduation_percentage || 0,
 
         // Client specific
         company_name: data.company_name || '',
         industry: data.industry || '',
 
         // Freelancer specific
-        portfolio_url: data.portfolio_url || '',
         hourly_rate: data.hourly_rate || 0,
 
         // Recruiter specific (using base user fields)
@@ -164,11 +206,26 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     }
   }, [user?._id]);
 
+  const loadPlacementDrives = useCallback(async () => {
+    if (!user?._id || userRole !== 'student') return;
+
+    try {
+      const res = await axios.get(`/placement-drives/student/${user._id}`);
+      setPlacementDrives(res.data.drives || []);
+    } catch (error) {
+      console.error('Error loading placement drives:', error);
+      // Don't show error toast for placement drives as it's not critical
+    }
+  }, [user?._id, userRole]);
+
   useEffect(() => {
     if (user?._id) {
       loadProfile();
+      if (userRole === 'student') {
+        loadPlacementDrives();
+      }
     }
-  }, [user?._id, loadProfile]);
+  }, [user?._id, loadProfile, loadPlacementDrives, userRole]);
 
   const handleSaveProfile = async () => {
     if (!profile || !user?._id) return;
@@ -183,8 +240,10 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         avatar_url: profile.avatarUrl,
         publicProfile: profile.publicProfile,
 
-        // Only include skills for JobSeeker and Freelancer
-        ...(['jobseeker', 'freelancer'].includes(userRole) && { skills: profile.skills }),
+        // Only include skills for JobSeeker, Freelancer, and Student
+        ...(['jobseeker', 'freelancer', 'student'].includes(userRole) && {
+          skills: profile.skills,
+        }),
 
         // JobSeeker specific
         resume_url: profile.resume_url,
@@ -203,19 +262,33 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         course_branch: profile.course_branch,
         total_students: profile.total_students,
 
-        // Student specific
+        // Student specific (all fields from User model)
         enrollment_no: profile.enrollment_no,
         course: profile.course,
         year: profile.year,
         department: profile.department,
         college_id: profile.college_id,
+        cgpa: profile.cgpa,
+        linkedin_url: profile.linkedin_url,
+        github_url: profile.github_url,
+        portfolio_url: profile.portfolio_url,
+        date_of_birth: profile.date_of_birth,
+        address: profile.address,
+        pincode: profile.pincode,
+        father_name: profile.father_name,
+        mother_name: profile.mother_name,
+        emergency_contact: profile.emergency_contact,
+        blood_group: profile.blood_group,
+        profile_complete: profile.profile_complete,
+        tenth_percentage: profile.tenth_percentage,
+        twelfth_percentage: profile.twelfth_percentage,
+        graduation_percentage: profile.graduation_percentage,
 
         // Client specific
         company_name: profile.company_name,
         industry: profile.industry,
 
         // Freelancer specific
-        portfolio_url: profile.portfolio_url,
         hourly_rate: profile.hourly_rate,
 
         // Recruiter specific
@@ -233,22 +306,27 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   };
 
   const handleAddSkill = () => {
-    if (!newSkill.trim() || !profile || !['jobseeker', 'freelancer'].includes(userRole)) return;
+    if (!newSkill.trim() || !profile || !['jobseeker', 'freelancer', 'student'].includes(userRole))
+      return;
 
-    if (profile.skills.includes(newSkill.trim())) {
+    if (profile.skills?.includes(newSkill.trim())) {
       toast.error('Skill already exists');
       return;
     }
 
-    setProfile(prev => (prev ? { ...prev, skills: [...prev.skills, newSkill.trim()] } : null));
+    setProfile(prev =>
+      prev ? { ...prev, skills: [...(prev.skills || []), newSkill.trim()] } : null
+    );
     setNewSkill('');
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
-    if (!['jobseeker', 'freelancer'].includes(userRole)) return;
+    if (!['jobseeker', 'freelancer', 'student'].includes(userRole)) return;
 
     setProfile(prev =>
-      prev ? { ...prev, skills: prev.skills.filter(skill => skill !== skillToRemove) } : null
+      prev
+        ? { ...prev, skills: (prev.skills || []).filter(skill => skill !== skillToRemove) }
+        : null
     );
   };
 
@@ -483,47 +561,233 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'student':
         return (
           <>
-            <div>
-              <Label htmlFor="enrollment_no">Enrollment Number</Label>
-              <Input
-                id="enrollment_no"
-                value={profile?.enrollment_no || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, enrollment_no: e.target.value } : null))
-                }
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="enrollment_no">Enrollment Number</Label>
+                <Input
+                  id="enrollment_no"
+                  value={profile?.enrollment_no || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, enrollment_no: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="course">Course</Label>
+                <Input
+                  id="course"
+                  value={profile?.course || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, course: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="year">Year</Label>
+                <Input
+                  id="year"
+                  type="number"
+                  min="1"
+                  max="4"
+                  value={profile?.year || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, year: parseInt(e.target.value) || 0 } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="department">Department</Label>
+                <Input
+                  id="department"
+                  value={profile?.department || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, department: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="cgpa">CGPA (0-10)</Label>
+                <Input
+                  id="cgpa"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="10"
+                  value={profile?.cgpa || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, cgpa: parseFloat(e.target.value) || 0 } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="linkedin_url">LinkedIn URL</Label>
+                <Input
+                  id="linkedin_url"
+                  type="url"
+                  value={profile?.linkedin_url || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, linkedin_url: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="github_url">GitHub URL</Label>
+                <Input
+                  id="github_url"
+                  type="url"
+                  value={profile?.github_url || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, github_url: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="portfolio_url">Portfolio URL</Label>
+                <Input
+                  id="portfolio_url"
+                  type="url"
+                  value={profile?.portfolio_url || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, portfolio_url: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="date_of_birth">Date of Birth</Label>
+                <Input
+                  id="date_of_birth"
+                  type="date"
+                  value={
+                    profile?.date_of_birth ? profile.date_of_birth.toISOString().split('T')[0] : ''
+                  }
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev
+                        ? {
+                            ...prev,
+                            date_of_birth: e.target.value ? new Date(e.target.value) : undefined,
+                          }
+                        : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="father_name">Father's Name</Label>
+                <Input
+                  id="father_name"
+                  value={profile?.father_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, father_name: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="mother_name">Mother's Name</Label>
+                <Input
+                  id="mother_name"
+                  value={profile?.mother_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, mother_name: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="emergency_contact">Emergency Contact</Label>
+                <Input
+                  id="emergency_contact"
+                  value={profile?.emergency_contact || ''}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, emergency_contact: e.target.value } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="blood_group">Blood Group</Label>
+                <Input
+                  id="blood_group"
+                  value={profile?.blood_group || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, blood_group: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="tenth_percentage">10th Percentage</Label>
+                <Input
+                  id="tenth_percentage"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={profile?.tenth_percentage || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, tenth_percentage: parseFloat(e.target.value) || 0 } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="twelfth_percentage">12th Percentage</Label>
+                <Input
+                  id="twelfth_percentage"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={profile?.twelfth_percentage || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, twelfth_percentage: parseFloat(e.target.value) || 0 } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="graduation_percentage">Graduation Percentage</Label>
+                <Input
+                  id="graduation_percentage"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  max="100"
+                  value={profile?.graduation_percentage || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev
+                        ? { ...prev, graduation_percentage: parseFloat(e.target.value) || 0 }
+                        : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="pincode">Pincode</Label>
+                <Input
+                  id="pincode"
+                  value={profile?.pincode || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, pincode: e.target.value } : null))
+                  }
+                />
+              </div>
             </div>
-            <div>
-              <Label htmlFor="course">Course</Label>
-              <Input
-                id="course"
-                value={profile?.course || ''}
+            <div className="mt-4">
+              <Label htmlFor="address">Address</Label>
+              <Textarea
+                id="address"
+                value={profile?.address || ''}
                 onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, course: e.target.value } : null))
+                  setProfile(prev => (prev ? { ...prev, address: e.target.value } : null))
                 }
-              />
-            </div>
-            <div>
-              <Label htmlFor="year">Year</Label>
-              <Input
-                id="year"
-                type="number"
-                value={profile?.year || 0}
-                onChange={e =>
-                  setProfile(prev =>
-                    prev ? { ...prev, year: parseInt(e.target.value) || 0 } : null
-                  )
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="department">Department</Label>
-              <Input
-                id="department"
-                value={profile?.department || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, department: e.target.value } : null))
-                }
+                rows={3}
               />
             </div>
           </>
@@ -692,6 +956,51 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               <div className="flex items-center text-sm text-gray-600">
                 <Building className="h-4 w-4 mr-2" />
                 <span>{profile.department}</span>
+              </div>
+            )}
+            {profile?.cgpa && profile.cgpa > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap className="h-4 w-4 mr-2" />
+                <span>CGPA: {profile.cgpa.toFixed(2)}</span>
+              </div>
+            )}
+            {profile?.linkedin_url && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Code className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.linkedin_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  LinkedIn Profile
+                </a>
+              </div>
+            )}
+            {profile?.github_url && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Code className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.github_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  GitHub Profile
+                </a>
+              </div>
+            )}
+            {profile?.portfolio_url && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Eye className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.portfolio_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  Portfolio
+                </a>
               </div>
             )}
           </>
@@ -889,8 +1198,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               </CardContent>
             </Card>
 
-            {/* Skills - Only for JobSeeker and Freelancer */}
-            {(userRole === 'jobseeker' || userRole === 'freelancer') && (
+            {/* Skills - Only for JobSeeker, Freelancer and Student */}
+            {(userRole === 'jobseeker' || userRole === 'freelancer' || userRole === 'student') && (
               <Card>
                 <CardHeader>
                   <CardTitle>Skills</CardTitle>
@@ -924,6 +1233,59 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Placement Drives - Only for Students */}
+            {userRole === 'student' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Available Placement Drives</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {placementDrives.length > 0 ? (
+                    <div className="space-y-4">
+                      {placementDrives.map(drive => (
+                        <div key={drive._id} className="border rounded-lg p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium text-lg">{drive.company_name}</h3>
+                            <Badge variant={drive.status === 'active' ? 'default' : 'secondary'}>
+                              {drive.status}
+                            </Badge>
+                          </div>
+                          <p className="text-gray-600 mb-2">{drive.job_role}</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                            <div className="flex items-center">
+                              <MapPin className="h-4 w-4 mr-2" />
+                              <span>{drive.location}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <Calendar className="h-4 w-4 mr-2" />
+                              <span>{new Date(drive.drive_date).toLocaleDateString()}</span>
+                            </div>
+                            <div className="flex items-center">
+                              <DollarSign className="h-4 w-4 mr-2" />
+                              <span>₹{drive.package} LPA</span>
+                            </div>
+                            {drive.eligibility_criteria && (
+                              <div className="flex items-center">
+                                <GraduationCap className="h-4 w-4 mr-2" />
+                                <span>{drive.eligibility_criteria}</span>
+                              </div>
+                            )}
+                          </div>
+                          {drive.description && (
+                            <p className="text-gray-600 mt-2 text-sm">{drive.description}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">
+                      No placement drives available for your college at the moment.
+                    </p>
                   )}
                 </CardContent>
               </Card>

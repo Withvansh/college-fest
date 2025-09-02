@@ -1,52 +1,107 @@
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Link } from "react-router-dom";
-import { 
-  ArrowLeft, 
-  TrendingUp, 
-  Target, 
-  Award, 
+import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'react-router-dom';
+import {
+  ArrowLeft,
+  Download,
   FileText,
-  BarChart3,
-  PieChart,
+  Target,
+  TrendingUp,
+  Award,
   Calendar,
-  Download
-} from "lucide-react";
+  PieChart,
+  BarChart3,
+  Loader,
+  AlertCircle,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@/hooks/useAuth';
+import studentAPI, { StudentAnalytics as StudentAnalyticsType } from '@/lib/api/student';
 
 const StudentAnalytics = () => {
-  const performanceData = {
-    totalApplications: 12,
-    testsCompleted: 8,
-    averageScore: 87,
-    shortlisted: 5,
-    interviews: 3,
-    offers: 2
+  const { user } = useAuth();
+  const [analytics, setAnalytics] = useState<StudentAnalyticsType | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?._id) {
+      loadAnalytics();
+    }
+  }, [user]);
+
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      const data = await studentAPI.getStudentAnalytics(user!._id);
+      setAnalytics(data);
+    } catch (error) {
+      toast.error('Failed to load analytics data');
+      console.error('Analytics error:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const testHistory = [
-    { company: "Google", date: "Dec 20, 2024", score: 95, status: "Qualified" },
-    { company: "Microsoft", date: "Dec 18, 2024", score: 88, status: "Qualified" },
-    { company: "Amazon", date: "Dec 15, 2024", score: 85, status: "Qualified" },
-    { company: "Flipkart", date: "Dec 12, 2024", score: 92, status: "Qualified" },
-    { company: "Accenture", date: "Dec 10, 2024", score: 78, status: "Not Qualified" }
-  ];
+  const handleExportReport = () => {
+    if (!analytics) return;
 
-  const applicationOutcomes = [
-    { company: "Google", status: "Interview Scheduled", package: "₹25 LPA", applied: "Dec 20, 2024" },
-    { company: "Microsoft", status: "Offer Received", package: "₹22 LPA", applied: "Dec 18, 2024" },
-    { company: "Amazon", status: "Technical Round", package: "₹20 LPA", applied: "Dec 15, 2024" },
-    { company: "Flipkart", status: "Offer Received", package: "₹18 LPA", applied: "Dec 12, 2024" },
-    { company: "TCS", status: "Selected", package: "₹12 LPA", applied: "Dec 8, 2024" }
-  ];
+    const reportContent = `Student Performance Analytics Report
 
-  const monthlyProgress = [
-    { month: "Sep", applications: 2, tests: 1, offers: 0 },
-    { month: "Oct", applications: 3, tests: 2, offers: 0 },
-    { month: "Nov", applications: 4, tests: 3, offers: 1 },
-    { month: "Dec", applications: 3, tests: 2, offers: 1 }
-  ];
+Performance Summary:
+- Total Applications: ${analytics.performanceData.totalApplications}
+- Tests Completed: ${analytics.performanceData.testsCompleted}
+- Average Score: ${analytics.performanceData.averageScore}%
+- Shortlisted: ${analytics.performanceData.shortlisted}
+- Interviews: ${analytics.performanceData.interviews}
+- Offers: ${analytics.performanceData.offers}
+
+Application Outcomes:
+${analytics.applicationOutcomes
+  .map(outcome => `${outcome.company} - ${outcome.status} - Applied: ${outcome.appliedDate}`)
+  .join('\n')}
+
+Test History:
+${analytics.testHistory
+  .map(
+    test => `${test.company} - Score: ${test.score}% - Status: ${test.status} - Date: ${test.date}`
+  )
+  .join('\n')}`;
+
+    const element = document.createElement('a');
+    element.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(reportContent);
+    element.download = 'student-analytics-report.txt';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+    toast.success('Analytics report downloaded successfully!');
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!analytics) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="h-8 w-8 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600">Failed to load analytics data</p>
+          <Button onClick={loadAnalytics} className="mt-4">
+            Retry
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -66,7 +121,7 @@ const StudentAnalytics = () => {
                 <p className="text-gray-600">Detailed insights into your placement journey</p>
               </div>
             </div>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleExportReport}>
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
@@ -80,7 +135,9 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
             <CardContent className="p-4 text-center">
               <FileText className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.totalApplications}</div>
+              <div className="text-2xl font-bold">
+                {analytics.performanceData.totalApplications}
+              </div>
               <p className="text-xs text-blue-100">Applications</p>
             </CardContent>
           </Card>
@@ -88,7 +145,7 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
             <CardContent className="p-4 text-center">
               <Target className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.testsCompleted}</div>
+              <div className="text-2xl font-bold">{analytics.performanceData.testsCompleted}</div>
               <p className="text-xs text-purple-100">Tests</p>
             </CardContent>
           </Card>
@@ -96,7 +153,7 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardContent className="p-4 text-center">
               <TrendingUp className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.averageScore}%</div>
+              <div className="text-2xl font-bold">{analytics.performanceData.averageScore}%</div>
               <p className="text-xs text-green-100">Avg Score</p>
             </CardContent>
           </Card>
@@ -104,7 +161,7 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
             <CardContent className="p-4 text-center">
               <Award className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.shortlisted}</div>
+              <div className="text-2xl font-bold">{analytics.performanceData.shortlisted}</div>
               <p className="text-xs text-orange-100">Shortlisted</p>
             </CardContent>
           </Card>
@@ -112,7 +169,7 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white">
             <CardContent className="p-4 text-center">
               <Calendar className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.interviews}</div>
+              <div className="text-2xl font-bold">{analytics.performanceData.interviews}</div>
               <p className="text-xs text-indigo-100">Interviews</p>
             </CardContent>
           </Card>
@@ -120,7 +177,7 @@ const StudentAnalytics = () => {
           <Card className="bg-gradient-to-r from-pink-500 to-pink-600 text-white">
             <CardContent className="p-4 text-center">
               <Award className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{performanceData.offers}</div>
+              <div className="text-2xl font-bold">{analytics.performanceData.offers}</div>
               <p className="text-xs text-pink-100">Offers</p>
             </CardContent>
           </Card>
@@ -137,18 +194,25 @@ const StudentAnalytics = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {testHistory.map((test, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                {analytics.testHistory.map((test, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-lg"
+                  >
                     <div>
                       <p className="font-semibold">{test.company}</p>
-                      <p className="text-sm text-gray-600">{test.date}</p>
+                      <p className="text-sm text-gray-600">{studentAPI.formatDate(test.date)}</p>
                     </div>
                     <div className="text-right">
                       <div className="flex items-center space-x-2">
                         <span className="text-lg font-bold text-purple-600">{test.score}%</span>
-                        <Badge 
-                          variant={test.status === "Qualified" ? "secondary" : "outline"}
-                          className={test.status === "Qualified" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}
+                        <Badge
+                          variant={test.status === 'Qualified' ? 'secondary' : 'outline'}
+                          className={
+                            test.status === 'Qualified'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-red-100 text-red-700'
+                          }
                         >
                           {test.status}
                         </Badge>
@@ -170,23 +234,24 @@ const StudentAnalytics = () => {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {monthlyProgress.map((month, index) => (
+                {analytics.monthlyProgress.map((month, index) => (
                   <div key={index} className="p-4 border rounded-lg">
                     <div className="flex items-center justify-between mb-2">
-                      <h4 className="font-semibold">{month.month} 2024</h4>
+                      <h4 className="font-semibold">
+                        {new Date(month._id.year, month._id.month - 1).toLocaleString('default', {
+                          month: 'long',
+                        })}{' '}
+                        {month._id.year}
+                      </h4>
                     </div>
-                    <div className="grid grid-cols-3 gap-4 text-sm">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="text-center">
                         <div className="text-xl font-bold text-blue-600">{month.applications}</div>
                         <p className="text-gray-600">Applications</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-xl font-bold text-purple-600">{month.tests}</div>
-                        <p className="text-gray-600">Tests</p>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-xl font-bold text-green-600">{month.offers}</div>
-                        <p className="text-gray-600">Offers</p>
+                        <div className="text-xl font-bold text-green-600">{month.selected}</div>
+                        <p className="text-gray-600">Selected</p>
                       </div>
                     </div>
                   </div>
@@ -206,26 +271,36 @@ const StudentAnalytics = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {applicationOutcomes.map((outcome, index) => (
-                <div key={index} className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow">
+              {analytics.applicationOutcomes.map((outcome, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:shadow-md transition-shadow"
+                >
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
                       <h4 className="font-semibold text-lg">{outcome.company}</h4>
-                      <Badge 
+                      <Badge
                         variant="secondary"
                         className={
-                          outcome.status === "Offer Received" ? "bg-green-100 text-green-700" :
-                          outcome.status === "Selected" ? "bg-blue-100 text-blue-700" :
-                          outcome.status === "Interview Scheduled" ? "bg-yellow-100 text-yellow-700" :
-                          "bg-purple-100 text-purple-700"
+                          outcome.status === 'Selected'
+                            ? 'bg-green-100 text-green-700'
+                            : outcome.status === 'Under Review'
+                              ? 'bg-yellow-100 text-yellow-700'
+                              : outcome.status === 'Rejected'
+                                ? 'bg-red-100 text-red-700'
+                                : 'bg-blue-100 text-blue-700'
                         }
                       >
                         {outcome.status}
                       </Badge>
                     </div>
                     <div className="mt-2 grid md:grid-cols-2 gap-4 text-sm text-gray-600">
-                      <p><strong>Package:</strong> {outcome.package}</p>
-                      <p><strong>Applied:</strong> {outcome.applied}</p>
+                      <p>
+                        <strong>Package:</strong> {outcome.package || 'Not disclosed'}
+                      </p>
+                      <p>
+                        <strong>Applied:</strong> {studentAPI.formatDate(outcome.appliedDate)}
+                      </p>
                     </div>
                   </div>
                 </div>

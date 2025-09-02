@@ -4,17 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   User,
@@ -54,8 +43,6 @@ const StudentDashboard = () => {
   // State for UI
   const [showCalendarView, setShowCalendarView] = useState(false);
   const [activeTab, setActiveTab] = useState('drives');
-  const [showResumeDialog, setShowResumeDialog] = useState(false);
-  const [resumeUrl, setResumeUrl] = useState('');
 
   // State for data
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
@@ -118,35 +105,6 @@ const StudentDashboard = () => {
       );
     } catch (error) {
       console.error('Failed to mark notification as read:', error);
-    }
-  };
-
-  const handleUpdateResume = async () => {
-    try {
-      if (!resumeUrl.trim()) {
-        toast.error('Please enter a valid resume URL');
-        return;
-      }
-
-      // Here you would call the API to update the resume URL
-      // await studentAPI.updateStudentResume(user!._id, resumeUrl);
-
-      // Update local state
-      if (dashboardData) {
-        setDashboardData({
-          ...dashboardData,
-          student: {
-            ...dashboardData.student,
-            resume_url: resumeUrl,
-          },
-        });
-      }
-
-      toast.success('Resume link updated successfully!');
-      setShowResumeDialog(false);
-      setResumeUrl('');
-    } catch (error) {
-      toast.error('Failed to update resume link');
     }
   };
 
@@ -250,11 +208,11 @@ ${applications
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setActiveTab('resume')}
+                onClick={() => navigate('/student/profile')}
                 className="hover:scale-105 transition-transform"
               >
                 <Download className="h-4 w-4 mr-2" />
-                {dashboardData.student.resume_url ? 'View Resume' : 'Add Resume'}
+                Resume
               </Button>
               <Button
                 size="sm"
@@ -375,7 +333,7 @@ ${applications
 
           {/* Enhanced Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 bg-white shadow-sm border">
+            <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm border">
               <TabsTrigger
                 value="drives"
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
@@ -387,18 +345,6 @@ ${applications
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
               >
                 Applications
-              </TabsTrigger>
-              <TabsTrigger
-                value="tests"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
-              >
-                Tests
-              </TabsTrigger>
-              <TabsTrigger
-                value="resume"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
-              >
-                Resume
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
@@ -643,341 +589,6 @@ ${applications
                   )}
                 </div>
               </ScrollArea>
-            </TabsContent>
-
-            {/* Tests */}
-            <TabsContent value="tests" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Assessment Tests</h2>
-                <Button
-                  variant="outline"
-                  onClick={() => navigate('/student/tests')}
-                  className="hover:scale-105 transition-transform shadow-sm"
-                >
-                  <Target className="h-4 w-4 mr-2" />
-                  Take Practice Test
-                </Button>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Award className="h-5 w-5 mr-2 text-yellow-500" />
-                      Test Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Tests Taken</span>
-                        <span className="font-bold">12</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Average Score</span>
-                        <span className="font-bold text-green-600">85%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Best Score</span>
-                        <span className="font-bold text-blue-600">92%</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
-                      Skill Assessment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Technical Skills</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          Strong
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Logical Reasoning</span>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          Good
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Communication</span>
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                          Average
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-4">
-                  {[
-                    {
-                      company: 'TechCorp',
-                      testType: 'Technical Assessment',
-                      score: 88,
-                      status: 'Passed',
-                      date: '2024-03-15',
-                      duration: '45 mins',
-                    },
-                    {
-                      company: 'InnovateSoft',
-                      testType: 'Aptitude Test',
-                      score: 92,
-                      status: 'Passed',
-                      date: '2024-03-10',
-                      duration: '60 mins',
-                    },
-                    {
-                      company: 'DataDriven',
-                      testType: 'Coding Challenge',
-                      score: 76,
-                      status: 'Passed',
-                      date: '2024-03-05',
-                      duration: '90 mins',
-                    },
-                    {
-                      company: 'CloudNext',
-                      testType: 'System Design',
-                      score: 65,
-                      status: 'Failed',
-                      date: '2024-02-28',
-                      duration: '120 mins',
-                    },
-                  ].map((test, index) => (
-                    <Card key={index} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-                              <Target className="h-5 w-5 text-purple-600" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900">{test.company}</h4>
-                              <p className="text-sm text-gray-600">{test.testType}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center space-x-3">
-                              <div className="text-right">
-                                <p className="font-bold text-lg">{test.score}%</p>
-                                <p className="text-xs text-gray-500">{test.duration}</p>
-                              </div>
-                              <Badge
-                                variant={test.status === 'Passed' ? 'secondary' : 'destructive'}
-                                className={
-                                  test.status === 'Passed' ? 'bg-green-100 text-green-700' : ''
-                                }
-                              >
-                                {test.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                          <span className="text-sm text-gray-500">
-                            Taken on {studentAPI.formatDate(test.date)}
-                          </span>
-                          <Button variant="outline" size="sm">
-                            View Details
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </ScrollArea>
-            </TabsContent>
-
-            {/* Resume */}
-            <TabsContent value="resume" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Resume Management</h2>
-                <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
-                  <DialogTrigger asChild>
-                    <Button
-                      className="bg-purple-600 hover:bg-purple-700"
-                      onClick={() => {
-                        setResumeUrl(dashboardData.student.resume_url || '');
-                        setShowResumeDialog(true);
-                      }}
-                    >
-                      <Upload className="h-4 w-4 mr-2" />
-                      {dashboardData.student.resume_url ? 'Update Resume Link' : 'Add Resume Link'}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Update Resume Link</DialogTitle>
-                      <DialogDescription>
-                        Enter your Google Drive resume link. Make sure the link is publicly
-                        accessible.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="resumeUrl" className="text-right">
-                          Resume URL
-                        </Label>
-                        <Input
-                          id="resumeUrl"
-                          value={resumeUrl}
-                          onChange={e => setResumeUrl(e.target.value)}
-                          placeholder="https://drive.google.com/file/d/..."
-                          className="col-span-3"
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setShowResumeDialog(false)}>
-                        Cancel
-                      </Button>
-                      <Button onClick={handleUpdateResume}>
-                        {dashboardData.student.resume_url ? 'Update Link' : 'Add Link'}
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <FileText className="h-5 w-5 mr-2 text-blue-500" />
-                      Current Resume
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {dashboardData.student.resume_url ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center space-x-3">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                            <div>
-                              <p className="font-medium text-green-800">Resume Linked</p>
-                              <p className="text-sm text-green-600">Google Drive link active</p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => window.open(dashboardData.student.resume_url, '_blank')}
-                            className="text-green-700 border-green-300 hover:bg-green-50"
-                          >
-                            <ExternalLink className="h-4 w-4 mr-1" />
-                            View
-                          </Button>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          <p>
-                            <strong>Last Updated:</strong> March 15, 2024
-                          </p>
-                          <p>
-                            <strong>Format:</strong> PDF
-                          </p>
-                          <p>
-                            <strong>Size:</strong> 245 KB
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 mb-4">No resume linked yet</p>
-                        <Button
-                          variant="outline"
-                          onClick={() => {
-                            setResumeUrl('');
-                            setShowResumeDialog(true);
-                          }}
-                        >
-                          Add Resume Link
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Award className="h-5 w-5 mr-2 text-yellow-500" />
-                      Resume Tips
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="p-3 bg-blue-50 rounded-lg">
-                        <h4 className="font-medium text-blue-800 mb-2">📝 Best Practices</h4>
-                        <ul className="text-sm text-blue-700 space-y-1">
-                          <li>• Keep it to 1-2 pages maximum</li>
-                          <li>• Use a clean, professional format</li>
-                          <li>• Include relevant projects and skills</li>
-                          <li>• Quantify your achievements</li>
-                        </ul>
-                      </div>
-                      <div className="p-3 bg-yellow-50 rounded-lg">
-                        <h4 className="font-medium text-yellow-800 mb-2">🔗 Google Drive Tips</h4>
-                        <ul className="text-sm text-yellow-700 space-y-1">
-                          <li>• Make sure link sharing is enabled</li>
-                          <li>• Set permissions to "Anyone with link"</li>
-                          <li>• Use PDF format for best compatibility</li>
-                          <li>• Test the link before submitting</li>
-                        </ul>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Resume Usage History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ScrollArea className="h-[300px]">
-                    <div className="space-y-3">
-                      {applications.slice(0, 5).map((application, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 border rounded-lg"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <Building2 className="h-4 w-4 text-blue-600" />
-                            </div>
-                            <div>
-                              <p className="font-medium">
-                                {application.placement_drive_id.company}
-                              </p>
-                              <p className="text-sm text-gray-600">
-                                {application.placement_drive_id.role}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-gray-600">
-                              {studentAPI.formatDate(application.registration_date)}
-                            </p>
-                            <Badge variant="outline" className="text-xs">
-                              {application.status}
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* Notifications */}

@@ -508,7 +508,7 @@ const App = () => {
                   <Route
                     path="/student/dashboard"
                     element={
-                      <UnifiedProtectedRoute allowedRoles={['student']}>
+                      <UnifiedProtectedRoute allowedRoles={['Student']}>
                         <StudentDashboard />
                       </UnifiedProtectedRoute>
                     }
@@ -516,7 +516,7 @@ const App = () => {
                   <Route
                     path="/student/profile"
                     element={
-                      <UnifiedProtectedRoute allowedRoles={['student']}>
+                      <UnifiedProtectedRoute allowedRoles={['Student']}>
                         <StudentProfile />
                       </UnifiedProtectedRoute>
                     }
@@ -524,7 +524,7 @@ const App = () => {
                   <Route
                     path="/student/analytics"
                     element={
-                      <UnifiedProtectedRoute allowedRoles={['student']}>
+                      <UnifiedProtectedRoute allowedRoles={['Student']}>
                         <StudentAnalytics />
                       </UnifiedProtectedRoute>
                     }
@@ -540,7 +540,7 @@ const App = () => {
                           'freelancer',
                           'client',
                           'college',
-                          'student',
+                          'Student',
                         ]}
                       >
                         <ProfileRedirect />
