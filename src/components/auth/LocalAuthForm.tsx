@@ -87,7 +87,7 @@ const LocalAuthForm = ({ userType, title, description, icon }: LocalAuthFormProp
         email.trim(),
         password.trim(),
         name.trim(),
-        userType as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student'
+        userType as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'Student'
       );
       if (success) {
         setActiveTab('login');

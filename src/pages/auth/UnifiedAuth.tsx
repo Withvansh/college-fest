@@ -121,6 +121,8 @@ const UnifiedAuth = () => {
     setIsLoading(true);
     try {
       await signup(email.trim(), password.trim(), name.trim(), selectedUserType);
+      toast.success('Signup successful');
+   navigate('/auth?tab=login')
     } finally {
       setIsLoading(false);
     }

@@ -83,6 +83,7 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     try {
       setLoading(true);
       const response = await unifiedAuthService.login(email, password);
+      console.log(response)
       return await handleAuthResponse(response, 'Login');
     } catch (error) {
       toast.error('Login failed. Please try again.');
@@ -97,14 +98,16 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     password: string,
     full_name: string,
     role: UserRole
-  ): Promise<boolean> => {
+  ) => {
     try {
       setLoading(true);
       const response = await unifiedAuthService.signup(email, password, full_name, role);
-      return await handleAuthResponse(response, 'Account creation');
+      // return await handleAuthResponse(response, 'Account creation');
+      navigate('/auth?tab=login')
+      return true
     } catch (error) {
       toast.error('Signup failed. Please try again.');
-      return false;
+    return false
     } finally {
       setLoading(false);
     }

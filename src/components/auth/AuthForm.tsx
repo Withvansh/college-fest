@@ -64,7 +64,7 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
         email.trim(),
         password.trim(),
         full_name.trim(),
-        role.trim() as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student'
+        role.trim() as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'Student'
       );
       if (success) {
         toast.success('Signup successful! Please login.');
