@@ -121,6 +121,7 @@ class PlacementDriveAPI extends BackendAPI {
   async getPlacementDriveById(driveId: string): Promise<PlacementDrive> {
     return this.get(`${this.baseUrl}/drives/${driveId}`);
   }
+  
 
   async updatePlacementDrive(driveId: string, updateData: Partial<CreatePlacementDriveRequest>): Promise<PlacementDrive> {
     return this.put(`${this.baseUrl}/drives/${driveId}`, updateData);

@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,101 +8,110 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { 
   Plus, 
   GraduationCap, 
   Mail, 
   Phone, 
-  Filter,
   Download,
   Upload,
   Search,
   ArrowLeft,
   FileText
 } from "lucide-react";
+import { collegeProfileAPI } from '@/lib/api/collegeProfile';
+
+interface Student {
+  _id: number;
+  full_name: string;
+  email: string;
+  phone: string;
+  enrollment_no: string;
+  department: string;
+  cgpa: number;
+  placementStatus: string;
+  company: string | null;
+}
 
 const Students = () => {
-  const [students, setStudents] = useState([
-    {
-      id: 1,
-      name: "Rahul Sharma",
-      email: "rahul.sharma@college.edu",
-      phone: "+91 9876543210",
-      rollNumber: "CSE21001",
-      department: "CSE",
-      cgpa: 8.5,
-      placementStatus: "Placed",
-      company: "Amazon"
-    },
-    {
-      id: 2,
-      name: "Priya Patel",
-      email: "priya.patel@college.edu",
-      phone: "+91 9876543211",
-      rollNumber: "ECE21045",
-      department: "ECE",
-      cgpa: 7.8,
-      placementStatus: "Registered",
-      company: null
-    },
-    {
-      id: 3,
-      name: "Amit Kumar",
-      email: "amit.kumar@college.edu",
-      phone: "+91 9876543212",
-      rollNumber: "ME21023",
-      department: "Mechanical",
-      cgpa: 7.2,
-      placementStatus: "Not Registered",
-      company: null
-    }
-  ]);
-
+  const { id } = useParams<{ id: string }>();
+  const [students, setStudents] = useState<Student[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
   const [formData, setFormData] = useState({
-    name: '',
+    full_name: '',
     email: '',
     phone: '',
-    rollNumber: '',
+    enrollment_no: '',
     department: 'CSE',
     cgpa: ''
   });
 
-  const handleAddStudent = (e: React.FormEvent) => {
+  // Fetch students data on component mount
+  useEffect(() => {
+    fetchStudentData();
+  }, []);
+
+  const fetchStudentData = async () => {
+    try {
+      if (!id) {
+        toast.error("College ID is missing");
+        return;
+      }
+      
+      const response = await collegeProfileAPI.getStudentsByCollegeId(id);
+      // console.log(response)
+      setStudents(response.data);
+    } catch (error: any) {
+      console.error("Error fetching students:", error);
+      toast.error("Failed to fetch student data");
+    }
+  };
+
+  const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newStudent = {
-      id: students.length + 1,
-      ...formData,
-      cgpa: parseFloat(formData.cgpa),
-      placementStatus: 'Not Registered',
-      company: null
-    };
+    try {
+      const newStudent = {
+        _id: students.length + 1,
+        ...formData,
+        cgpa: parseFloat(formData.cgpa),
+        placementStatus: 'Not Registered',
+        company: null
+      };
 
-    setStudents([...students, newStudent]);
-    setIsAddModalOpen(false);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      rollNumber: '',
-      department: 'CSE',
-      cgpa: ''
-    });
-    
-    toast.success("Student added successfully!");
+      // Call API to add student
+      // await collegeProfileAPI.addStudent(collegeId as string, newStudent);
+      
+      // Update local state
+      setStudents([...students, newStudent]);
+      setIsAddModalOpen(false);
+      setFormData({
+        full_name: '',
+        email: '',
+        phone: '',
+       enrollment_no: '',
+        department: 'CSE',
+        cgpa: ''
+      });
+      
+      toast.success("Student added successfully!");
+    } catch (error) {
+      console.error("Error adding student:", error);
+      toast.error("Failed to add student");
+    }
   };
 
   const handleExportData = () => {
     const csvContent = [
       ['Name', 'Email', 'Roll Number', 'Department', 'CGPA', 'Placement Status', 'Company'],
       ...filteredStudents.map(student => [
-        student.name,
+        student.full_name,
         student.email,
-        student.rollNumber,
+        student.enrollment_no,
         student.department,
         student.cgpa,
         student.placementStatus,
@@ -116,19 +124,58 @@ const Students = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = 'students-data.csv';
+    document.body.appendChild(a);
     a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
     
     toast.success("Student data exported successfully!");
   };
 
-  const handleBulkImport = () => {
-    // Simulate bulk import
-    toast.success("Bulk import feature coming soon!");
+  const handleBulkImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      toast.error('Please upload an Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    setUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('http://localhost:3001/upload-students', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const result = await response.json();
+      toast.success(`Successfully uploaded ${result.count} students`);
+      
+      // Refresh student data
+      fetchStudentData();
+      
+      // Reset file input
+      event.target.value = '';
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error('Failed to upload students. Please try again.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const filteredStudents = students.filter(student => {
-    const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.rollNumber.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         student.enrollment_no.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = departmentFilter === 'all' || student.department === departmentFilter;
     return matchesSearch && matchesDepartment;
   });
@@ -155,14 +202,28 @@ const Students = () => {
               <h1 className="text-2xl font-bold text-gray-900">Student Management</h1>
             </div>
             <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleBulkImport}>
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Import
-              </Button>
-              <Button variant="outline" onClick={handleExportData}>
-                <Download className="h-4 w-4 mr-2" />
-                Export Data
-              </Button>
+              <div className="relative">
+    <Button 
+      variant="outline" 
+      onClick={() => document.getElementById('bulk-import-input')?.click()}
+      disabled={uploading}
+    >
+      <Upload className="h-4 w-4 mr-2" />
+      Bulk Import
+    </Button>
+    <Input 
+      id="bulk-import-input"
+      type="file" 
+      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer hidden" 
+      onChange={handleBulkImport}
+      accept=".xlsx,.xls"
+      disabled={uploading}
+    />
+  </div>
+  <Button variant="outline" onClick={handleExportData} disabled={students.length === 0}>
+    <Download className="h-4 w-4 mr-2" />
+    Export Data
+  </Button>
               <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-orange-600 hover:bg-orange-700">
@@ -180,8 +241,8 @@ const Students = () => {
                         <Label htmlFor="name">Full Name</Label>
                         <Input
                           id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          value={formData.full_name}
+                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                           placeholder="Enter student name"
                           required
                         />
@@ -211,8 +272,8 @@ const Students = () => {
                         <Label htmlFor="rollNumber">Roll Number</Label>
                         <Input
                           id="rollNumber"
-                          value={formData.rollNumber}
-                          onChange={(e) => setFormData({...formData, rollNumber: e.target.value})}
+                          value={formData.enrollment_no}
+                          onChange={(e) => setFormData({...formData, enrollment_no: e.target.value})}
                           placeholder="CSE21001"
                           required
                         />
@@ -279,7 +340,7 @@ const Students = () => {
               </div>
               <Select value={departmentFilter} onValueChange={setDepartmentFilter}>
                 <SelectTrigger className="w-48">
-                  <SelectValue />
+                  <SelectValue placeholder="Filter by department" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Departments</SelectItem>
@@ -349,62 +410,70 @@ const Students = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredStudents.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <GraduationCap className="h-5 w-5 mr-3 text-gray-400" />
+                {filteredStudents.length > 0 ? (
+                  filteredStudents.map((student) => (
+                    <TableRow key={student._id}>
+                      <TableCell>
+                        <div className="flex items-center">
+                          <GraduationCap className="h-5 w-5 mr-3 text-gray-400" />
+                          <div>
+                            <p className="font-medium">{student.full_name}</p>
+                            <p className="text-sm text-gray-600">{student.enrollment_no}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center text-sm">
+                            <Mail className="h-3 w-3 mr-1 text-gray-400" />
+                            {student.email}
+                          </div>
+                          <div className="flex items-center text-sm">
+                            <Phone className="h-3 w-3 mr-1 text-gray-400" />
+                            {student.phone}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
                         <div>
-                          <p className="font-medium">{student.name}</p>
-                          <p className="text-sm text-gray-600">{student.rollNumber}</p>
+                          <p className="font-medium">{student.department}</p>
+                          <p className="text-sm text-gray-600">Final Year</p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center text-sm">
-                          <Mail className="h-3 w-3 mr-1 text-gray-400" />
-                          {student.email}
-                        </div>
-                        <div className="flex items-center text-sm">
-                          <Phone className="h-3 w-3 mr-1 text-gray-400" />
-                          {student.phone}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{student.department}</p>
-                        <p className="text-sm text-gray-600">Final Year</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary" className="font-mono">
-                        {student.cgpa}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <Badge className={getStatusColor(student.placementStatus)}>
-                          {student.placementStatus}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="font-mono">
+                          {student.cgpa}
                         </Badge>
-                        {student.company && (
-                          <p className="text-sm text-gray-600 mt-1">{student.company}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <Badge className={getStatusColor(student.placementStatus)}>
+                            {student.placementStatus}
+                          </Badge>
+                          {student.company && (
+                            <p className="text-sm text-gray-600 mt-1">{student.company}</p>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button size="sm" variant="outline">
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                          <Button size="sm" variant="outline">
+                            Edit
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+                      No students found. {searchTerm || departmentFilter !== 'all' ? 'Try adjusting your filters.' : 'Add students to get started.'}
                     </TableCell>
                   </TableRow>
-                ))}
+                )}
               </TableBody>
             </Table>
           </CardContent>

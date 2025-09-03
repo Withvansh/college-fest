@@ -21,6 +21,7 @@ import {
   Trophy,
   Upload,
   User,
+  MoveRight,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -35,7 +36,7 @@ const CollegeDashboard = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('drives');
   const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
+
   const [dashboardData, setDashboardData] = useState<{
     stats: DashboardStats;
     upcomingDrives: PlacementDrive[];
@@ -75,43 +76,43 @@ const CollegeDashboard = () => {
   };
 
   // Handle Excel file upload
-  const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // const handleExcelUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (!file) return;
 
-    // Validate file type
-    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
-      toast.error('Please upload an Excel file (.xlsx or .xls)');
-      return;
-    }
+  //   // Validate file type
+  //   if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+  //     toast.error('Please upload an Excel file (.xlsx or .xls)');
+  //     return;
+  //   }
 
-    setUploading(true);
+  //   setUploading(true);
     
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('file', file);
 
-      const response = await fetch('http://localhost:3001/upload-students', {
-        method: 'POST',
-        body: formData,
-      });
+  //     const response = await fetch('http://localhost:3001/upload-students', {
+  //       method: 'POST',
+  //       body: formData,
+  //     });
 
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Upload failed');
+  //     }
 
-      const result = await response.json();
-      toast.success(`Successfully uploaded ${result.count} students`);
+  //     const result = await response.json();
+  //     toast.success(`Successfully uploaded ${result.count} students`);
       
-      // Reset file input
-      event.target.value = '';
-    } catch (error) {
-      console.error('Error uploading file:', error);
-      toast.error('Failed to upload students. Please try again.');
-    } finally {
-      setUploading(false);
-    }
-  };
+  //     // Reset file input
+  //     event.target.value = '';
+  //   } catch (error) {
+  //     console.error('Error uploading file:', error);
+  //     toast.error('Failed to upload students. Please try again.');
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
 
   // Mock data for students - this can be fetched from a separate API later
   const studentStats = [
@@ -159,7 +160,7 @@ const CollegeDashboard = () => {
               </Button>
 
               {/* Excel Upload Button */}
-              <div className="relative">
+              {/* <div className="relative">
                 <input
                   type="file"
                   id="excel-upload"
@@ -187,7 +188,7 @@ const CollegeDashboard = () => {
                     )}
                   </Button>
                 </label>
-              </div>
+              </div> */}
               
               <Button
                 className="bg-orange-600 hover:bg-orange-700"
@@ -204,18 +205,33 @@ const CollegeDashboard = () => {
       <div className="container mx-auto px-6 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium opacity-90">Total Students</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold">1,250</div>
-              <div className="flex items-center mt-2">
-                <Users className="h-4 w-4 mr-1" />
-                <span className="text-sm opacity-90">Active Students</span>
-              </div>
-            </CardContent>
-          </Card>
+         <Card
+  className="relative cursor-pointer bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group border-0"
+  onClick={() => navigate(`/college/students/${collegeId}`)}
+>
+  {/* Animated gradient overlay */}
+  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+  
+  {/* Subtle pattern overlay */}
+  <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNIDAgMCBMIDYwIDYwIE0gNjAgMCBMIDAgNjAiLz48L2c+PC9zdmc+')] opacity-10"></div>
+  
+  {/* Shine effect on hover */}
+  <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-40 group-hover:animate-shine transition-all duration-1000"></div>
+
+  <CardHeader className="relative z-10 pb-2 flex flex-row items-center justify-between space-y-0">
+    <div className="flex flex-col space-y-1">
+      <CardTitle className="text-lg font-bold tracking-wide">
+        Student Management
+      </CardTitle>
+      
+        View and manage all student records
+      
+    </div>
+    
+  </CardHeader>
+  
+  
+</Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
             <CardHeader className="pb-2">

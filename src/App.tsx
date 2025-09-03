@@ -481,7 +481,7 @@ const App = () => {
                     }
                   />
                   <Route
-                    path="/college/students"
+                    path="/college/students/:id"
                     element={
                       <UnifiedProtectedRoute allowedRoles={['college']}>
                         <Students />
