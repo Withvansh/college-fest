@@ -1,4 +1,5 @@
 import { saveSession, loadSession, clearSession, getToken, getUserRole, getUserId, getUser, isAuthenticated, updateUserData } from '@/lib/utils/storage';
+import { otpVerificationService } from './otpVerification';
 
 export interface User {
   _id: string;
@@ -48,6 +49,8 @@ export interface AuthResponse {
   success: boolean;
   user?: User;
   error?: string;
+  requiresEmailVerification?: boolean;
+  email?: string;
 }
 
 export type UserRole = 
@@ -105,12 +108,22 @@ class UnifiedAuthService {
         body: JSON.stringify({ email, password }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Login failed");
+        // Check if email verification is required
+        if (response.status === 403 && data.requiresEmailVerification) {
+          return {
+            success: false,
+            error: data.message,
+            requiresEmailVerification: true,
+            email: data.email || email
+          };
+        }
+        
+        throw new Error(data.message || "Login failed");
       }
 
-      const data = await response.json();
       const user: User = {
         _id: data.user._id,
         email: data.user.email,
@@ -143,24 +156,33 @@ class UnifiedAuthService {
         body: JSON.stringify({ email, password, full_name, role }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Signup failed");
+        throw new Error(data.message || "Signup failed");
       }
 
-      const data = await response.json();
-      const user: User = {
-        _id: data.user.id || Date.now().toString(),
-        email,
-        full_name,
-        role,
-        profile_complete: false,
-        token: data.token || `mock-token-${Date.now()}`,
-      };
-
-      this.saveSession(user);
+      // Registration successful, now send email verification
       console.log('✅ API signup successful for role:', role);
-      return { success: true, user };
+      
+      // Automatically send email verification OTP
+      const emailVerificationResponse = await this.sendEmailVerification(email);
+      
+      if (emailVerificationResponse.success) {
+        return { 
+          success: true, 
+          requiresEmailVerification: true,
+          email: email
+        };
+      } else {
+        // Signup was successful but email verification failed
+        return {
+          success: true,
+          requiresEmailVerification: true,
+          email: email,
+          error: 'Account created but failed to send verification email. You can resend it later.'
+        };
+      }
     } catch (error) {
       console.error('❌ API signup failed:', error);
       return { 
@@ -245,6 +267,45 @@ class UnifiedAuthService {
 
   updateUserData(updates: Partial<User>): void {
     updateUserData(updates);
+  }
+
+  // Email Verification Methods
+  async sendEmailVerification(email: string): Promise<AuthResponse> {
+    try {
+      console.log('📧 Sending email verification to:', email);
+      const response = await otpVerificationService.sendEmailVerificationOTP(email);
+      
+      if (response.success) {
+        return { success: true };
+      } else {
+        return { success: false, error: response.message };
+      }
+    } catch (error) {
+      console.error('❌ Email verification send failed:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to send verification email' 
+      };
+    }
+  }
+
+  async verifyEmail(email: string, otp: string): Promise<AuthResponse> {
+    try {
+      console.log('🔍 Verifying email with OTP for:', email);
+      const response = await otpVerificationService.verifyEmailOTP(email, otp);
+      
+      if (response.success) {
+        return { success: true };
+      } else {
+        return { success: false, error: response.message };
+      }
+    } catch (error) {
+      console.error('❌ Email verification failed:', error);
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Email verification failed' 
+      };
+    }
   }
 
   // Utility Methods

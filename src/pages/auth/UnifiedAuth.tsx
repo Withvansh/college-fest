@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole, unifiedAuthService } from '@/services/unifiedAuth';
+import { otpService } from '@/services/otpService';
 import { toast } from 'sonner';
 import {
   Eye,
@@ -19,6 +20,8 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle,
+  Mail,
+  Shield,
 } from 'lucide-react';
 
 // Removed student role from frontend - students get credentials from college
@@ -71,8 +74,14 @@ const UnifiedAuth = () => {
   const [activeTab, setActiveTab] = useState('login');
 
   // Multistep signup state
-  const [signupStep, setSignupStep] = useState(1); // 1: role selection, 2: form
+  const [signupStep, setSignupStep] = useState(1); // 1: role selection, 2: email verification, 3: form
   const [selectedSignupRole, setSelectedSignupRole] = useState<UserRole | null>(null);
+  const [signupEmail, setSignupEmail] = useState('');
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
 
   const { login, signup, isAuthenticated } = useAuth();
 
@@ -92,6 +101,10 @@ const UnifiedAuth = () => {
       if (tabFromUrl === 'signup') {
         setSignupStep(1);
         setSelectedSignupRole(null);
+        setSignupEmail('');
+        setIsEmailVerified(false);
+        setOtpValue('');
+        setIsOtpSent(false);
       }
     }
   }, [searchParams]);
@@ -108,6 +121,55 @@ const UnifiedAuth = () => {
     setName('');
     setEmail('');
     setPassword('');
+    setSignupEmail('');
+    setIsEmailVerified(false);
+    setOtpValue('');
+    setIsOtpSent(false);
+  };
+
+  const goBackToEmailVerification = () => {
+    setSignupStep(2);
+    // Clear form data but keep email verification
+    setName('');
+    setPassword('');
+  };
+
+  const handleSendOtp = async () => {
+    if (!signupEmail.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    setIsSendingOtp(true);
+    try {
+      await otpService.sendEmailVerificationOTP(signupEmail.trim());
+      setIsOtpSent(true);
+      toast.success('OTP sent to your email. Please check your inbox.');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send OTP');
+    } finally {
+      setIsSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otpValue.trim()) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+
+    setIsVerifyingOtp(true);
+    try {
+      await otpService.verifyEmailOTP(signupEmail.trim(), otpValue.trim());
+      setIsEmailVerified(true);
+      setSignupStep(3);
+      setEmail(signupEmail); // Set the verified email in the main form
+      toast.success('Email verified successfully!');
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid OTP');
+    } finally {
+      setIsVerifyingOtp(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -143,6 +205,10 @@ const UnifiedAuth = () => {
       setName('');
       setEmail('');
       setPassword('');
+      setSignupEmail('');
+      setIsEmailVerified(false);
+      setOtpValue('');
+      setIsOtpSent(false);
     } finally {
       setIsLoading(false);
     }
@@ -288,12 +354,133 @@ const UnifiedAuth = () => {
                         Students receive login credentials from their college
                       </div>
                     </div>
-                  ) : (
-                    // Step 2: Signup Form
+                  ) : signupStep === 2 ? (
+                    // Step 2: Email Verification
                     <div className="space-y-4 sm:space-y-6">
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={goBackToRoleSelection}
+                          className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                        >
+                          <ArrowLeft className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <div className="min-w-0">
+                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                            Verify Your Email
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            We'll send an OTP to verify your email address
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedSignupRole && (
+                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm font-medium text-green-800 truncate">
+                              Selected Role:{' '}
+                              {userTypes.find(t => t.id === selectedSignupRole)?.label}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="signup-email-verify" className="text-sm">
+                            Email Address
+                          </Label>
+                          <Input
+                            id="signup-email-verify"
+                            type="email"
+                            placeholder="Enter your email address"
+                            value={signupEmail}
+                            onChange={e => setSignupEmail(e.target.value)}
+                            className="h-10 sm:h-11 text-sm"
+                            disabled={isOtpSent}
+                            required
+                          />
+                        </div>
+
+                        {!isOtpSent ? (
+                          <Button
+                            onClick={handleSendOtp}
+                            className="w-full h-10 sm:h-11 text-sm"
+                            disabled={isSendingOtp || !signupEmail.trim()}
+                          >
+                            <Mail className="h-4 w-4 mr-2" />
+                            {isSendingOtp ? 'Sending OTP...' : 'Send Verification Code'}
+                          </Button>
+                        ) : (
+                          <div className="space-y-4">
+                            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                              <div className="flex items-center space-x-2">
+                                <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                                <span className="text-xs sm:text-sm text-blue-800">
+                                  OTP sent to <strong>{signupEmail}</strong>
+                                </span>
+                              </div>
+                            </div>
+
+                            <div>
+                              <Label htmlFor="otp-input" className="text-sm">
+                                Enter OTP
+                              </Label>
+                              <Input
+                                id="otp-input"
+                                type="text"
+                                placeholder="Enter the 6-digit code"
+                                value={otpValue}
+                                onChange={e =>
+                                  setOtpValue(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))
+                                }
+                                className="h-10 sm:h-11 text-sm text-center tracking-wider"
+                                maxLength={6}
+                                required
+                              />
+                            </div>
+
+                            <div className="flex space-x-2">
+                              <Button
+                                onClick={handleVerifyOtp}
+                                className="flex-1 h-10 sm:h-11 text-sm"
+                                disabled={isVerifyingOtp || otpValue.length !== 6}
+                              >
+                                <Shield className="h-4 w-4 mr-2" />
+                                {isVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                onClick={() => {
+                                  setIsOtpSent(false);
+                                  setOtpValue('');
+                                }}
+                                className="h-10 sm:h-11 text-sm px-3"
+                                disabled={isSendingOtp || isVerifyingOtp}
+                              >
+                                Change Email
+                              </Button>
+                            </div>
+
+                            <Button
+                              variant="ghost"
+                              onClick={handleSendOtp}
+                              className="w-full h-10 sm:h-11 text-sm"
+                              disabled={isSendingOtp}
+                            >
+                              {isSendingOtp ? 'Resending...' : 'Resend OTP'}
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    // Step 3: Registration Form
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={goBackToEmailVerification}
                           className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
                         >
                           <ArrowLeft className="h-4 w-4 text-gray-600" />
@@ -306,13 +493,23 @@ const UnifiedAuth = () => {
                         </div>
                       </div>
 
-                      {selectedSignupRole && (
+                      {isEmailVerified && (
                         <div className="p-3 bg-green-50 rounded-lg border border-green-200">
                           <div className="flex items-center space-x-2">
                             <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
                             <span className="text-xs sm:text-sm font-medium text-green-800 truncate">
-                              Selected Role:{' '}
-                              {userTypes.find(t => t.id === selectedSignupRole)?.label}
+                              Email verified: {signupEmail}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {selectedSignupRole && (
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm font-medium text-blue-800 truncate">
+                              Role: {userTypes.find(t => t.id === selectedSignupRole)?.label}
                             </span>
                           </div>
                         </div>
@@ -335,15 +532,14 @@ const UnifiedAuth = () => {
                         </div>
                         <div>
                           <Label htmlFor="signup-email" className="text-sm">
-                            Email
+                            Email (Verified)
                           </Label>
                           <Input
                             id="signup-email"
                             type="email"
-                            placeholder="Enter your email"
                             value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="h-10 sm:h-11 text-sm"
+                            className="h-10 sm:h-11 text-sm bg-gray-50"
+                            disabled
                             required
                           />
                         </div>
@@ -379,7 +575,7 @@ const UnifiedAuth = () => {
                         <Button
                           type="submit"
                           className="w-full h-10 sm:h-11 text-sm"
-                          disabled={isLoading}
+                          disabled={isLoading || !isEmailVerified}
                         >
                           {isLoading
                             ? 'Creating Account...'
