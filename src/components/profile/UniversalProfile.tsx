@@ -40,7 +40,7 @@ import axios from '@/lib/utils/axios';
 
 interface PlacementDrive {
   _id: string;
-  company_name: string;
+  client_company_name: string;
   job_role: string;
   location: string;
   drive_date: string;
@@ -54,7 +54,22 @@ interface UniversalProfileProps {
   userRole: string;
 }
 
-interface UserProfile {
+/**
+ * Defines the structure for a single work experience entry.
+ */
+export interface ExperienceEntry {
+  company_name: string;
+  position: string;
+  start_date: Date | string; // Can be a Date object or a string from a form input
+  end_date?: Date | string;
+  skills_learned?: string[];
+}
+
+/**
+ * A comprehensive interface for the user profile state in the frontend.
+ * It includes all possible fields for all user roles.
+ */
+export interface UserProfile {
   id: string;
   name: string;
   email: string;
@@ -66,7 +81,7 @@ interface UserProfile {
 
   // JobSeeker specific
   resume_url?: string;
-  experience?: number;
+  experience?: ExperienceEntry[]; // MODIFIED: Changed from 'number' to an array of experience objects
 
   // College specific
   college_name?: string;
@@ -81,7 +96,7 @@ interface UserProfile {
   course_branch?: string;
   total_students?: number;
 
-  // Student specific (all fields from User model)
+  // Student specific
   enrollment_no?: string;
   course?: string;
   year?: number;
@@ -104,20 +119,19 @@ interface UserProfile {
   graduation_percentage?: number;
 
   // Client specific
-  company_name?: string;
+  client_company_name?: string;
   industry?: string;
 
   // Freelancer specific
   hourly_rate?: number;
 
-  // Recruiter specific (base user with company info)
-  companyName?: string;
-  website?: string;
+  // Recruiter specific
+  company_name?: string;
+  company_website?: string;
 
   // Common additional fields
   publicProfile?: boolean;
 }
-
 const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -186,15 +200,15 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         graduation_percentage: data.graduation_percentage || 0,
 
         // Client specific
-        company_name: data.company_name || '',
+        client_company_name: data.client_company_name || '',
         industry: data.industry || '',
 
         // Freelancer specific
         hourly_rate: data.hourly_rate || 0,
 
         // Recruiter specific (using base user fields)
-        companyName: data.companyName || '',
-        website: data.website || '',
+  company_name: data.company_name || '',
+        company_website: data.company_website || '',
 
         publicProfile: data.publicProfile ?? true,
       });
@@ -231,70 +245,67 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     if (!profile || !user?._id) return;
     setSaving(true);
     try {
-      const payload = {
-        full_name: profile.name,
-        email: profile.email,
-        phone: profile.phone,
-        location: profile.location,
-        bio: profile.bio,
-        avatar_url: profile.avatarUrl,
-        publicProfile: profile.publicProfile,
+     // 1. Define the payload with all possible keys from your profile state
+const payload = {
+    full_name: profile.name,
+    email: profile.email,
+    phone: profile.phone,
+    location: profile.location,
+    bio: profile.bio,
+    avatar_url: profile.avatarUrl,
 
-        // Only include skills for JobSeeker, Freelancer, and Student
-        ...(['jobseeker', 'freelancer', 'student'].includes(userRole) && {
-          skills: profile.skills,
-        }),
+    // Role-specific fields
+    skills: profile.skills,
+    resume_url: profile.resume_url,
+    experience: profile.experience,
+    college_name: profile.college_name,
+    institute_code: profile.institute_code,
+    university_affiliation: profile.university_affiliation,
+    city: profile.city,
+    state: profile.state,
+    accreditation: profile.accreditation,
+    tpo_name: profile.tpo_name,
+    tpo_email: profile.tpo_email,
+    tpo_mobile: profile.tpo_mobile,
+    course_branch: profile.course_branch,
+    total_students: profile.total_students,
+    enrollment_no: profile.enrollment_no,
+    course: profile.course,
+    year: profile.year,
+    department: profile.department,
+    college_id: profile.college_id,
+    cgpa: profile.cgpa,
+    linkedin_url: profile.linkedin_url,
+    github_url: profile.github_url,
+    portfolio_url: profile.portfolio_url,
+    date_of_birth: profile.date_of_birth,
+    address: profile.address,
+    pincode: profile.pincode,
+    father_name: profile.father_name,
+    mother_name: profile.mother_name,
+    emergency_contact: profile.emergency_contact,
+    blood_group: profile.blood_group,
+    profile_complete: profile.profile_complete,
+    tenth_percentage: profile.tenth_percentage,
+    twelfth_percentage: profile.twelfth_percentage,
+    graduation_percentage: profile.graduation_percentage,
+    client_company_name: profile.client_company_name,
+    industry: profile.industry,
+    hourly_rate: profile.hourly_rate,
+    company_name: profile.company_name,
+    company_website: profile.company_website,
+};
 
-        // JobSeeker specific
-        resume_url: profile.resume_url,
-        experience: profile.experience,
+// 2. Clean the payload by removing any keys with 'undefined' values
+Object.keys(payload).forEach(key => {
+    if (payload[key] === undefined) {
+        delete payload[key];
+    }
+});
 
-        // College specific
-        college_name: profile.college_name,
-        institute_code: profile.institute_code,
-        university_affiliation: profile.university_affiliation,
-        city: profile.city,
-        state: profile.state,
-        accreditation: profile.accreditation,
-        tpo_name: profile.tpo_name,
-        tpo_email: profile.tpo_email,
-        tpo_mobile: profile.tpo_mobile,
-        course_branch: profile.course_branch,
-        total_students: profile.total_students,
-
-        // Student specific (all fields from User model)
-        enrollment_no: profile.enrollment_no,
-        course: profile.course,
-        year: profile.year,
-        department: profile.department,
-        college_id: profile.college_id,
-        cgpa: profile.cgpa,
-        linkedin_url: profile.linkedin_url,
-        github_url: profile.github_url,
-        portfolio_url: profile.portfolio_url,
-        date_of_birth: profile.date_of_birth,
-        address: profile.address,
-        pincode: profile.pincode,
-        father_name: profile.father_name,
-        mother_name: profile.mother_name,
-        emergency_contact: profile.emergency_contact,
-        blood_group: profile.blood_group,
-        profile_complete: profile.profile_complete,
-        tenth_percentage: profile.tenth_percentage,
-        twelfth_percentage: profile.twelfth_percentage,
-        graduation_percentage: profile.graduation_percentage,
-
-        // Client specific
-        company_name: profile.company_name,
-        industry: profile.industry,
-
-        // Freelancer specific
-        hourly_rate: profile.hourly_rate,
-
-        // Recruiter specific
-        companyName: profile.companyName,
-        website: profile.website,
-      };
+// Now, 'payload' is a clean object with only the relevant data,
+// ready to be sent to your API.
+// For example: await updateUser(payload);
       await axios.put(`/user/${user._id}`, payload);
       toast.success('Profile updated successfully!');
       setIsEditing(false);
@@ -350,7 +361,30 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return '/dashboard';
     }
   };
+const calculateTotalExperience = (experience: ExperienceEntry[]): string => {
+  if (!experience || experience.length === 0) {
+    return '0';
+  }
 
+  const totalMilliseconds = experience.reduce((total, job) => {
+    const startDate = new Date(job.start_date);
+    // If a job has no end date, assume it's ongoing until today
+    const endDate = job.end_date ? new Date(job.end_date) : new Date();
+
+    // Ensure dates are valid before calculation
+    if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+      return total;
+    }
+
+    return total + (endDate.getTime() - startDate.getTime());
+  }, 0);
+
+  // Convert total milliseconds to years
+  const years = totalMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+  
+  // Return the value rounded to one decimal place
+  return years.toFixed(1);
+};
   const getRoleDisplayName = () => {
     switch (userRole) {
       case 'jobseeker':
@@ -378,31 +412,144 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     switch (userRole) {
       case 'jobseeker':
         return (
-          <>
+         <>
+  {/* Card container for the dynamic experience section */}
+  <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-4">
+    <div className="flex flex-col space-y-1.5 pb-4">
+      <h3 className="font-semibold leading-none tracking-tight">Work Experience</h3>
+      <p className="text-sm text-muted-foreground">Add your professional experience.</p>
+    </div>
+
+    {/* Map over each experience entry and render a form for it */}
+    <div className="space-y-4">
+      {profile?.experience?.map((exp, index) => (
+        <div key={index} className="border p-4 rounded-md space-y-2 relative">
+          {/* Remove Button */}
+          <Button
+            variant="destructive"
+            size="sm"
+            className="absolute top-2 right-2"
+            onClick={() => {
+              const updatedExperience = [...(profile.experience || [])];
+              updatedExperience.splice(index, 1); // Remove the item at the current index
+              setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+            }}
+          >
+            Remove
+          </Button>
+
+          {/* Form fields for one experience entry */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="experience">Years of Experience</Label>
+              <Label htmlFor={`company_name-${index}`}>Company Name</Label>
               <Input
-                id="experience"
-                type="number"
-                value={profile?.experience || 0}
-                onChange={e =>
-                  setProfile(prev =>
-                    prev ? { ...prev, experience: parseInt(e.target.value) || 0 } : null
-                  )
-                }
+                id={`company_name-${index}`}
+                name="company_name"
+                value={exp.company_name || ''}
+                onChange={e => {
+                  const { name, value } = e.target;
+                  const updatedExperience = [...(profile.experience || [])];
+                  updatedExperience[index] = { ...updatedExperience[index], [name]: value };
+                  setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+                }}
               />
             </div>
             <div>
-              <Label htmlFor="resume_url">Resume URL</Label>
+              <Label htmlFor={`position-${index}`}>Position</Label>
               <Input
-                id="resume_url"
-                value={profile?.resume_url || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, resume_url: e.target.value } : null))
-                }
+                id={`position-${index}`}
+                name="position"
+                value={exp.position || ''}
+                onChange={e => {
+                  const { name, value } = e.target;
+                  const updatedExperience = [...(profile.experience || [])];
+                  updatedExperience[index] = { ...updatedExperience[index], [name]: value };
+                  setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+                }}
               />
             </div>
-          </>
+            <div>
+              <Label htmlFor={`start_date-${index}`}>Start Date</Label>
+              <Input
+                id={`start_date-${index}`}
+                name="start_date"
+                type="date"
+                value={exp.start_date ? new Date(exp.start_date).toISOString().split('T')[0] : ''}
+                onChange={e => {
+                  const { name, value } = e.target;
+                  const updatedExperience = [...(profile.experience || [])];
+                  updatedExperience[index] = { ...updatedExperience[index], [name]: value };
+                  setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+                }}
+              />
+            </div>
+            <div>
+              <Label htmlFor={`end_date-${index}`}>End Date</Label>
+              <Input
+                id={`end_date-${index}`}
+                name="end_date"
+                type="date"
+                value={exp.end_date ? new Date(exp.end_date).toISOString().split('T')[0] : ''}
+                onChange={e => {
+                  const { name, value } = e.target;
+                  const updatedExperience = [...(profile.experience || [])];
+                  updatedExperience[index] = { ...updatedExperience[index], [name]: value };
+                  setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+                }}
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor={`skills_learned-${index}`}>Skills Learned (comma-separated)</Label>
+              <Input
+                id={`skills_learned-${index}`}
+                name="skills_learned"
+                value={exp.skills_learned?.join(', ') || ''}
+                onChange={e => {
+                  const { name, value } = e.target;
+                  const skillsArray = value.split(',').map(skill => skill.trim());
+                  const updatedExperience = [...(profile.experience || [])];
+                  updatedExperience[index] = { ...updatedExperience[index], [name]: skillsArray };
+                  setProfile(prev => (prev ? { ...prev, experience: updatedExperience } : null));
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Button to add a new blank experience entry */}
+    <Button
+      variant="outline"
+      className="mt-4"
+      onClick={() => {
+        const newExperience = {
+          company_name: '',
+          position: '',
+          start_date: new Date(),
+          skills_learned: [],
+        };
+        setProfile(prev =>
+          prev ? { ...prev, experience: [...(prev.experience || []), newExperience] } : null
+        );
+      }}
+    >
+      + Add Experience
+    </Button>
+  </div>
+
+  {/* Resume URL field remains the same */}
+  <div>
+    <Label htmlFor="resume_url">Resume URL</Label>
+    <Input
+      id="resume_url"
+      value={profile?.resume_url || ''}
+      onChange={e =>
+        setProfile(prev => (prev ? { ...prev, resume_url: e.target.value } : null))
+      }
+    />
+  </div>
+</>
         );
 
       case 'freelancer':
@@ -438,22 +585,22 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="companyName">Company Name</Label>
+              <Label htmlFor="company_name">Company Name</Label>
               <Input
-                id="companyName"
-                value={profile?.companyName || ''}
+                id="company_name"
+                value={profile?.company_name || ''}
                 onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, companyName: e.target.value } : null))
+                  setProfile(prev => (prev ? { ...prev, company_name: e.target.value } : null))
                 }
               />
             </div>
             <div>
-              <Label htmlFor="website">Company Website</Label>
+              <Label htmlFor="company_website">Company website</Label>
               <Input
-                id="website"
-                value={profile?.website || ''}
+                id="company_website"
+                value={profile?.company_website || ''}
                 onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, website: e.target.value } : null))
+                  setProfile(prev => (prev ? { ...prev, company_website: e.target.value } : null))
                 }
               />
             </div>
@@ -464,12 +611,12 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="company_name">Company Name</Label>
+              <Label htmlFor="client_company_name">Company Name</Label>
               <Input
-                id="company_name"
-                value={profile?.company_name || ''}
+                id="client_company_name"
+                value={profile?.client_company_name || ''}
                 onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, company_name: e.target.value } : null))
+                  setProfile(prev => (prev ? { ...prev, client_company_name: e.target.value } : null))
                 }
               />
             </div>
@@ -805,12 +952,12 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'jobseeker':
         return (
           <>
-            {profile?.experience !== undefined && profile.experience > 0 && (
+            {/* {profile?.experience !== undefined && profile.experience > 0 && (
               <div className="flex items-center text-sm text-gray-600">
                 <Award className="h-4 w-4 mr-2" />
                 <span>{profile.experience} years experience</span>
               </div>
-            )}
+            )} */}
             {profile?.resume_url && (
               <div className="flex items-center text-sm text-gray-600">
                 <FileText className="h-4 w-4 mr-2" />
@@ -855,22 +1002,22 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'recruiter':
         return (
           <>
-            {profile?.companyName && (
+            {profile?.company_name && (
               <div className="flex items-center text-sm text-gray-600">
                 <Building2 className="h-4 w-4 mr-2" />
-                <span>{profile.companyName}</span>
+                <span>{profile.company_name}</span>
               </div>
             )}
-            {profile?.website && (
+            {profile?.company_website && (
               <div className="flex items-center text-sm text-gray-600">
                 <Code className="h-4 w-4 mr-2" />
                 <a
-                  href={profile.website}
+                  href={profile.company_website}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-blue-600 hover:underline"
                 >
-                  {profile.website}
+                  {profile.company_website}
                 </a>
               </div>
             )}
@@ -880,10 +1027,10 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'client':
         return (
           <>
-            {profile?.company_name && (
+            {profile?.client_company_name && (
               <div className="flex items-center text-sm text-gray-600">
                 <Building2 className="h-4 w-4 mr-2" />
-                <span>{profile.company_name}</span>
+                <span>{profile.client_company_name}</span>
               </div>
             )}
             {profile?.industry && (
@@ -1250,7 +1397,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       {placementDrives.map(drive => (
                         <div key={drive._id} className="border rounded-lg p-4">
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="font-medium text-lg">{drive.company_name}</h3>
+                            <h3 className="font-medium text-lg">{drive.client_company_name}</h3>
                             <Badge variant={drive.status === 'active' ? 'default' : 'secondary'}>
                               {drive.status}
                             </Badge>
