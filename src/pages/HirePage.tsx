@@ -3,9 +3,21 @@ import axios from '@/lib/utils/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
   Laptop,
@@ -29,7 +41,6 @@ import {
   Phone,
   BookOpen,
   Megaphone,
-  PaintRoller
 } from 'lucide-react';
 import CategoryModal from '@/components/hire/CategoryModal';
 import ListYourselfModal from '@/components/hire/ListYourselfModal';
@@ -58,9 +69,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   Phone,
   BookOpen,
   Megaphone,
-  
 };
-
 
 const HirePage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -76,8 +85,9 @@ const HirePage = () => {
 
   // Fetch categories from backend
   useEffect(() => {
-    axios.get('/categories')
-      .then((res) => {
+    axios
+      .get('/categories')
+      .then(res => {
         const categories = Array.isArray(res.data) ? res.data : [];
         const mapped = categories.map((c: any) => ({
           _id: c._id,
@@ -99,14 +109,19 @@ const HirePage = () => {
     }
     setUsersLoading(true);
     setUsersError(null);
-    axios.get(`/user`)
-      .then((res) => {
+    axios
+      .get(`/user`)
+      .then(res => {
         const payload = res.data;
-        const allUsers = Array.isArray(payload?.data) ? payload.data : Array.isArray(payload) ? payload : [];
+        const allUsers = Array.isArray(payload?.data)
+          ? payload.data
+          : Array.isArray(payload)
+            ? payload
+            : [];
         const filtered = allUsers.filter((u: any) => u.availableForRole === selectedCategory);
         setFilteredUsers(filtered);
       })
-      .catch((err) => {
+      .catch(err => {
         setUsersError(err.message);
         setFilteredUsers([]);
       })
@@ -151,16 +166,16 @@ const HirePage = () => {
             Hire Skilled People in Just a Click
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Connect with verified professionals and skilled individuals across various categories. 
+            Connect with verified professionals and skilled individuals across various categories.
             Find the right person for your needs instantly.
           </p>
-          
+
           {/* Search Bar */}
           <div className="max-w-md mx-auto mb-8">
             <Input
               placeholder="Search for services..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="text-lg p-4"
             />
           </div>
@@ -168,7 +183,7 @@ const HirePage = () => {
 
         {/* Job Categories Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-12">
-          {filteredCategories.map((category) => {
+          {filteredCategories.map(category => {
             const Icon = category.icon;
             return (
               <Card
@@ -177,7 +192,9 @@ const HirePage = () => {
                 onClick={() => handleCategoryClick(category.id)}
               >
                 <CardContent className="flex flex-col items-center justify-center p-6 text-center">
-                  <div className={`${category.color} w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  <div
+                    className={`${category.color} w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                  >
                     <Icon className="h-8 w-8 text-white" />
                   </div>
                   <h3 className="font-semibold text-sm text-gray-800 group-hover:text-blue-600 transition-colors">
@@ -192,16 +209,14 @@ const HirePage = () => {
         <Separator className="my-8" />
 
         {/*List Yourself Section */}
-         <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">
-            Want to Get Hired?
-          </h2>
+        <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Want to Get Hired?</h2>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            List yourself in your expertise area and start receiving booking requests from potential clients.
-            Build your professional profile and grow your business.
+            List yourself in your expertise area and start receiving booking requests from potential
+            clients. Build your professional profile and grow your business.
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3"
             onClick={() => setShowListYourselfModal(true)}
           >
@@ -209,12 +224,11 @@ const HirePage = () => {
           </Button>
         </div>
 
-
         {/* Category Modal */}
         <CategoryModal
           isOpen={showCategoryModal}
           onClose={() => setShowCategoryModal(false)}
-          onSelect={(category) => setSelectedCategory(category)}
+          onSelect={category => setSelectedCategory(category)}
           category={selectedCategory ? jobCategories.find(c => c.id === selectedCategory) : null}
         />
 
@@ -254,7 +268,7 @@ const HirePage = () => {
           onSubmit={handleListYourself}
         /> */}
       </div>
-       {/* <Footer />
+      {/* <Footer />
       <FloatingActionButtons /> */}
     </div>
   );

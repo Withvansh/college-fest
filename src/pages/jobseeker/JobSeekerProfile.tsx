@@ -36,29 +36,28 @@ interface UserProfile {
   skills: string[];
   resumeUrl?: string;
   avatarUrl?: string;
-  workExperience: WorkExperience[];
+  experience: WorkExperience[];
   education: Education[];
   testScores: TestScore[];
   publicProfile: boolean;
 }
 
 interface WorkExperience {
-  id: string;
-  company: string;
+  _id?: string;
+  company_name: string;
   position: string;
-  startDate: string;
-  endDate?: string;
-  description: string;
-  current: boolean;
+  start_date: string;
+  end_date?: string;
+  skills_learned?: string[];
 }
 
 interface Education {
-  id: string;
+  _id?: string;
   institution: string;
   degree: string;
   field: string;
-  startDate: string;
-  endDate?: string;
+  start_date: string;
+  end_date?: string;
   gpa?: string;
 }
 
@@ -78,6 +77,21 @@ const JobSeekerProfile = () => {
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+  const [newExperience, setNewExperience] = useState<Partial<WorkExperience>>({
+    company_name: '',
+    position: '',
+    start_date: '',
+    end_date: '',
+    skills_learned: [],
+  });
+  const [newEducation, setNewEducation] = useState<Partial<Education>>({
+    institution: '',
+    degree: '',
+    field: '',
+    start_date: '',
+    end_date: '',
+    gpa: '',
+  });
 
   const loadProfile = useCallback(async () => {
     if (!user?._id) return;
@@ -87,8 +101,9 @@ const JobSeekerProfile = () => {
 
       const res = await axios.get(`/user/${user._id}`);
       const data = res.data.user;
-      console.log(data.user);
-      // Map backend data to UserProfile shape if needed
+      console.log('User data:', data);
+
+      // Map backend data to UserProfile shape
       setProfile({
         id: data._id,
         name: data.full_name,
@@ -97,9 +112,9 @@ const JobSeekerProfile = () => {
         location: data.location || '',
         bio: data.bio || '',
         skills: data.skills || [],
-        resumeUrl: data.resumeUrl || '',
+        resumeUrl: data.resume_url || '',
         avatarUrl: data.avatar_url || '',
-        workExperience: data.workExperience || [],
+        experience: data.experience || [],
         education: data.education || [],
         testScores: data.testScores || [],
         publicProfile: data.publicProfile ?? true,
@@ -119,7 +134,8 @@ const JobSeekerProfile = () => {
   }, [user?._id, loadProfile]);
 
   const handleSaveProfile = async () => {
-    // if (!profile || !user?.id) return;
+    if (!profile || !user?._id) return;
+
     setSaving(true);
     try {
       const payload = {
@@ -130,13 +146,19 @@ const JobSeekerProfile = () => {
         bio: profile.bio,
         skills: profile.skills,
         avatar_url: profile.avatarUrl,
+        resume_url: profile.resumeUrl,
+        experience: profile.experience,
+        education: profile.education,
         publicProfile: profile.publicProfile,
-        // Add workExperience, education, testScores, resumeUrl if supported by backend
       };
-      await axios.put(`/user/${user?._id}`, payload);
+
+      console.log('Saving payload:', payload);
+      await axios.put(`/user/${user._id}`, payload);
       toast.success('Profile updated successfully!');
       setIsEditing(false);
+      await loadProfile(); // Reload to get updated data
     } catch (error) {
+      console.error('Error updating profile:', error);
       toast.error('Failed to update profile');
     } finally {
       setSaving(false);
@@ -176,7 +198,7 @@ const JobSeekerProfile = () => {
   const handleResumeUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Mock file upload
+      // Mock file upload - in real implementation, upload to server
       toast.success('Resume uploaded successfully!');
       setProfile(prev =>
         prev
@@ -187,6 +209,109 @@ const JobSeekerProfile = () => {
           : null
       );
     }
+  };
+
+  const handleAddExperience = () => {
+    if (
+      !newExperience.company_name ||
+      !newExperience.position ||
+      !newExperience.start_date ||
+      !profile
+    ) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const experienceToAdd: WorkExperience = {
+      _id: Date.now().toString(), // Temporary ID
+      company_name: newExperience.company_name,
+      position: newExperience.position,
+      start_date: newExperience.start_date,
+      end_date: newExperience.end_date,
+      skills_learned: newExperience.skills_learned || [],
+    };
+
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            experience: [...prev.experience, experienceToAdd],
+          }
+        : null
+    );
+
+    // Reset form
+    setNewExperience({
+      company_name: '',
+      position: '',
+      start_date: '',
+      end_date: '',
+      skills_learned: [],
+    });
+  };
+
+  const handleRemoveExperience = (experienceId: string) => {
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            experience: prev.experience.filter(exp => exp._id !== experienceId),
+          }
+        : null
+    );
+  };
+
+  const handleAddEducation = () => {
+    if (
+      !newEducation.institution ||
+      !newEducation.degree ||
+      !newEducation.field ||
+      !newEducation.start_date ||
+      !profile
+    ) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+
+    const educationToAdd: Education = {
+      _id: Date.now().toString(), // Temporary ID
+      institution: newEducation.institution,
+      degree: newEducation.degree,
+      field: newEducation.field,
+      start_date: newEducation.start_date,
+      end_date: newEducation.end_date,
+      gpa: newEducation.gpa,
+    };
+
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            education: [...prev.education, educationToAdd],
+          }
+        : null
+    );
+
+    // Reset form
+    setNewEducation({
+      institution: '',
+      degree: '',
+      field: '',
+      start_date: '',
+      end_date: '',
+      gpa: '',
+    });
+  };
+
+  const handleRemoveEducation = (educationId: string) => {
+    setProfile(prev =>
+      prev
+        ? {
+            ...prev,
+            education: prev.education.filter(edu => edu._id !== educationId),
+          }
+        : null
+    );
   };
 
   if (loading) {
@@ -437,30 +562,119 @@ const JobSeekerProfile = () => {
             {/* Work Experience */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Briefcase className="h-5 w-5 mr-2" />
-                  Work Experience
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Briefcase className="h-5 w-5 mr-2" />
+                    Work Experience
+                  </div>
+                  {isEditing && (
+                    <Button onClick={handleAddExperience} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Experience
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  {profile.workExperience.map(exp => (
-                    <div key={exp.id} className="border-l-2 border-blue-200 pl-4">
-                      <div className="flex justify-between items-start mb-2">
+                  {profile.experience.map(exp => (
+                    <div key={exp._id} className="border-l-2 border-blue-200 pl-4 relative">
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveExperience(exp._id!)}
+                          className="absolute top-0 right-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <div className="flex justify-between items-start mb-2 pr-10">
                         <div>
                           <h4 className="font-semibold text-gray-900">{exp.position}</h4>
-                          <p className="text-blue-600 font-medium">{exp.company}</p>
+                          <p className="text-blue-600 font-medium">{exp.company_name}</p>
                         </div>
-                        <Badge variant={exp.current ? 'default' : 'secondary'}>
-                          {exp.current ? 'Current' : 'Past'}
+                        <Badge variant={!exp.end_date ? 'default' : 'secondary'}>
+                          {!exp.end_date ? 'Current' : 'Past'}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">
-                        {exp.startDate} - {exp.current ? 'Present' : exp.endDate}
+                        {new Date(exp.start_date).toLocaleDateString()} -{' '}
+                        {!exp.end_date ? 'Present' : new Date(exp.end_date).toLocaleDateString()}
                       </p>
-                      <p className="text-gray-700">{exp.description}</p>
+                      {exp.skills_learned && exp.skills_learned.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {exp.skills_learned.map((skill, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {skill}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
+
+                  {isEditing && (
+                    <Card className="border-dashed">
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-4">Add New Experience</h4>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label htmlFor="new-company">Company Name *</Label>
+                            <Input
+                              id="new-company"
+                              value={newExperience.company_name}
+                              onChange={e =>
+                                setNewExperience(prev => ({
+                                  ...prev,
+                                  company_name: e.target.value,
+                                }))
+                              }
+                              placeholder="Enter company name"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-position">Position *</Label>
+                            <Input
+                              id="new-position"
+                              value={newExperience.position}
+                              onChange={e =>
+                                setNewExperience(prev => ({ ...prev, position: e.target.value }))
+                              }
+                              placeholder="Enter position"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label htmlFor="new-start-date">Start Date *</Label>
+                            <Input
+                              id="new-start-date"
+                              type="date"
+                              value={newExperience.start_date}
+                              onChange={e =>
+                                setNewExperience(prev => ({ ...prev, start_date: e.target.value }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-end-date">End Date (leave empty if current)</Label>
+                            <Input
+                              id="new-end-date"
+                              type="date"
+                              value={newExperience.end_date}
+                              onChange={e =>
+                                setNewExperience(prev => ({ ...prev, end_date: e.target.value }))
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Button onClick={handleAddExperience} className="w-full">
+                          Add Experience
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -468,23 +682,129 @@ const JobSeekerProfile = () => {
             {/* Education */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BookOpen className="h-5 w-5 mr-2" />
-                  Education
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <BookOpen className="h-5 w-5 mr-2" />
+                    Education
+                  </div>
+                  {isEditing && (
+                    <Button onClick={handleAddEducation} size="sm">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Education
+                    </Button>
+                  )}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {profile.education.map(edu => (
-                    <div key={edu.id} className="border-l-2 border-green-200 pl-4">
-                      <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
-                      <p className="text-green-600 font-medium">{edu.institution}</p>
-                      <p className="text-sm text-gray-600">
-                        {edu.field} • {edu.startDate} - {edu.endDate}
-                        {edu.gpa && ` • GPA: ${edu.gpa}`}
-                      </p>
+                    <div key={edu._id} className="border-l-2 border-green-200 pl-4 relative">
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveEducation(edu._id!)}
+                          className="absolute top-0 right-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <div className="pr-10">
+                        <h4 className="font-semibold text-gray-900">{edu.degree}</h4>
+                        <p className="text-green-600 font-medium">{edu.institution}</p>
+                        <p className="text-sm text-gray-600">
+                          {edu.field} • {new Date(edu.start_date).toLocaleDateString()} -{' '}
+                          {edu.end_date ? new Date(edu.end_date).toLocaleDateString() : 'Present'}
+                          {edu.gpa && ` • GPA: ${edu.gpa}`}
+                        </p>
+                      </div>
                     </div>
                   ))}
+
+                  {isEditing && (
+                    <Card className="border-dashed">
+                      <CardContent className="p-4">
+                        <h4 className="font-medium mb-4">Add New Education</h4>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label htmlFor="new-institution">Institution *</Label>
+                            <Input
+                              id="new-institution"
+                              value={newEducation.institution}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, institution: e.target.value }))
+                              }
+                              placeholder="Enter institution name"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-degree">Degree *</Label>
+                            <Input
+                              id="new-degree"
+                              value={newEducation.degree}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, degree: e.target.value }))
+                              }
+                              placeholder="Enter degree"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label htmlFor="new-field">Field of Study *</Label>
+                            <Input
+                              id="new-field"
+                              value={newEducation.field}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, field: e.target.value }))
+                              }
+                              placeholder="Enter field of study"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-gpa">GPA (Optional)</Label>
+                            <Input
+                              id="new-gpa"
+                              value={newEducation.gpa}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, gpa: e.target.value }))
+                              }
+                              placeholder="Enter GPA"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label htmlFor="new-edu-start-date">Start Date *</Label>
+                            <Input
+                              id="new-edu-start-date"
+                              type="date"
+                              value={newEducation.start_date}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, start_date: e.target.value }))
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="new-edu-end-date">
+                              End Date (leave empty if current)
+                            </Label>
+                            <Input
+                              id="new-edu-end-date"
+                              type="date"
+                              value={newEducation.end_date}
+                              onChange={e =>
+                                setNewEducation(prev => ({ ...prev, end_date: e.target.value }))
+                              }
+                            />
+                          </div>
+                        </div>
+                        <Button onClick={handleAddEducation} className="w-full">
+                          Add Education
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  )}
                 </div>
               </CardContent>
             </Card>
