@@ -8,6 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import { Eye, EyeOff } from 'lucide-react';
 import { useParams, useSearchParams } from 'react-router-dom';
+import OTPVerification from './OTPVerification';
 
 interface AuthFormProps {
   userType: string;
@@ -27,6 +28,8 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
 
   const { login, signup } = useAuth();
 
@@ -39,8 +42,13 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
 
     setIsLoading(true);
     try {
-      const success = await login(email.trim(), password.trim());
-      if (!success) {
+      const result = await login(email.trim(), password.trim());
+
+      if (result.requiresEmailVerification) {
+        setVerificationEmail(result.email || email.trim());
+        setShowEmailVerification(true);
+        toast.info('Please verify your email to continue');
+      } else if (!result.success) {
         // Error is handled in the login function
       }
     } catch (error) {
@@ -60,19 +68,24 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
 
     setIsLoading(true);
     try {
-      const success = await signup(
+      const result = await signup(
         email.trim(),
         password.trim(),
         full_name.trim(),
         role.trim() as 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'Student'
       );
-      if (success) {
-        toast.success('Signup successful! Please login.');
-        setActiveTab('login');
-        // Clear form
-        setEmail('');
-        setPassword('');
-        setFull_Name('');
+
+      if (result.success) {
+        if (result.requiresEmailVerification) {
+          setVerificationEmail(result.email || email.trim());
+          setShowEmailVerification(true);
+        } else {
+          setActiveTab('login');
+          // Clear form
+          setEmail('');
+          setPassword('');
+          setFull_Name('');
+        }
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Signup failed. Please try again.');
@@ -80,6 +93,34 @@ const AuthForm = ({ userType, title, description, icon }: AuthFormProps) => {
       setIsLoading(false);
     }
   };
+
+  const handleEmailVerificationSuccess = () => {
+    setShowEmailVerification(false);
+    setActiveTab('login');
+    setEmail('');
+    setPassword('');
+    setFull_Name('');
+    toast.success('Email verified successfully! You can now log in.');
+  };
+
+  const handleCancelEmailVerification = () => {
+    setShowEmailVerification(false);
+    setVerificationEmail('');
+  };
+
+  // Show email verification screen if needed
+  if (showEmailVerification) {
+    return (
+      <OTPVerification
+        email={verificationEmail}
+        type="email_verification"
+        onVerificationSuccess={handleEmailVerificationSuccess}
+        onCancel={handleCancelEmailVerification}
+        title="Verify Your Email"
+        description="We've sent a verification code to your email address. Please enter it below to complete your registration."
+      />
+    );
+  }
 
   return (
     <div className="w-full max-w-md mx-auto p-4">
