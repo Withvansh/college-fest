@@ -10,11 +10,23 @@ interface AuthContextType {
   loading: boolean;
 
   // Actions
-  login: (email: string, password: string) => Promise<boolean>;
-  signup: (email: string, password: string, full_name: string, role: UserRole) => Promise<boolean>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }>;
+  signup: (
+    email: string,
+    password: string,
+    full_name: string,
+    role: UserRole
+  ) => Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }>;
   demoLogin: (role: UserRole) => Promise<boolean>;
   logout: () => void;
   updateProfile: (updates: Partial<User>) => Promise<void>;
+
+  // Email Verification
+  sendEmailVerification: (email: string) => Promise<boolean>;
+  verifyEmail: (email: string, otp: string) => Promise<boolean>;
 
   // Utilities
   getDashboardRoute: (role?: UserRole) => string;
@@ -79,15 +91,47 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     }
   };
 
-  const login = async (email: string, password: string): Promise<boolean> => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }> => {
     try {
       setLoading(true);
       const response = await unifiedAuthService.login(email, password);
-      console.log(response)
-      return await handleAuthResponse(response, 'Login');
+      console.log(response);
+
+      if (response.success && response.user) {
+        setUser(response.user);
+        toast.success(`Login successful! Welcome ${response.user.full_name}`);
+
+        // Navigate to appropriate dashboard
+        const dashboardRoute = unifiedAuthService.getDashboardRoute(response.user.role);
+        console.log(`🎯 Redirecting ${response.user.role} to:`, dashboardRoute);
+
+        // Special handling for recruiters with dashboard ID
+        if (response.user.role === 'recruiter' && response.user.dashboardId) {
+          navigate(`/recruiter/dashboard/${response.user.dashboardId}`);
+        } else {
+          navigate(dashboardRoute);
+        }
+
+        return { success: true };
+      } else {
+        // Check if email verification is required
+        if (response.requiresEmailVerification) {
+          return {
+            success: false,
+            requiresEmailVerification: true,
+            email: response.email,
+          };
+        }
+
+        toast.error(response.error || 'Login failed');
+        return { success: false };
+      }
     } catch (error) {
       toast.error('Login failed. Please try again.');
-      return false;
+      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -98,16 +142,31 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     password: string,
     full_name: string,
     role: UserRole
-  ) => {
+  ): Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }> => {
     try {
       setLoading(true);
       const response = await unifiedAuthService.signup(email, password, full_name, role);
-      // return await handleAuthResponse(response, 'Account creation');
-      navigate('/auth?tab=login')
-      return true
+
+      if (response.success) {
+        if (response.requiresEmailVerification) {
+          toast.success('Account created! Please check your email for verification.');
+          return {
+            success: true,
+            requiresEmailVerification: true,
+            email: response.email,
+          };
+        } else {
+          toast.success('Account created successfully!');
+          navigate('/auth?tab=login');
+          return { success: true };
+        }
+      } else {
+        toast.error(response.error || 'Signup failed');
+        return { success: false };
+      }
     } catch (error) {
       toast.error('Signup failed. Please try again.');
-    return false
+      return { success: false };
     } finally {
       setLoading(false);
     }
@@ -155,6 +214,38 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     }
   };
 
+  const sendEmailVerification = async (email: string): Promise<boolean> => {
+    try {
+      const response = await unifiedAuthService.sendEmailVerification(email);
+      if (response.success) {
+        toast.success('Verification email sent!');
+        return true;
+      } else {
+        toast.error(response.error || 'Failed to send verification email');
+        return false;
+      }
+    } catch (error) {
+      toast.error('Failed to send verification email');
+      return false;
+    }
+  };
+
+  const verifyEmail = async (email: string, otp: string): Promise<boolean> => {
+    try {
+      const response = await unifiedAuthService.verifyEmail(email, otp);
+      if (response.success) {
+        toast.success('Email verified successfully!');
+        return true;
+      } else {
+        toast.error(response.error || 'Email verification failed');
+        return false;
+      }
+    } catch (error) {
+      toast.error('Email verification failed');
+      return false;
+    }
+  };
+
   const getDashboardRoute = (role?: UserRole): string => {
     const targetRole = role || user?.role;
     return targetRole ? unifiedAuthService.getDashboardRoute(targetRole) : '/';
@@ -194,6 +285,10 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
     demoLogin,
     logout,
     updateProfile,
+
+    // Email Verification
+    sendEmailVerification,
+    verifyEmail,
 
     // Utilities
     getDashboardRoute,
