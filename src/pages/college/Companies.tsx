@@ -1,5 +1,4 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -21,105 +20,122 @@ import {
   Download,
   ArrowLeft,
   Users,
-  Briefcase
+  Briefcase,
+  Crown,
+  Send,
+  Eye,
+  Loader2
 } from "lucide-react";
+import { recruiterProfileAPI, RecruiterProfile } from '@/lib/api/Recuriter';
 
 const Companies = () => {
-  const [companies, setCompanies] = useState([
-    {
-      id: 1,
-      name: "Google Inc.",
-      website: "https://google.com",
-      contactPerson: "John Smith",
-      email: "john.smith@google.com",
-      phone: "+1 555 0123",
-      industry: "Technology",
-      hiringRoles: ["Software Engineer", "Product Manager"],
-      packageRange: "₹15-25 LPA",
-      status: "Active",
-      totalHires: 12
-    },
-    {
-      id: 2,
-      name: "Microsoft",
-      website: "https://microsoft.com",
-      contactPerson: "Sarah Johnson",
-      email: "sarah.j@microsoft.com",
-      phone: "+1 555 0124",
-      industry: "Technology",
-      hiringRoles: ["Software Developer", "Data Scientist"],
-      packageRange: "₹18-30 LPA",
-      status: "Active",
-      totalHires: 8
-    },
-    {
-      id: 3,
-      name: "Amazon",
-      website: "https://amazon.com",
-      contactPerson: "Mike Wilson",
-      email: "mike.w@amazon.com",
-      phone: "+1 555 0125",
-      industry: "E-commerce",
-      hiringRoles: ["SDE-1", "Business Analyst"],
-      packageRange: "₹12-20 LPA",
-      status: "Inactive",
-      totalHires: 15
-    }
-  ]);
-
+  const [companies, setCompanies] = useState<RecruiterProfile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [formData, setFormData] = useState({
-    name: '',
-    website: '',
-    contactPerson: '',
+    company_name: '',
+    company_website: '',
+    full_name: '',
     email: '',
     phone: '',
     industry: 'Technology',
     hiringRole: '',
     packageRange: '',
-    description: ''
+    bio: ''
   });
 
-  const handleAddCompany = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const newCompany = {
-      id: companies.length + 1,
-      ...formData,
-      hiringRoles: [formData.hiringRole],
-      status: 'Active',
-      totalHires: 0
+  const [inviteData, setInviteData] = useState({
+    companyName: '',
+    contactEmail: '',
+    message: 'We would like to invite your company to participate in our campus recruitment program.'
+  });
+
+  // Fetch companies data from API
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      try {
+        setIsLoading(true);
+        // Get all recruiter profiles
+        const recruiters = await recruiterProfileAPI.getRandomRecruiters();
+        setCompanies(recruiters);
+      } catch (error) {
+        console.error('Error fetching companies:', error);
+        toast.error("Failed to load companies data");
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    setCompanies([...companies, newCompany]);
-    setIsAddModalOpen(false);
-    setFormData({
-      name: '',
-      website: '',
-      contactPerson: '',
-      email: '',
-      phone: '',
-      industry: 'Technology',
-      hiringRole: '',
-      packageRange: '',
-      description: ''
-    });
+    fetchCompanies();
+  }, []);
+
+  const handleAddCompany = async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    toast.success("Company added successfully!");
+    try {
+      const newCompanyData = {
+        company_name: formData.company_name,
+        company_website: formData.company_website,
+        full_name: formData.full_name,
+        email: formData.email,
+        phone: formData.phone,
+        bio: formData.bio,
+        package_purchased: formData.packageRange ? [formData.packageRange] : []
+      };
+
+      // Create new company profile
+      const newCompany = await recruiterProfileAPI.updateProfile(newCompanyData);
+      
+      // Update local state
+      setCompanies([...companies, newCompany]);
+      setIsAddModalOpen(false);
+      
+      // Reset form
+      setFormData({
+        company_name: '',
+        company_website: '',
+        full_name: '',
+        email: '',
+        phone: '',
+        industry: 'Technology',
+        hiringRole: '',
+        packageRange: '',
+        bio: ''
+      });
+      
+      toast.success("Company added successfully!");
+    } catch (error) {
+      console.error('Error adding company:', error);
+      toast.error("Failed to add company");
+    }
+  };
+
+  const handleInviteCompany = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real app, this would send an email or API request
+    console.log("Inviting company:", inviteData);
+    setIsInviteModalOpen(false);
+    setInviteData({
+      companyName: '',
+      contactEmail: '',
+      message: 'We would like to invite your company to participate in our campus recruitment program.'
+    });
+    toast.success("Invitation sent successfully!");
   };
 
   const handleExportData = () => {
     const csvContent = [
       ['Company Name', 'Contact Person', 'Email', 'Industry', 'Package Range', 'Status', 'Total Hires'],
       ...filteredCompanies.map(company => [
-        company.name,
-        company.contactPerson,
+        company.company_name,
+        company.full_name,
         company.email,
-        company.industry,
-        company.packageRange,
-        company.status,
-        company.totalHires
+        company.industry || 'Not specified',
+        company.package_purchased?.join(', ') || 'Not specified',
+        company.verify ? 'Active' : 'Inactive',
+        '0' // This would need to come from a different API endpoint
       ])
     ].map(row => row.join(',')).join('\n');
 
@@ -134,18 +150,26 @@ const Companies = () => {
   };
 
   const filteredCompanies = companies.filter(company =>
-    company.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    company.industry.toLowerCase().includes(searchTerm.toLowerCase())
+    company.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (company.industry && company.industry.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Active': return 'bg-green-100 text-green-700';
-      case 'Inactive': return 'bg-gray-100 text-gray-700';
-      case 'Pending': return 'bg-yellow-100 text-yellow-700';
-      default: return 'bg-gray-100 text-gray-700';
-    }
+  const topRecruiters = companies.filter(company => company.verify);
+
+  const getStatusColor = (status: boolean) => {
+    return status ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700';
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Loader2 className="h-8 w-8 animate-spin text-orange-600 mb-4" />
+          <p className="text-gray-600">Loading companies data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
@@ -178,31 +202,31 @@ const Companies = () => {
                   <form onSubmit={handleAddCompany} className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="name">Company Name</Label>
+                        <Label htmlFor="company_name">Company Name</Label>
                         <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          id="company_name"
+                          value={formData.company_name}
+                          onChange={(e) => setFormData({...formData, company_name: e.target.value})}
                           placeholder="e.g., Google Inc."
                           required
                         />
                       </div>
                       <div>
-                        <Label htmlFor="website">Website</Label>
+                        <Label htmlFor="company_website">Website</Label>
                         <Input
-                          id="website"
+                          id="company_website"
                           type="url"
-                          value={formData.website}
-                          onChange={(e) => setFormData({...formData, website: e.target.value})}
+                          value={formData.company_website}
+                          onChange={(e) => setFormData({...formData, company_website: e.target.value})}
                           placeholder="https://company.com"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="contactPerson">Contact Person</Label>
+                        <Label htmlFor="full_name">Contact Person</Label>
                         <Input
-                          id="contactPerson"
-                          value={formData.contactPerson}
-                          onChange={(e) => setFormData({...formData, contactPerson: e.target.value})}
+                          id="full_name"
+                          value={formData.full_name}
+                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
                           placeholder="John Smith"
                           required
                         />
@@ -250,7 +274,6 @@ const Companies = () => {
                           value={formData.hiringRole}
                           onChange={(e) => setFormData({...formData, hiringRole: e.target.value})}
                           placeholder="Software Engineer"
-                          required
                         />
                       </div>
                       <div>
@@ -264,11 +287,11 @@ const Companies = () => {
                       </div>
                     </div>
                     <div>
-                      <Label htmlFor="description">Company Description (Optional)</Label>
+                      <Label htmlFor="bio">Company Description (Optional)</Label>
                       <Textarea
-                        id="description"
-                        value={formData.description}
-                        onChange={(e) => setFormData({...formData, description: e.target.value})}
+                        id="bio"
+                        value={formData.bio}
+                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
                         placeholder="Brief description about the company..."
                       />
                     </div>
@@ -289,157 +312,244 @@ const Companies = () => {
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">All Companies</h2>
-            <div className="relative">
-              <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
-                placeholder="Search companies..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Panel - Top Recruiters */}
+          <div className="w-full lg:w-1/3">
+            <Card className="h-full">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">Top Recruiters</CardTitle>
+                  <Crown className="h-5 w-5 text-yellow-500" />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="h-[calc(100vh-250px)] overflow-y-auto">
+                  {topRecruiters.length > 0 ? (
+                    <div className="space-y-4 p-4">
+                      {topRecruiters.map((company) => (
+                        <div key={company._id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start space-x-3">
+                              <div className="bg-blue-100 p-2 rounded-full">
+                                <Building2 className="h-5 w-5 text-blue-600" />
+                              </div>
+                              <div>
+                                <h3 className="font-semibold">{company.company_name}</h3>
+                                <p className="text-sm text-gray-600">{company.industry || 'Not specified'}</p>
+                                <div className="flex items-center mt-1">
+                                  <Users className="h-3 w-3 mr-1 text-gray-400" />
+                                  <span className="text-xs">0 hires</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Badge className={getStatusColor(company.verify)}>
+                              {company.verify ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between">
+                            <div className="text-sm font-medium">
+                              {company.package_purchased?.join(', ') || 'Not specified'}
+                            </div>
+                            <Button size="sm" variant="outline">
+                              <Eye className="h-4 w-4 mr-1" />
+                              View
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-6 text-center text-gray-500">
+                      <Building2 className="h-12 w-12 mx-auto text-gray-300 mb-3" />
+                      <p>No top recruiters yet</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Right Panel - Company Invitation & Management */}
+          <div className="w-full lg:w-2/3">
+            <Card className="h-full">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Company Invitation & Management</CardTitle>
+                  <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="bg-orange-600 hover:bg-orange-700">
+                        <Send className="h-4 w-4 mr-2" />
+                        Invite Company
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Invite a Company</DialogTitle>
+                      </DialogHeader>
+                      <form onSubmit={handleInviteCompany} className="space-y-4">
+                        <div>
+                          <Label htmlFor="companyName">Company Name</Label>
+                          <Input
+                            id="companyName"
+                            value={inviteData.companyName}
+                            onChange={(e) => setInviteData({...inviteData, companyName: e.target.value})}
+                            placeholder="e.g., Google Inc."
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="contactEmail">Contact Email</Label>
+                          <Input
+                            id="contactEmail"
+                            type="email"
+                            value={inviteData.contactEmail}
+                            onChange={(e) => setInviteData({...inviteData, contactEmail: e.target.value})}
+                            placeholder="contact@company.com"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="message">Invitation Message</Label>
+                          <Textarea
+                            id="message"
+                            value={inviteData.message}
+                            onChange={(e) => setInviteData({...inviteData, message: e.target.value})}
+                            rows={4}
+                          />
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button type="button" variant="outline" onClick={() => setIsInviteModalOpen(false)}>
+                            Cancel
+                          </Button>
+                          <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
+                            Send Invitation
+                          </Button>
+                        </div>
+                      </form>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-xl font-semibold">All Companies</h2>
+                    <div className="relative">
+                      <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                      <Input
+                        placeholder="Search companies..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10 w-64"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">{companies.length}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Active</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-green-600">
+                        {companies.filter(c => c.verify).length}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Total Hires</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-blue-600">
+                        0
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Industries</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-purple-600">
+                        {new Set(companies.map(c => c.industry).filter(Boolean)).size}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="h-[calc(100vh-450px)] overflow-y-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Company Details</TableHead>
+                        <TableHead>Contact Information</TableHead>
+                        <TableHead>Package</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCompanies.map((company) => (
+                        <TableRow key={company._id}>
+                          <TableCell>
+                            <div className="flex items-center">
+                              <Building2 className="h-5 w-5 mr-3 text-gray-400" />
+                              <div>
+                                <p className="font-medium">{company.company_name}</p>
+                                <Badge variant="secondary" className="mt-1">
+                                  {company.industry || 'Not specified'}
+                                </Badge>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-1">
+                              <p className="font-medium text-sm">{company.full_name}</p>
+                              <div className="flex items-center text-sm text-gray-600">
+                                <Mail className="h-3 w-3 mr-1" />
+                                {company.email}
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="font-mono">
+                              {company.package_purchased?.join(', ') || 'Not specified'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={getStatusColor(company.verify)}>
+                              {company.verify ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline">
+                                View
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                Edit
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{companies.length}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Active</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">
-                {companies.filter(c => c.status === 'Active').length}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Hires</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">
-                {companies.reduce((sum, c) => sum + c.totalHires, 0)}
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Industries</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-purple-600">
-                {new Set(companies.map(c => c.industry)).size}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Company Details</TableHead>
-                  <TableHead>Contact Information</TableHead>
-                  <TableHead>Industry & Roles</TableHead>
-                  <TableHead>Package</TableHead>
-                  <TableHead>Hires</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCompanies.map((company) => (
-                  <TableRow key={company.id}>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Building2 className="h-5 w-5 mr-3 text-gray-400" />
-                        <div>
-                          <p className="font-medium">{company.name}</p>
-                          {company.website && (
-                            <div className="flex items-center text-sm text-blue-600">
-                              <Globe className="h-3 w-3 mr-1" />
-                              <a href={company.website} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                                Website
-                              </a>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <p className="font-medium text-sm">{company.contactPerson}</p>
-                        <div className="flex items-center text-sm text-gray-600">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {company.email}
-                        </div>
-                        {company.phone && (
-                          <div className="flex items-center text-sm text-gray-600">
-                            <Phone className="h-3 w-3 mr-1" />
-                            {company.phone}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <Badge variant="secondary" className="mb-2">
-                          {company.industry}
-                        </Badge>
-                        <div className="space-y-1">
-                          {company.hiringRoles.map((role, index) => (
-                            <div key={index} className="flex items-center text-sm">
-                              <Briefcase className="h-3 w-3 mr-1 text-gray-400" />
-                              {role}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="font-mono">
-                        {company.packageRange}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1 text-gray-400" />
-                        <span className="font-medium">{company.totalHires}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(company.status)}>
-                        {company.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          View
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          Edit
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
