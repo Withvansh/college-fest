@@ -22,6 +22,7 @@ import {
   Upload,
   User,
   MoveRight,
+  Briefcase,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
@@ -444,49 +445,65 @@ const CollegeDashboard = () => {
           </TabsContent>
 
           {/* Companies Tab */}
-          <TabsContent value="companies" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Top Recruiting Companies</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {dashboardData?.topCompanies && dashboardData.topCompanies.length > 0 ? (
-                    dashboardData.topCompanies.map((company, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-4 bg-white/50 rounded-lg"
-                      >
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-                            <Building2 className="h-5 w-5 text-orange-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{company.name}</p>
-                            <p className="text-sm text-gray-600">{company.hires} hires</p>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium text-green-600">{company.package}</p>
-                          {company.totalDrives && (
-                            <p className="text-sm text-gray-600">{company.totalDrives} drives</p>
-                          )}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="col-span-2 text-center py-8">
-                      <Building2 className="h-12 w-12 mx-auto text-gray-400 mb-3" />
-                      <h3 className="text-lg font-medium text-gray-600 mb-2">No Company Data</h3>
-                      <p className="text-gray-500">
-                        Company statistics will appear here once placement drives are created
-                      </p>
-                    </div>
-                  )}
+         <TabsContent value="companies" className="space-y-6">
+  <Card>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardTitle className="text-xl font-semibold">Top Recruiting Companies</CardTitle>
+      <Button variant="outline" asChild>
+        <Link to="/college/companies" className="flex items-center">
+          <span>View All Companies</span>
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-2" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clipRule="evenodd" />
+          </svg>
+        </Link>
+      </Button>
+    </CardHeader>
+    <CardContent>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {dashboardData?.topCompanies && dashboardData.topCompanies.length > 0 ? (
+          dashboardData.topCompanies.map((company, index) => (
+            <div
+              key={index}
+              className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                  <Building2 className="h-6 w-6 text-orange-600" />
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                <div>
+                  <p className="font-medium text-gray-900">{company.name}</p>
+                  <div className="flex items-center mt-1">
+                    <Users className="h-4 w-4 text-gray-500 mr-1" />
+                    <p className="text-sm text-gray-600">{company.hires} hires</p>
+                  </div>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-medium text-green-600">{company.package}</p>
+                {company.totalDrives && (
+                  <div className="flex items-center justify-end mt-1">
+                    <Briefcase className="h-4 w-4 text-gray-500 mr-1" />
+                    <p className="text-sm text-gray-600">{company.totalDrives} drives</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="col-span-2 text-center py-8 px-4 bg-gray-50 rounded-lg">
+            <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Building2 className="h-8 w-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-600 mb-2">No Company Data Available</h3>
+            <p className="text-gray-500 max-w-md mx-auto">
+              Company statistics will appear here once placement drives are organized and companies start recruiting.
+            </p>
+          </div>
+        )}
+      </div>
+    </CardContent>
+  </Card>
+</TabsContent>
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
