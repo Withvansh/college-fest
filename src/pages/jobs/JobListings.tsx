@@ -1,15 +1,22 @@
-
 import { useState, useEffect } from 'react';
 import { jobsService } from '@/services/jobsService';
 import { toast } from 'sonner';
-import JobHeader from '@/components/jobs/JobHeader';
 import JobSearchHero from '@/components/jobs/JobSearchHero';
 import JobFilterTags from '@/components/jobs/JobFilterTags';
 import JobSidebar from '@/components/jobs/JobSidebar';
 import JobCard from '@/components/jobs/JobCard';
-import { Building2 } from 'lucide-react';
-import FloatingActionButtons from '@/components/FloatingActionButtons';
-import Footer from '@/components/Footer';
+import { Building2, Filter, Grid, List, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface Job {
   _id: string;
@@ -17,12 +24,18 @@ interface Job {
   company_name: string;
   location: string;
   job_type: string;
+  employment_type?: string;
   min_salary?: number;
   max_salary?: number;
+  currency?: string;
   description: string;
   skills_required?: string[];
   created_at: string;
   remote_allowed?: boolean;
+  experience_required?: number;
+  experience_level?: string;
+  urgency_level?: string;
+  benefits?: string[];
 }
 
 const JobListings = () => {
@@ -31,9 +44,11 @@ const JobListings = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState<'newest' | 'salary' | 'relevance'>('newest');
   const [filters, setFilters] = useState({
-    employment: ['fulltime', 'senior', 'remote'],
-    salaryType: []
+    employment: ['Full-time', 'Senior Level', 'Remote', 'Contract', 'Internship'],
+    salaryType: [],
   });
 
   useEffect(() => {
@@ -60,51 +75,107 @@ const JobListings = () => {
   };
 
   const handleTagToggle = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
-        ? prev.filter(t => t !== tag)
-        : [...prev, tag]
-    );
+    setSelectedTags(prev => (prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]));
   };
 
   const handleFilterChange = (category: string, value: string, checked: boolean) => {
     setFilters(prev => ({
       ...prev,
-      [category]: checked 
+      [category]: checked
         ? [...prev[category as keyof typeof prev], value]
-        : prev[category as keyof typeof prev].filter(v => v !== value)
+        : prev[category as keyof typeof prev].filter(v => v !== value),
     }));
   };
 
   const handleBookmark = (jobId: string) => {
-    // Handle bookmark functionality
-    toast.success('Job bookmarked!');
+    toast.success('Job bookmarked!', {
+      description: 'You can view your bookmarked jobs in your profile.',
+    });
   };
 
-  const filteredJobs = jobs.filter(job => {
-    const matchesSearch = !searchTerm || 
-      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.company_name.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesLocation = !locationFilter || 
-      job.location.toLowerCase().includes(locationFilter.toLowerCase());
-    
-    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => 
-      job.job_type.toLowerCase().includes(tag.toLowerCase()) ||
-      job.skills_required?.some(skill => skill.toLowerCase().includes(tag.toLowerCase()))
-    );
+  const sortJobs = (jobsToSort: Job[]) => {
+    switch (sortBy) {
+      case 'salary':
+        return [...jobsToSort].sort((a, b) => {
+          const salaryA = a.max_salary || a.min_salary || 0;
+          const salaryB = b.max_salary || b.min_salary || 0;
+          return salaryB - salaryA;
+        });
+      case 'relevance':
+        return [...jobsToSort].sort((a, b) => {
+          const scoreA = (a.skills_required?.length || 0) + (a.remote_allowed ? 1 : 0);
+          const scoreB = (b.skills_required?.length || 0) + (b.remote_allowed ? 1 : 0);
+          return scoreB - scoreA;
+        });
+      case 'newest':
+      default:
+        return [...jobsToSort].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+    }
+  };
 
-    return matchesSearch && matchesLocation && matchesTags;
-  });
+  const filteredJobs = sortJobs(
+    jobs.filter(job => {
+      const matchesSearch =
+        !searchTerm ||
+        job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.description.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesLocation =
+        !locationFilter ||
+        job.location.toLowerCase().includes(locationFilter.toLowerCase()) ||
+        (locationFilter.toLowerCase() === 'remote' && job.remote_allowed);
+
+      const matchesTags =
+        selectedTags.length === 0 ||
+        selectedTags.some(
+          tag =>
+            job.job_type.toLowerCase().includes(tag.toLowerCase()) ||
+            job.employment_type?.toLowerCase().includes(tag.toLowerCase()) ||
+            job.skills_required?.some(skill => skill.toLowerCase().includes(tag.toLowerCase())) ||
+            (tag.toLowerCase() === 'remote' && job.remote_allowed)
+        );
+
+      // Filter by employment type
+      const matchesEmployment =
+        filters.employment.length === 0 ||
+        filters.employment.some(empType => {
+          const normalizedEmpType = empType.toLowerCase().replace(/[-\s]/g, '_');
+          const normalizedJobType = (job.employment_type || job.job_type)
+            .toLowerCase()
+            .replace(/[-\s]/g, '_');
+
+          // Handle specific mappings
+          if (empType === 'Full-time') return normalizedJobType === 'full_time';
+          if (empType === 'Part-time') return normalizedJobType === 'part_time';
+          if (empType === 'Contract') return normalizedJobType === 'contract';
+          if (empType === 'Internship') return normalizedJobType === 'internship';
+          if (empType === 'Remote' && job.remote_allowed) return true;
+          if (empType === 'Senior Level')
+            return job.experience_required && job.experience_required >= 3;
+
+          return normalizedJobType.includes(normalizedEmpType);
+        });
+
+      return matchesSearch && matchesLocation && matchesTags && matchesEmployment;
+    })
+  );
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-job-bg">
-        <JobHeader />
-        <div className="flex items-center justify-center py-12 md:py-20 px-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="flex items-center justify-center py-20 px-4">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 md:h-12 md:w-12 border-b-2 border-primary mx-auto"></div>
-            <p className="mt-4 text-job-text-secondary text-sm md:text-base">Loading jobs...</p>
+            <div className="relative">
+              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+              <div className="absolute inset-0 rounded-full h-16 w-16 border-4 border-transparent border-r-purple-600 animate-spin animation-delay-150 mx-auto"></div>
+            </div>
+            <p className="mt-6 text-gray-600 text-lg font-medium">
+              Discovering amazing opportunities...
+            </p>
+            <p className="mt-2 text-gray-500 text-sm">Please wait while we load the latest jobs</p>
           </div>
         </div>
       </div>
@@ -112,64 +183,207 @@ const JobListings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-job-bg">
-      {/* Header */}
-      <JobHeader />
-      
-      {/* Hero Section */}
-      <JobSearchHero onSearch={handleSearch} />
-      
-      {/* Filter Tags */}
-      <JobFilterTags 
-        selectedTags={selectedTags} 
-        onTagToggle={handleTagToggle} 
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      {/* Enhanced Hero Section */}
+      <JobSearchHero
+        onSearch={handleSearch}
+        totalJobs={jobs.length}
+        featuredCompanies={Array.from(new Set(jobs.map(job => job.company_name))).slice(0, 5)}
       />
-      
-      {/* Main Content */}
-      <div className="flex flex-col lg:flex-row max-w-7xl mx-auto">
-        {/* Sidebar - Hidden on mobile, shown as drawer/modal */}
-        <div className="hidden lg:block">
-          <JobSidebar 
-            filters={filters}
-            onFilterChange={handleFilterChange}
-          />
+
+      {/* Enhanced Filter Tags */}
+      <div className="border-b border-gray-100 bg-white/60 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <JobFilterTags selectedTags={selectedTags} onTagToggle={handleTagToggle} />
         </div>
-        
-        {/* Main Job Listings */}
-        <main className="flex-1 p-4 md:p-6">
-          {/* Jobs Count */}
-          <div className="mb-4 md:mb-6">
-            <p className="text-job-text-secondary text-sm">
-              {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''} found
-            </p>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+          {/* Desktop Sidebar */}
+          <div className="hidden lg:block lg:w-80 lg:flex-shrink-0">
+            <JobSidebar filters={filters} onFilterChange={handleFilterChange} jobs={jobs} />
           </div>
 
-          {/* Jobs List */}
-          {filteredJobs.length === 0 ? (
-            <div className="text-center py-12 md:py-20 px-4">
-              <Building2 className="h-10 w-10 md:h-12 md:w-12 text-job-text-secondary mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-job-text-primary mb-2">No jobs found</h3>
-              <p className="text-job-text-secondary mb-4 text-sm md:text-base max-w-md mx-auto">
-                {jobs.length === 0 
-                  ? "No jobs have been posted yet. Check back later!" 
-                  : "Try adjusting your search criteria to find more jobs."}
-              </p>
+          {/* Main Job Content */}
+          <main className="flex-1 min-w-0">
+            {/* Mobile Header with Filters */}
+            <div className="lg:hidden mb-6">
+              <Card className="p-4 bg-white/80 backdrop-blur-sm shadow-sm border-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-blue-600" />
+                      <h2 className="text-lg font-semibold text-gray-900">
+                        {filteredJobs.length} Jobs Found
+                      </h2>
+                    </div>
+                    {filteredJobs.length > 0 && (
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                        {filteredJobs.filter(job => job.urgency_level === 'urgent').length} Urgent
+                      </Badge>
+                    )}
+                  </div>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="flex items-center gap-2 border-gray-200"
+                      >
+                        <SlidersHorizontal className="h-4 w-4" />
+                        Filters
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent side="left" className="w-80 p-0">
+                      <div className="p-6">
+                        <JobSidebar
+                          filters={filters}
+                          onFilterChange={handleFilterChange}
+                          jobs={jobs}
+                        />
+                      </div>
+                    </SheetContent>
+                  </Sheet>
+                </div>
+              </Card>
             </div>
-          ) : (
-            <div className="space-y-3 md:space-y-4">
-              {filteredJobs.map((job) => (
-                <JobCard 
-                  key={job._id} 
-                  job={job}
-                  onBookmark={handleBookmark}
-                />
-              ))}
+
+            {/* Desktop Header with Sort and View Options */}
+            <div className="hidden lg:block mb-6">
+              <Card className="p-4 bg-white/80 backdrop-blur-sm shadow-sm border-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-blue-600" />
+                      <h2 className="text-xl font-semibold text-gray-900">
+                        {filteredJobs.length} Jobs Available
+                      </h2>
+                    </div>
+                    {filteredJobs.length > 0 && (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700">
+                          {
+                            filteredJobs.filter(
+                              job =>
+                                new Date(job.created_at) >
+                                new Date(Date.now() - 24 * 60 * 60 * 1000)
+                            ).length
+                          }{' '}
+                          New Today
+                        </Badge>
+                        <Badge variant="secondary" className="bg-red-100 text-red-700">
+                          {filteredJobs.filter(job => job.urgency_level === 'urgent').length} Urgent
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {/* Sort Options */}
+                    <Select
+                      value={sortBy}
+                      onValueChange={(value: 'newest' | 'salary' | 'relevance') => setSortBy(value)}
+                    >
+                      <SelectTrigger className="w-40 bg-white border-gray-200">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="newest">Newest First</SelectItem>
+                        <SelectItem value="salary">Highest Salary</SelectItem>
+                        <SelectItem value="relevance">Most Relevant</SelectItem>
+                      </SelectContent>
+                    </Select>
+
+                    {/* View Mode Toggle */}
+                    <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                      <Button
+                        variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('grid')}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Grid className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('list')}
+                        className="h-8 w-8 p-0"
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </Card>
             </div>
-          )}
-        </main>
+
+            {/* Jobs List */}
+            {filteredJobs.length === 0 ? (
+              <Card className="p-12 text-center bg-white/60 backdrop-blur-sm border-0 shadow-lg">
+                <div className="max-w-md mx-auto">
+                  <div className="mb-6">
+                    <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Building2 className="h-12 w-12 text-gray-400" />
+                    </div>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-3">No Jobs Found</h3>
+                  <p className="text-gray-600 mb-6 leading-relaxed">
+                    {jobs.length === 0
+                      ? "We're constantly adding new opportunities. Check back soon for the latest job postings!"
+                      : 'Try adjusting your search criteria or filters to discover more opportunities that match your skills.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setLocationFilter('');
+                        setSelectedTags([]);
+                      }}
+                      variant="outline"
+                      className="border-gray-300 hover:border-blue-300 hover:text-blue-600"
+                    >
+                      Clear Filters
+                    </Button>
+                    <Button
+                      onClick={() => window.location.reload()}
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                    >
+                      Refresh Jobs
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ) : (
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-2 gap-6'
+                    : 'space-y-4'
+                }
+              >
+                {filteredJobs.map(job => (
+                  <JobCard key={job._id} job={job} onBookmark={handleBookmark} />
+                ))}
+              </div>
+            )}
+
+            {/* Load More Button for Future */}
+            {filteredJobs.length > 0 && (
+              <div className="text-center mt-12">
+                <Button
+                  variant="outline"
+                  className="px-8 py-3 bg-white/80 border-gray-200 hover:bg-white hover:border-blue-300 hover:text-blue-600"
+                >
+                  Load More Jobs
+                </Button>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
-       {/* <Footer />
-      <FloatingActionButtons /> */}
     </div>
   );
 };
