@@ -460,9 +460,11 @@ const Students = () => {
                           <Button size="sm" variant="outline">
                             <FileText className="h-4 w-4" />
                           </Button>
+                          <Link to={`/college/student/${student._id}`}>
                           <Button size="sm" variant="outline">
-                            Edit
+                            View Details
                           </Button>
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>

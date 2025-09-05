@@ -1,5 +1,5 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import axiosInstance from '../utils/axios'; // ✅ Your provided axios config
+import axiosInstance from '../utils/axios'; 
 
 class BackendAPI {
   private async request<T>(

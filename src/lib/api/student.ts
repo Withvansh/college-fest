@@ -120,7 +120,7 @@ export interface StudentAnalytics {
   }>;
 }
 
-class StudentAPI extends BackendAPI {
+ class StudentAPI extends BackendAPI {
   private baseUrl = '/student';
 
   // Get student dashboard data
@@ -182,7 +182,9 @@ class StudentAPI extends BackendAPI {
       resume_url: resumeUrl
     });
   }
-
+async getStudentProfile(studentId: string): Promise<StudentProfile> {
+    return this.get(`${this.baseUrl}/${studentId}/profile`);
+  }
   // Get student analytics
   async getStudentAnalytics(studentId: string): Promise<StudentAnalytics> {
     return this.get(`${this.baseUrl}/${studentId}/analytics`);
@@ -280,5 +282,5 @@ class StudentAPI extends BackendAPI {
     return this.getDaysUntilDeadline(deadline) <= 3;
   }
 }
-
-export default new StudentAPI();
+const studentAPI = new StudentAPI();
+export default studentAPI;
