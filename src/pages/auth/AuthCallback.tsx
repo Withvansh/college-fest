@@ -1,4 +1,4 @@
-import  { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -52,6 +52,11 @@ const AuthCallback = () => {
       case 'Student':
         console.log('🎓 Redirecting student to dashboard');
         navigate('/student/dashboard');
+        break;
+
+      case 'startup':
+        console.log('🚀 Redirecting startup to dashboard');
+        navigate('/startup/dashboard');
         break;
 
       case 'admin':

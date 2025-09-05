@@ -1,5 +1,30 @@
+import axiosInstance from '@/lib/utils/axios';
 import { saveSession, loadSession, clearSession, getToken, getUserRole, getUserId, getUser, isAuthenticated, updateUserData } from '@/lib/utils/storage';
 import { otpVerificationService } from './otpVerification';
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface SignupRequest {
+  email: string;
+  password: string;
+  full_name: string;
+  role: UserRole;
+}
+
+export interface LoginResponse {
+  user: User;
+  token: string;
+  message: string;
+}
+
+export interface SignupResponse {
+  user: User;
+  token: string;
+  message: string;
+}
 
 export interface User {
   _id: string;
@@ -60,6 +85,7 @@ export type UserRole =
   | 'client' 
   | 'college' 
   | 'Student' 
+  | 'startup'
   | 'admin' 
   | 'hr_admin' 
   | 'super_admin';
@@ -72,6 +98,7 @@ const DEMO_CREDENTIALS: Record<UserRole, { email: string; password: string }> = 
   client: { email: 'demo.client@minutehire.com', password: '#Client123' },
   Student: { email: 'demo.student@minutehire.com', password: '#Student123' },
   college: { email: 'demo.college@minutehire.com', password: '#College123' },
+  startup: { email: 'demo.startup@minutehire.com', password: '#Startup123' },
   admin: { email: 'admin@minutehire.com', password: 'admin123' },
   hr_admin: { email: 'hradmin@minutehire.com', password: 'hr123' },
   super_admin: { email: 'superadmin@minutehire.com', password: 'super123' },
@@ -85,6 +112,7 @@ export const DASHBOARD_ROUTES: Record<UserRole, string> = {
   client: '/client/dashboard',
   college: '/college/dashboard',
   Student: '/student/dashboard',
+  startup: '/startup/dashboard',
   admin: '/admin/dashboard',
   hr_admin: '/admin/dashboard',
   super_admin: '/super-admin/dashboard',
@@ -102,46 +130,40 @@ class UnifiedAuthService {
     try {
       console.log('🔐 Attempting API login for:', email);
       
-      const response = await fetch("http://localhost:3000/api/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
+      const response = await axiosInstance.post<LoginResponse>('/user/login', {
+        email,
+        password
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        // Check if email verification is required
-        if (response.status === 403 && data.requiresEmailVerification) {
-          return {
-            success: false,
-            error: data.message,
-            requiresEmailVerification: true,
-            email: data.email || email
-          };
-        }
-        
-        throw new Error(data.message || "Login failed");
-      }
-
       const user: User = {
-        _id: data.user._id,
-        email: data.user.email,
-        full_name: data.user.full_name,
-        role: data.user.role as UserRole,
-        profile_complete: data.user.profile_complete || false,
-        dashboardId: data.user.dashboardId,
-        token: data.token,
+        _id: response.data.user._id,
+        email: response.data.user.email,
+        full_name: response.data.user.full_name,
+        role: response.data.user.role as UserRole,
+        profile_complete: response.data.user.profile_complete || false,
+        dashboardId: response.data.user.dashboardId,
+        token: response.data.token,
       };
 
       this.saveSession(user);
       console.log('✅ API login successful for role:', user.role);
       return { success: true, user };
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ API login failed:', error);
+      
+      // Check if email verification is required
+      if (error.response?.status === 403 && error.response?.data?.requiresEmailVerification) {
+        return {
+          success: false,
+          error: error.response.data.message,
+          requiresEmailVerification: true,
+          email: error.response.data.email || email
+        };
+      }
+      
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Login failed' 
+        error: error.response?.data?.message || error.message || 'Login failed' 
       };
     }
   }
@@ -150,19 +172,13 @@ class UnifiedAuthService {
     try {
       console.log('📝 Attempting API signup for role:', role);
       
-      const response = await fetch("http://localhost:3000/api/user/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, full_name, role }),
+      const response = await axiosInstance.post<SignupResponse>('/user/register', {
+        email,
+        password,
+        full_name,
+        role
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
-      // Registration successful, now send email verification
       console.log('✅ API signup successful for role:', role);
       
       // Automatically send email verification OTP
@@ -183,11 +199,11 @@ class UnifiedAuthService {
           error: 'Account created but failed to send verification email. You can resend it later.'
         };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ API signup failed:', error);
       return { 
         success: false, 
-        error: error instanceof Error ? error.message : 'Signup failed' 
+        error: error.response?.data?.message || error.message || 'Signup failed' 
       };
     }
   }
@@ -222,7 +238,7 @@ class UnifiedAuthService {
       this.saveSession(user);
       console.log('✅ Demo login successful for role:', role);
       return { success: true, user };
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Demo login failed:', error);
       return { 
         success: false, 
@@ -280,7 +296,7 @@ class UnifiedAuthService {
       } else {
         return { success: false, error: response.message };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Email verification send failed:', error);
       return { 
         success: false, 
@@ -299,7 +315,7 @@ class UnifiedAuthService {
       } else {
         return { success: false, error: response.message };
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('❌ Email verification failed:', error);
       return { 
         success: false, 
