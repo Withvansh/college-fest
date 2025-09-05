@@ -45,7 +45,7 @@ class PaymentService {
     try {
       const response = await api.post('/payments/digital-product', {
         productId,
-        redirectUrl: redirectUrl || `${window.location.origin}/payment/success`
+        redirectUrl: redirectUrl || `${window.location.origin}/products`
       });
       
       if (response.data.success) {
@@ -73,7 +73,7 @@ class PaymentService {
       const response = await api.post('/payments/subscription', {
         planName,
         amount,
-        redirectUrl: redirectUrl || `${window.location.origin}/payment/success`
+        redirectUrl: redirectUrl || `${window.location.origin}/products`
       });
       
       if (response.data.success) {

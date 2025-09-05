@@ -19,6 +19,7 @@ const navLinks = [
   { name: 'Services', href: '/services' },
   { name: 'About', href: '/about' },
   { name: 'Plans', href: '/pricing' },
+  { name: 'StartUp job', href: '/startup-job' },
 ];
 
 const GuestButtons = () => (
