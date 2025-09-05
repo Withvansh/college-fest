@@ -5,20 +5,18 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
-
 interface ListYourselfModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit?: (formData: any) => Promise<void> | void;
 }
 
-
 const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     rate: '',
-    skills: ''
+    skills: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +30,12 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
         await onSubmit(formData);
       } else {
         // Default: POST to /api/bookings or /api/user
-        const res = await fetch("/api/bookings", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+        const res = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
-        if (!res.ok) throw new Error("Failed to list service");
+        if (!res.ok) throw new Error('Failed to list service');
       }
       onClose();
     } catch (err: any) {
@@ -59,7 +57,7 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
             <Input
               id="title"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={e => setFormData({ ...formData, title: e.target.value })}
               disabled={loading}
             />
           </div>
@@ -68,7 +66,7 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
             <Textarea
               id="description"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              onChange={e => setFormData({ ...formData, description: e.target.value })}
               disabled={loading}
             />
           </div>
@@ -78,7 +76,7 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
               id="rate"
               type="number"
               value={formData.rate}
-              onChange={(e) => setFormData({ ...formData, rate: e.target.value })}
+              onChange={e => setFormData({ ...formData, rate: e.target.value })}
               disabled={loading}
             />
           </div>
@@ -87,13 +85,13 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
             <Input
               id="skills"
               value={formData.skills}
-              onChange={(e) => setFormData({ ...formData, skills: e.target.value })}
+              onChange={e => setFormData({ ...formData, skills: e.target.value })}
               disabled={loading}
             />
           </div>
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Listing..." : "List Service"}
+            {loading ? 'Listing...' : 'List Service'}
           </Button>
         </form>
       </DialogContent>

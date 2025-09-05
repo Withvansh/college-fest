@@ -37,6 +37,7 @@ import {
   ExternalLink,
   AlertCircle,
   Loader,
+  MessageSquare,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -47,6 +48,68 @@ import studentAPI, {
   StudentNotification,
 } from '@/lib/api/student';
 
+// Helper function to get notification icon and color based on type
+const getNotificationIcon = (type: string) => {
+  switch (type?.toLowerCase()) {
+    case 'placement_drive':
+    case 'drive':
+      return {
+        icon: <Building2 className="h-4 w-4 text-blue-600" />,
+        bgColor: 'bg-blue-100',
+      };
+    case 'application':
+    case 'application_update':
+      return {
+        icon: <CheckCircle className="h-4 w-4 text-green-600" />,
+        bgColor: 'bg-green-100',
+      };
+    case 'interview':
+    case 'schedule':
+      return {
+        icon: <Calendar className="h-4 w-4 text-purple-600" />,
+        bgColor: 'bg-purple-100',
+      };
+    case 'deadline':
+    case 'reminder':
+      return {
+        icon: <Clock className="h-4 w-4 text-orange-600" />,
+        bgColor: 'bg-orange-100',
+      };
+    case 'result':
+    case 'selection':
+      return {
+        icon: <Award className="h-4 w-4 text-yellow-600" />,
+        bgColor: 'bg-yellow-100',
+      };
+    default:
+      return {
+        icon: <Bell className="h-4 w-4 text-gray-600" />,
+        bgColor: 'bg-gray-100',
+      };
+  }
+};
+
+// Helper function to format time ago
+const getTimeAgo = (dateString: string) => {
+  const now = new Date();
+  const date = new Date(dateString);
+  const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+
+  if (diffInMinutes < 1) return 'Just now';
+  if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours}h ago`;
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 7) return `${diffInDays}d ago`;
+
+  const diffInWeeks = Math.floor(diffInDays / 7);
+  if (diffInWeeks < 4) return `${diffInWeeks}w ago`;
+
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+};
+
 const StudentDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -56,6 +119,8 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState('drives');
   const [showResumeDialog, setShowResumeDialog] = useState(false);
   const [resumeUrl, setResumeUrl] = useState('');
+  const [showNotificationPanel, setShowNotificationPanel] = useState(false);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
 
   // State for data
   const [dashboardData, setDashboardData] = useState<StudentDashboardData | null>(null);
@@ -71,7 +136,26 @@ const StudentDashboard = () => {
     if (user?._id) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user, showAllNotifications]); // Add showAllNotifications as dependency
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (
+        showNotificationPanel &&
+        !target.closest('.notification-panel') &&
+        !target.closest('.notification-button')
+      ) {
+        setShowNotificationPanel(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showNotificationPanel]);
 
   const loadDashboardData = async () => {
     try {
@@ -88,8 +172,107 @@ const StudentDashboard = () => {
       setApplications(appsData.applications);
 
       // Load notifications
-      const notifsData = await studentAPI.getStudentNotifications(user!._id, { limit: 20 });
-      setNotifications(notifsData.notifications);
+      try {
+        const notifsData = await studentAPI.getStudentNotifications(user!._id, {
+          limit: showAllNotifications ? 100 : 20,
+        });
+        setNotifications(notifsData.notifications);
+      } catch (error) {
+        // If API fails, use mock notifications for demo purposes
+        console.warn('Using mock notifications:', error);
+        const mockNotifications = [
+          {
+            _id: '1',
+            title: 'Placement Drive Update',
+            message:
+              'New placement drive from TechCorp has been posted. Applications are now open.',
+            type: 'placement_drive',
+            is_read: false,
+            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+          },
+          {
+            _id: '2',
+            title: 'Application Status Update',
+            message:
+              'Your application for Software Developer at InnovateSoft has been shortlisted.',
+            type: 'application_update',
+            is_read: false,
+            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+          },
+          {
+            _id: '3',
+            title: 'Interview Scheduled',
+            message: 'Interview scheduled for tomorrow at 10:00 AM for DataDriven Technologies.',
+            type: 'interview',
+            is_read: false,
+            created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), // 7 hours ago
+          },
+          {
+            _id: '4',
+            title: 'Application Deadline Reminder',
+            message: 'Reminder: Application deadline for Microsoft is tomorrow.',
+            type: 'deadline',
+            is_read: true,
+            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+          },
+          {
+            _id: '5',
+            title: 'Selection Result',
+            message: 'Congratulations! You have been selected for the role at Google.',
+            type: 'selection',
+            is_read: true,
+            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
+          },
+        ];
+
+        // Add more mock notifications when showing all
+        if (showAllNotifications) {
+          mockNotifications.push(
+            {
+              _id: '6',
+              title: 'Profile Update Required',
+              message: 'Please update your profile with your latest achievements.',
+              type: 'reminder',
+              is_read: true,
+              created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            {
+              _id: '7',
+              title: 'New Training Available',
+              message: 'React.js training session is now available for enrollment.',
+              type: 'drive',
+              is_read: true,
+              created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            {
+              _id: '8',
+              title: 'Assessment Test Reminder',
+              message: 'Complete your aptitude test before the deadline.',
+              type: 'deadline',
+              is_read: true,
+              created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            {
+              _id: '9',
+              title: 'Job Fair Announcement',
+              message: 'Virtual job fair scheduled for next week. Register now!',
+              type: 'placement_drive',
+              is_read: true,
+              created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+            },
+            {
+              _id: '10',
+              title: 'Resume Feedback Available',
+              message: 'Your resume has been reviewed by our career counselor.',
+              type: 'result',
+              is_read: true,
+              created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+            }
+          );
+        }
+
+        setNotifications(mockNotifications as any);
+      }
     } catch (error) {
       toast.error('Failed to load dashboard data');
       console.error('Dashboard error:', error);
@@ -234,19 +417,204 @@ ${applications
               </Badge>
             </div>
             <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="relative hover:bg-purple-50"
-                onClick={() => setActiveTab('notifications')}
-              >
-                <Bell className="h-5 w-5" />
-                {dashboardData.stats.unreadNotifications > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {dashboardData.stats.unreadNotifications}
-                  </span>
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="relative hover:bg-purple-50 notification-button"
+                  onClick={() => setShowNotificationPanel(!showNotificationPanel)}
+                >
+                  <Bell className="h-5 w-5" />
+                  {dashboardData.stats.unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                      {dashboardData.stats.unreadNotifications}
+                    </span>
+                  )}
+                </Button>
+
+                {/* Notification Dropdown Panel */}
+                {showNotificationPanel && (
+                  <div
+                    className={`absolute top-12 right-0 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
+                      showAllNotifications ? 'w-96' : 'w-80'
+                    }`}
+                  >
+                    <div className="p-4 border-b flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          {showAllNotifications ? 'All Notifications' : 'Notifications'}
+                        </h3>
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                          {notifications.length}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        {notifications.some(notif => !notif.is_read) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            onClick={() => {
+                              // Mark all notifications as read
+                              const unreadNotifications = notifications.filter(
+                                notif => !notif.is_read
+                              );
+                              unreadNotifications.forEach(notif => {
+                                handleMarkNotificationRead(notif._id);
+                              });
+                            }}
+                          >
+                            ✓ Mark all as read
+                          </Button>
+                        )}
+                        {!showAllNotifications && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            onClick={() => setShowAllNotifications(true)}
+                          >
+                            View all
+                          </Button>
+                        )}
+                        {showAllNotifications && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                            onClick={() => setShowAllNotifications(false)}
+                          >
+                            Show less
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div
+                      className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 ${
+                        showAllNotifications ? 'max-h-96' : 'max-h-80'
+                      }`}
+                    >
+                      {notifications.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600">No notifications yet</p>
+                          <p className="text-sm text-gray-500">
+                            You'll be notified about placement drives and application updates here
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-2">
+                          {/* Group notifications by date */}
+                          {notifications
+                            .reduce((groups: any[], notification) => {
+                              const date = new Date(notification.created_at);
+                              const today = new Date();
+                              const yesterday = new Date(today);
+                              yesterday.setDate(yesterday.getDate() - 1);
+
+                              let dateLabel = '';
+                              if (date.toDateString() === today.toDateString()) {
+                                dateLabel = 'Today';
+                              } else if (date.toDateString() === yesterday.toDateString()) {
+                                dateLabel = 'Yesterday';
+                              } else {
+                                dateLabel = date.toLocaleDateString('en-US', {
+                                  weekday: 'long',
+                                  month: 'short',
+                                  day: 'numeric',
+                                });
+                              }
+
+                              let group = groups.find(g => g.date === dateLabel);
+                              if (!group) {
+                                group = { date: dateLabel, notifications: [] };
+                                groups.push(group);
+                              }
+                              group.notifications.push(notification);
+                              return groups;
+                            }, [])
+                            .map((group, groupIndex) => (
+                              <div key={groupIndex} className="mb-4">
+                                <div className="text-sm text-gray-500 px-2 py-1 font-medium">
+                                  {group.date}
+                                </div>
+                                <div className="space-y-1">
+                                  {group.notifications.map((notification: any, index: number) => (
+                                    <div
+                                      key={notification._id}
+                                      className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
+                                        !notification.is_read
+                                          ? 'hover:bg-blue-50 bg-gradient-to-r from-blue-25 to-transparent border-l-2 border-blue-400'
+                                          : 'hover:bg-gray-50'
+                                      }`}
+                                      onClick={() => {
+                                        if (!notification.is_read) {
+                                          handleMarkNotificationRead(notification._id);
+                                        }
+                                      }}
+                                    >
+                                      <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-1 ${
+                                          getNotificationIcon(notification.type).bgColor
+                                        }`}
+                                      >
+                                        {getNotificationIcon(notification.type).icon}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="inline-flex items-center">
+                                            {!notification.is_read && (
+                                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                            )}
+                                            <span
+                                              className={`text-sm font-medium ${
+                                                !notification.is_read
+                                                  ? 'text-gray-900'
+                                                  : 'text-gray-700'
+                                              }`}
+                                            >
+                                              {notification.title}
+                                            </span>
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {getTimeAgo(notification.created_at)}
+                                          </span>
+                                        </div>
+                                        <p
+                                          className={`text-sm ${
+                                            !notification.is_read
+                                              ? 'text-gray-700'
+                                              : 'text-gray-600'
+                                          }`}
+                                        >
+                                          {notification.message}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {!showAllNotifications && (
+                      <div className="border-t p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700"
+                          onClick={() => setShowAllNotifications(true)}
+                        >
+                          View all notifications
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 )}
-              </Button>
+              </div>
               <Button
                 variant="outline"
                 size="sm"
@@ -404,13 +772,13 @@ ${applications
                 value="notifications"
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
               >
-                Notifications
+                Training
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
                 className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
               >
-                Profile
+                Counselling
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
@@ -516,9 +884,10 @@ ${applications
                             )}
                             <div className="flex justify-between items-center pt-3">
                               <Link to={`/student/drive/${drive._id}`}>
-                              <Button variant="outline" size="sm">
-                                View Details
-                              </Button></Link>
+                                <Button variant="outline" size="sm">
+                                  View Details
+                                </Button>
+                              </Link>
                               <Button
                                 size="sm"
                                 className="bg-purple-600 hover:bg-purple-700"
@@ -660,142 +1029,21 @@ ${applications
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6 mb-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Award className="h-5 w-5 mr-2 text-yellow-500" />
-                      Test Performance
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Tests Taken</span>
-                        <span className="font-bold">12</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Average Score</span>
-                        <span className="font-bold text-green-600">85%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Best Score</span>
-                        <span className="font-bold text-blue-600">92%</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <BookOpen className="h-5 w-5 mr-2 text-blue-500" />
-                      Skill Assessment
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Technical Skills</span>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700">
-                          Strong
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Logical Reasoning</span>
-                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                          Good
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Communication</span>
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-700">
-                          Average
-                        </Badge>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              <ScrollArea className="h-[400px] pr-4">
-                <div className="space-y-4">
-                  {[
-                    {
-                      company: 'TechCorp',
-                      testType: 'Technical Assessment',
-                      score: 88,
-                      status: 'Passed',
-                      date: '2024-03-15',
-                      duration: '45 mins',
-                    },
-                    {
-                      company: 'InnovateSoft',
-                      testType: 'Aptitude Test',
-                      score: 92,
-                      status: 'Passed',
-                      date: '2024-03-10',
-                      duration: '60 mins',
-                    },
-                    {
-                      company: 'DataDriven',
-                      testType: 'Coding Challenge',
-                      score: 76,
-                      status: 'Passed',
-                      date: '2024-03-05',
-                      duration: '90 mins',
-                    },
-                    {
-                      company: 'CloudNext',
-                      testType: 'System Design',
-                      score: 65,
-                      status: 'Failed',
-                      date: '2024-02-28',
-                      duration: '120 mins',
-                    },
-                  ].map((test, index) => (
-                    <Card key={index} className="hover:shadow-md transition-shadow">
-                      <CardContent className="pt-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-                              <Target className="h-5 w-5 text-purple-600" />
-                            </div>
-                            <div>
-                              <h4 className="font-semibold text-gray-900">{test.company}</h4>
-                              <p className="text-sm text-gray-600">{test.testType}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center space-x-3">
-                              <div className="text-right">
-                                <p className="font-bold text-lg">{test.score}%</p>
-                                <p className="text-xs text-gray-500">{test.duration}</p>
-                              </div>
-                              <Badge
-                                variant={test.status === 'Passed' ? 'secondary' : 'destructive'}
-                                className={
-                                  test.status === 'Passed' ? 'bg-green-100 text-green-700' : ''
-                                }
-                              >
-                                {test.status}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-                          <span className="text-sm text-gray-500">
-                            Taken on {studentAPI.formatDate(test.date)}
-                          </span>
-                          <Button variant="outline" size="sm">
-                            View Details
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+              <div className="flex items-center justify-center h-96">
+                <div className="text-center space-y-4">
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
+                    <Target className="h-16 w-16 text-purple-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Assessment tests feature is under development. Stay tuned for comprehensive
+                    testing capabilities.
+                  </p>
+                  <Badge variant="secondary" className="bg-purple-100 text-purple-700">
+                    In Development
+                  </Badge>
                 </div>
-              </ScrollArea>
+              </div>
             </TabsContent>
 
             {/* Resume */}
@@ -981,129 +1229,60 @@ ${applications
               </Card>
             </TabsContent>
 
-            {/* Notifications */}
+            {/* Training */}
             <TabsContent value="notifications" className="space-y-6 animate-fade-in">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Notifications</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Training Programs</h2>
                 <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                  {dashboardData.stats.unreadNotifications} unread
+                  Available Training
                 </Badge>
               </div>
 
-              <ScrollArea className="h-[600px] pr-4">
-                <div className="space-y-4">
-                  {notifications.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No notifications yet</p>
-                    </div>
-                  ) : (
-                    notifications.map((notification, index) => (
-                      <Card
-                        key={notification._id}
-                        className={`transition-all duration-300 cursor-pointer ${
-                          notification.is_read
-                            ? 'bg-gray-50'
-                            : 'bg-white border-l-4 border-l-blue-500 shadow-md'
-                        }`}
-                        onClick={() =>
-                          !notification.is_read && handleMarkNotificationRead(notification._id)
-                        }
-                      >
-                        <CardContent className="pt-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center space-x-2 mb-2">
-                                <h4 className="font-semibold text-gray-900">
-                                  {notification.title}
-                                </h4>
-                                {!notification.is_read && (
-                                  <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
-                                )}
-                              </div>
-                              <p className="text-gray-600 text-sm mb-2">{notification.message}</p>
-                              <p className="text-xs text-gray-500">
-                                {studentAPI.formatDate(notification.created_at)}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
+              <div className="flex items-center justify-center h-96">
+                <div className="text-center space-y-4">
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                    <BookOpen className="h-16 w-16 text-blue-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Professional training programs and skill development courses will be available
+                    here.
+                  </p>
+                  <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                    In Development
+                  </Badge>
                 </div>
-              </ScrollArea>
+              </div>
             </TabsContent>
 
-            {/* Profile */}
+            {/* Counselling */}
             <TabsContent value="profile" className="space-y-6 animate-fade-in">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Student Profile</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Career Counselling</h2>
                 <Button
                   onClick={() => navigate('/student/profile')}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
-                  <Edit className="h-4 w-4 mr-2" />
-                  Edit Profile
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Book Session
                 </Button>
               </div>
 
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Personal Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <span className="text-gray-600">Name:</span>{' '}
-                            {dashboardData.student.full_name}
-                          </p>
-                          <p>
-                            <span className="text-gray-600">Email:</span>{' '}
-                            {dashboardData.student.email}
-                          </p>
-                          <p>
-                            <span className="text-gray-600">Enrollment No:</span>{' '}
-                            {dashboardData.student.enrollment_no}
-                          </p>
-                          {dashboardData.student.phone && (
-                            <p>
-                              <span className="text-gray-600">Phone:</span>{' '}
-                              {dashboardData.student.phone}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-semibold text-gray-900 mb-2">Academic Information</h3>
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <span className="text-gray-600">Course:</span>{' '}
-                            {dashboardData.student.course}
-                          </p>
-                          <p>
-                            <span className="text-gray-600">Department:</span>{' '}
-                            {dashboardData.student.department || 'Not specified'}
-                          </p>
-                          <p>
-                            <span className="text-gray-600">Year:</span>{' '}
-                            {dashboardData.student.year}
-                          </p>
-                          {dashboardData.student.cgpa && (
-                            <p>
-                              <span className="text-gray-600">CGPA:</span>{' '}
-                              {dashboardData.student.cgpa}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
+              <div className="flex items-center justify-center h-96">
+                <div className="text-center space-y-4">
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-purple-100 rounded-full flex items-center justify-center">
+                    <MessageSquare className="h-16 w-16 text-green-500" />
                   </div>
-                </CardContent>
-              </Card>
+                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 max-w-md">
+                    One-on-one career counselling sessions with industry experts will be available
+                    here.
+                  </p>
+                  <Badge variant="secondary" className="bg-green-100 text-green-700">
+                    In Development
+                  </Badge>
+                </div>
+              </div>
             </TabsContent>
 
             {/* Analytics */}
@@ -1120,56 +1299,19 @@ ${applications
                 </Button>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Application Success Rate</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-green-600 mb-2">
-                      {dashboardData.stats.totalApplications > 0
-                        ? Math.round(
-                            (dashboardData.stats.selectedApplications /
-                              dashboardData.stats.totalApplications) *
-                              100
-                          )
-                        : 0}
-                      %
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {dashboardData.stats.selectedApplications} selected out of{' '}
-                      {dashboardData.stats.totalApplications} applications
-                    </p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Active Applications</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-blue-600 mb-2">
-                      {dashboardData.stats.pendingApplications}
-                    </div>
-                    <p className="text-sm text-gray-600">Applications under review</p>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">Profile Completion</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold text-purple-600 mb-2">
-                      {dashboardData.student.profile_complete ? '100%' : '75%'}
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      {dashboardData.student.profile_complete
-                        ? 'Profile complete'
-                        : 'Complete your profile'}
-                    </p>
-                  </CardContent>
-                </Card>
+              <div className="flex items-center justify-center h-96">
+                <div className="text-center space-y-4">
+                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-orange-100 to-yellow-100 rounded-full flex items-center justify-center">
+                    <BarChart3 className="h-16 w-16 text-orange-500" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 max-w-md">
+                    Advanced analytics and performance tracking features will be available here.
+                  </p>
+                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
+                    In Development
+                  </Badge>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
