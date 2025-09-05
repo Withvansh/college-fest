@@ -85,6 +85,7 @@ export type UserRole =
   | 'client' 
   | 'college' 
   | 'Student' 
+  | 'startup'
   | 'admin' 
   | 'hr_admin' 
   | 'super_admin';
@@ -97,6 +98,7 @@ const DEMO_CREDENTIALS: Record<UserRole, { email: string; password: string }> = 
   client: { email: 'demo.client@minutehire.com', password: '#Client123' },
   Student: { email: 'demo.student@minutehire.com', password: '#Student123' },
   college: { email: 'demo.college@minutehire.com', password: '#College123' },
+  startup: { email: 'demo.startup@minutehire.com', password: '#Startup123' },
   admin: { email: 'admin@minutehire.com', password: 'admin123' },
   hr_admin: { email: 'hradmin@minutehire.com', password: 'hr123' },
   super_admin: { email: 'superadmin@minutehire.com', password: 'super123' },
@@ -110,6 +112,7 @@ export const DASHBOARD_ROUTES: Record<UserRole, string> = {
   client: '/client/dashboard',
   college: '/college/dashboard',
   Student: '/student/dashboard',
+  startup: '/startup/dashboard',
   admin: '/admin/dashboard',
   hr_admin: '/admin/dashboard',
   super_admin: '/super-admin/dashboard',

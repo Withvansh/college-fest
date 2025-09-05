@@ -1,5 +1,5 @@
 
-export type UserRole = 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student' | 'admin';
+export type UserRole = 'jobseeker' | 'recruiter' | 'freelancer' | 'client' | 'college' | 'student' | 'startup' | 'admin';
 
 export const rolePermissions = {
   jobseeker: {
@@ -40,6 +40,13 @@ export const rolePermissions = {
     canViewPlacements: true,
     canUploadResume: true,
   },
+  startup: {
+    canPostJobs: true,
+    canViewApplications: true,
+    canManageTeam: true,
+    canViewAnalytics: true,
+    canRaiseInvestment: true,
+  },
   admin: {
     canManageUsers: true,
     canViewAnalytics: true,
@@ -61,6 +68,7 @@ export function canAccessRoute(role: UserRole, route: string): boolean {
     '/client': ['client'],
     '/college': ['college'],
     '/student': ['student'],
+    '/startup': ['startup'],
     '/admin': ['admin'],
     '/hrms': ['recruiter', 'admin'],
   };
@@ -77,6 +85,7 @@ export function getDefaultRoute(role: UserRole): string {
     client: '/client/dashboard',
     college: '/college/dashboard',
     student: '/student/dashboard',
+    startup: '/startup/dashboard',
     admin: '/admin/dashboard',
   };
 

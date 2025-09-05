@@ -33,6 +33,8 @@ import {
   Building,
   Mail,
   Calendar,
+  TrendingUp,
+  Globe,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -129,6 +131,14 @@ export interface UserProfile {
   company_name?: string;
   company_website?: string;
 
+  // Startup specific
+  startup_name?: string;
+  founder_name?: string;
+  website?: string;
+  funding_stage?: string;
+  employees_count?: number;
+  logo_url?: string;
+
   // Common additional fields
   publicProfile?: boolean;
 }
@@ -209,6 +219,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         // Recruiter specific (using base user fields)
         company_name: data.company_name || '',
         company_website: data.company_website || '',
+
+        // Startup specific
+        startup_name: data.startup_name || '',
+        founder_name: data.founder_name || '',
+        website: data.website || '',
+        funding_stage: data.funding_stage || '',
+        employees_count: data.employees_count || 0,
+        logo_url: data.logo_url || '',
 
         publicProfile: data.publicProfile ?? true,
       });
@@ -294,6 +312,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         hourly_rate: profile.hourly_rate,
         company_name: profile.company_name,
         company_website: profile.company_website,
+
+        // Startup fields
+        startup_name: profile.startup_name,
+        founder_name: profile.founder_name,
+        website: profile.website,
+        funding_stage: profile.funding_stage,
+        employees_count: profile.employees_count,
+        logo_url: profile.logo_url,
       };
 
       // 2. Clean the payload by removing any keys with 'undefined' values
@@ -355,6 +381,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return '/college/dashboard';
       case 'student':
         return '/student/dashboard';
+      case 'startup':
+        return '/startup/dashboard';
       case 'admin':
         return '/admin/dashboard';
       default:
@@ -399,6 +427,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return 'College';
       case 'student':
         return 'Student';
+      case 'startup':
+        return 'Startup';
       case 'admin':
         return 'Admin';
       default:
@@ -1240,6 +1270,55 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   className="text-blue-600 hover:underline"
                 >
                   Portfolio
+                </a>
+              </div>
+            )}
+          </>
+        );
+
+      case 'startup':
+        return (
+          <>
+            {profile?.startup_name && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Building2 className="h-4 w-4 mr-2" />
+                <span>{profile.startup_name}</span>
+              </div>
+            )}
+            {profile?.founder_name && (
+              <div className="flex items-center text-sm text-gray-600">
+                <User className="h-4 w-4 mr-2" />
+                <span>Founder: {profile.founder_name}</span>
+              </div>
+            )}
+            {profile?.industry && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Briefcase className="h-4 w-4 mr-2" />
+                <span>{profile.industry}</span>
+              </div>
+            )}
+            {profile?.funding_stage && (
+              <div className="flex items-center text-sm text-gray-600">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                <span>{profile.funding_stage}</span>
+              </div>
+            )}
+            {profile?.employees_count && profile.employees_count > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Users className="h-4 w-4 mr-2" />
+                <span>{profile.employees_count} employees</span>
+              </div>
+            )}
+            {profile?.website && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Globe className="h-4 w-4 mr-2" />
+                <a
+                  href={profile.website}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-600 hover:underline"
+                >
+                  {profile.website}
                 </a>
               </div>
             )}

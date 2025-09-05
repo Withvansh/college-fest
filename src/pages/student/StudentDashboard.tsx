@@ -281,6 +281,17 @@ const StudentDashboard = () => {
     }
   };
 
+  // Helper function to check if user has already applied to a drive
+  const hasAlreadyApplied = (driveId: string) => {
+    return applications.some(app => app.placement_drive_id._id === driveId);
+  };
+
+  // Helper function to get application status for a drive
+  const getApplicationStatus = (driveId: string) => {
+    const application = applications.find(app => app.placement_drive_id._id === driveId);
+    return application?.status || null;
+  };
+
   const handleApplyToDrive = async (driveId: string, resumeUrl?: string) => {
     try {
       await studentAPI.applyToPlacementDrive(user!._id, driveId, resumeUrl);
@@ -888,13 +899,38 @@ ${applications
                                   View Details
                                 </Button>
                               </Link>
-                              <Button
-                                size="sm"
-                                className="bg-purple-600 hover:bg-purple-700"
-                                onClick={() => handleApplyToDrive(drive._id)}
-                              >
-                                Apply Now
-                              </Button>
+                              {hasAlreadyApplied(drive._id) ? (
+                                <div className="flex items-center space-x-2">
+                                  <Badge
+                                    className={`font-semibold ${
+                                      getApplicationStatus(drive._id) === 'Selected'
+                                        ? 'bg-green-100 text-green-700'
+                                        : getApplicationStatus(drive._id) === 'Rejected'
+                                          ? 'bg-red-100 text-red-700'
+                                          : 'bg-yellow-100 text-yellow-700'
+                                    }`}
+                                  >
+                                    {getApplicationStatus(drive._id)}
+                                  </Badge>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="cursor-not-allowed opacity-60"
+                                    disabled
+                                  >
+                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    Applied
+                                  </Button>
+                                </div>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  className="bg-purple-600 hover:bg-purple-700"
+                                  onClick={() => handleApplyToDrive(drive._id)}
+                                >
+                                  Apply Now
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </CardContent>

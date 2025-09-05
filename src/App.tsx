@@ -79,6 +79,8 @@ import Reports from './pages/college/Reports';
 import StudentDashboard from './pages/student/StudentDashboard';
 import StudentProfile from './pages/student/StudentProfile';
 import StudentAnalytics from './pages/student/StudentAnalytics';
+import StartupDashboard from './pages/startup/StartupDashboard';
+import StartupProfile from './pages/startup/StartupProfile';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminProfile from './pages/admin/AdminProfile';
 import ManageUsers from './pages/admin/ManageUsers';
@@ -179,11 +181,13 @@ const App = () => {
                   <Route path="/auth/client" element={<UnifiedAuth />} />
                   <Route path="/auth/college" element={<UnifiedAuth />} />
                   <Route path="/auth/student" element={<UnifiedAuth />} />
+                  <Route path="/auth/startup" element={<UnifiedAuth />} />
                   <Route path="/auth/callback" element={<AuthCallback />} />
                   <Route path="/freelancer-login" element={<UnifiedAuth />} />
                   <Route path="/client-login" element={<UnifiedAuth />} />
                   <Route path="/college-login" element={<UnifiedAuth />} />
                   <Route path="/student-login" element={<UnifiedAuth />} />
+                  <Route path="/startup-login" element={<UnifiedAuth />} />
 
                   {/* Protected Job Seeker Routes */}
                   <Route
@@ -258,7 +262,6 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['recruiter']}>
                         <RecruiterProfile />
-                        
                       </UnifiedProtectedRoute>
                     }
                   />
@@ -541,6 +544,24 @@ const App = () => {
                     }
                   />
 
+                  {/* Protected Startup Routes */}
+                  <Route
+                    path="/startup/dashboard"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['startup']}>
+                        <StartupDashboard />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/startup/profile"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['startup']}>
+                        <StartupProfile />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+
                   <Route
                     path="/profile"
                     element={
@@ -552,6 +573,7 @@ const App = () => {
                           'client',
                           'college',
                           'Student',
+                          'startup',
                         ]}
                       >
                         <ProfileRedirect />
@@ -589,6 +611,8 @@ const App = () => {
                     <Route path="products" element={<ProductManagement />} />
                     <Route path="orders" element={<OrderManagement />} />
                   </Route>
+
+                  {/* startUp Routes */}
 
                   <Route path="*" element={<NotFound />} />
                 </Routes>
