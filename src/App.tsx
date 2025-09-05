@@ -113,6 +113,7 @@ import ViewPosting from './pages/recruiter/ViewPosting';
 import AllApplications from './pages/recruiter/AllApplications';
 import UniversalProfile from './components/profile/UniversalProfile';
 import ViewPlacementDriveStudent from './pages/student/ViewDrive';
+import StartupsPage from './pages/StartUp';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -153,6 +154,7 @@ const App = () => {
                   <Route path="/book-campus-drive" element={<BookCampusDrive />} />
                   <Route path="/products" element={<DigitalProducts />} />
                   <Route path="/hire" element={<HirePage />} />
+                  <Route path="/startup-job" element={<StartupsPage />} />
                   <Route path="/auth" element={<UnifiedAuth />} />
                   <Route path="/blog/:slug" element={<BlogDetailPage />} />
                   <Route path="/faq" element={<FaqPage />} />
