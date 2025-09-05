@@ -12,8 +12,8 @@ interface JobFilterTagsProps {
 
 const JobFilterTags = ({ selectedTags, onTagToggle }: JobFilterTagsProps) => {
   return (
-    <div className="bg-job-bg py-4 px-6 border-b">
-      <div className="max-w-7xl mx-auto">
+    <div >
+      {/* <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap gap-2 overflow-x-auto pb-2">
           {filterTags.map((tag) => (
             <Badge
@@ -32,7 +32,7 @@ const JobFilterTags = ({ selectedTags, onTagToggle }: JobFilterTagsProps) => {
             </Badge>
           ))}
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

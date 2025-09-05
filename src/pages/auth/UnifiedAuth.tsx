@@ -217,9 +217,9 @@ const UnifiedAuth = () => {
   return (
     <div className="min-h-screen bg-black flex flex-col lg:flex-row overflow-hidden">
       {/* Left Side - Auth Section (60% on desktop, full width on mobile) */}
-      <div className="w-full lg:w-[60%] bg-white flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 min-h-screen lg:min-h-auto">
-        <div className="w-full max-w-sm sm:max-w-md">
-          <Card className="shadow-2xl border-0 bg-white">
+      <div className="w-full lg:w-[50%] bg-white flex items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 min-h-screen lg:min-h-auto">
+        <div className="w-full max-w-md sm:max-w-lg lg:max-w-2xl">
+          <Card className=" border-0 ">
             <CardHeader className="text-center pb-4 sm:pb-6">
               <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg mb-3 sm:mb-4">
                 <User className="h-6 w-6 sm:h-8 sm:w-8 text-white" />
@@ -232,7 +232,7 @@ const UnifiedAuth = () => {
               </p>
             </CardHeader>
 
-            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+            <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login" className="text-sm">
@@ -592,16 +592,46 @@ const UnifiedAuth = () => {
       </div>
 
       {/* Right Side - Video Section (40% on desktop, hidden on mobile/tablet) */}
-      <div className="hidden lg:block lg:w-[40%] relative overflow-hidden">
-        <video
-          className="absolute inset-0 w-full h-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-        >
-          <source src="/MinuteHire_Video_For_Job_Seekers.mp4" type="video/mp4" />
-        </video>
+      <div className="hidden lg:block lg:w-[50%] relative overflow-hidden">
+        <div className="relative h-full">
+          <video
+            className="absolute inset-0 w-full h-full object-cover"
+            autoPlay
+            loop
+            playsInline
+            ref={el => {
+              if (el) {
+                el.muted = true; // Set initial muted state
+              }
+            }}
+          >
+            <source src="/Vertical_Video_Generation_Complete.mp4" type="video/mp4" />
+          </video>
+
+          <button
+            onClick={e => {
+              const video = e.currentTarget.previousElementSibling as HTMLVideoElement;
+              video.muted = !video.muted;
+              e.currentTarget.classList.toggle('text-white');
+              e.currentTarget.classList.toggle('text-green-500');
+            }}
+            className="absolute bottom-4 right-4 z-10 p-2 bg-black/50 rounded-full hover:bg-black/70 transition-colors text-white"
+            aria-label="Toggle audio"
+          >
+            {/* Show different icon based on muted state */}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <path d="M11 5L6 9H2v6h4l5 4V5z" />
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+            </svg>
+          </button>
+        </div>
 
         {/* Overlay for better contrast */}
         <div className="absolute inset-0 bg-black/30"></div>

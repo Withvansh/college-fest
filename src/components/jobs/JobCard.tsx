@@ -1,7 +1,21 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Bookmark, MapPin, Clock } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import {
+  Bookmark,
+  MapPin,
+  Clock,
+  DollarSign,
+  Building2,
+  Briefcase,
+  Star,
+  Zap,
+  Users,
+  ArrowRight,
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
 interface Job {
   _id: string;
@@ -9,12 +23,18 @@ interface Job {
   company_name: string;
   location: string;
   job_type: string;
+  employment_type?: string;
   min_salary?: number;
   max_salary?: number;
+  currency?: string;
   description: string;
   skills_required?: string[];
   created_at: string;
   remote_allowed?: boolean;
+  experience_required?: number;
+  experience_level?: string;
+  urgency_level?: string;
+  benefits?: string[];
 }
 
 interface JobCardProps {
@@ -24,100 +44,253 @@ interface JobCardProps {
 
 const JobCard = ({ job, onBookmark }: JobCardProps) => {
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(false);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const getTimeAgo = (dateString: string) => {
     const now = new Date();
     const posted = new Date(dateString);
     const diffInHours = Math.floor((now.getTime() - posted.getTime()) / (1000 * 60 * 60));
-    
+
+    if (diffInHours < 1) return 'Just posted';
     if (diffInHours < 24) {
-      return `${diffInHours} hour${diffInHours !== 1 ? 's' : ''} ago`;
+      return `${diffInHours}h ago`;
     } else {
       const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays} day${diffInDays !== 1 ? 's' : ''} ago`;
+      return `${diffInDays}d ago`;
     }
   };
 
-  const getCompanyInitials = (company: string) => {
-    return company.split(' ').map(word => word[0]).join('').toUpperCase().slice(0, 2);
+  const formatSalary = (min?: number, max?: number, currency = 'INR') => {
+    if (!min && !max) return null;
+    const symbol = currency === 'USD' ? '$' : '₹';
+    if (min && max) {
+      return `${symbol}${min.toLocaleString()}-${max.toLocaleString()}`;
+    }
+    if (min) return `${symbol}${min.toLocaleString()}+`;
+    if (max) return `Up to ${symbol}${max.toLocaleString()}`;
   };
 
-  const handleNavigate = (_id: string) => {
-    navigate(`/jobs/${_id}`);
+  const getJobTypeColor = (type: string) => {
+    switch (type?.toLowerCase()) {
+      case 'full_time':
+      case 'full-time':
+        return 'bg-blue-100 text-blue-700 border-blue-200';
+      case 'part_time':
+      case 'part-time':
+        return 'bg-green-100 text-green-700 border-green-200';
+      case 'contract':
+        return 'bg-orange-100 text-orange-700 border-orange-200';
+      case 'internship':
+        return 'bg-purple-100 text-purple-700 border-purple-200';
+      default:
+        return 'bg-gray-100 text-gray-700 border-gray-200';
+    }
+  };
+
+  const getExperienceColor = (level?: string) => {
+    switch (level?.toLowerCase()) {
+      case 'entry':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'mid':
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'senior':
+        return 'bg-red-100 text-red-700';
+      default:
+        return 'bg-slate-100 text-slate-700';
+    }
+  };
+
+  const isUrgent = job.urgency_level === 'urgent';
+  const isNew = new Date(job.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+  const getCompanyInitials = (company: string) => {
+    return company
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const handleBookmark = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsBookmarked(!isBookmarked);
+    onBookmark?.(job._id);
+  };
+
+  const handleNavigate = () => {
+    navigate(`/jobs/${job._id}`);
   };
 
   return (
-    <div 
-      className="bg-white rounded-lg border border-border p-4 hover:bg-job-tag-bg/30 transition-colors cursor-pointer group" 
-      onClick={() => handleNavigate(job._id)}
+    <Card
+      className={`
+        group relative overflow-hidden border-0 shadow-sm hover:shadow-xl 
+        transition-all duration-300 cursor-pointer
+        bg-gradient-to-br from-white to-gray-50/30
+        hover:from-white hover:to-blue-50/40
+        ${isUrgent ? 'ring-2 ring-red-200 bg-gradient-to-br from-red-50/30 to-white' : ''}
+      `}
+      onClick={handleNavigate}
     >
-      <div className="flex items-start justify-between">
-        {/* Left Content */}
-        <div className="flex items-start space-x-4 flex-1">
-          {/* Company Logo */}
-          <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center flex-shrink-0">
-            <span className="text-primary font-medium text-sm">
-              {getCompanyInitials(job.company_name)}
-            </span>
+      {/* Status Indicators */}
+      <div className="absolute top-4 right-4 flex gap-2">
+        {isNew && (
+          <Badge className="bg-green-500 hover:bg-green-600 text-white px-2 py-1 text-xs font-medium animate-pulse">
+            <Star className="w-3 h-3 mr-1" />
+            New
+          </Badge>
+        )}
+        {isUrgent && (
+          <Badge className="bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs font-medium animate-pulse">
+            <Zap className="w-3 h-3 mr-1" />
+            Urgent
+          </Badge>
+        )}
+      </div>
+
+      <div className="p-6">
+        {/* Header Section */}
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-start gap-4 flex-1 min-w-0">
+            {/* Company Avatar */}
+            <Avatar className="h-12 w-12 border-2 border-white shadow-md">
+              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
+                {getCompanyInitials(job.company_name)}
+              </AvatarFallback>
+            </Avatar>
+
+            {/* Job Info */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-semibold text-lg text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">
+                  {job.title}
+                </h3>
+              </div>
+
+              <div className="flex items-center gap-2 mb-2">
+                <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                <span className="text-sm text-gray-600 font-medium">{job.company_name}</span>
+              </div>
+
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <MapPin className="w-4 h-4 flex-shrink-0" />
+                  <span className="truncate">{job.location}</span>
+                  {job.remote_allowed && (
+                    <Badge
+                      variant="outline"
+                      className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border-green-200"
+                    >
+                      Remote
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Clock className="w-4 h-4 flex-shrink-0" />
+                  <span>{getTimeAgo(job.created_at)}</span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Job Details */}
-          <div className="flex-1 min-w-0">
-            {/* Job Title & Company */}
-            <div className="mb-2">
-              <h3 className="font-semibold text-job-text-primary text-base mb-1 group-hover:text-primary transition-colors">
-                {job.title}
-              </h3>
-              <p className="text-sm text-job-text-secondary">{job.company_name}</p>
-            </div>
-
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge variant="secondary" className="bg-job-tag-bg text-job-text-secondary text-xs px-2 py-1">
-                {job.job_type.replace('_', ' ')}
-              </Badge>
-              {job.remote_allowed && (
-                <Badge variant="secondary" className="bg-job-tag-bg text-job-text-secondary text-xs px-2 py-1">
-                  Remote
-                </Badge>
-              )}
-              {job.skills_required?.slice(0, 2).map((skill, index) => (
-                <Badge key={index} variant="secondary" className="bg-job-tag-bg text-job-text-secondary text-xs px-2 py-1">
-                  {skill}
-                </Badge>
-              ))}
-            </div>
-
-            {/* Location & Time */}
-            <div className="flex items-center justify-between text-sm text-job-text-secondary">
-              <div className="flex items-center">
-                <MapPin className="h-4 w-4 mr-1" />
-                <span>{job.location}</span>
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-1" />
-                <span>{getTimeAgo(job.created_at)}</span>
-              </div>
-            </div>
-          </div>
+          {/* Bookmark Button */}
+          {/* <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBookmark}
+            className={`
+              h-9 w-9 rounded-full transition-all duration-200
+              ${
+                isBookmarked
+                  ? 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                  : 'hover:bg-gray-100 text-gray-400 hover:text-gray-600'
+              }
+            `}
+          >
+            <Bookmark className={`h-4 w-4 ${isBookmarked ? 'fill-current' : ''}`} />
+          </Button> */}
         </div>
 
-        {/* Right Actions */}
-        <div className="flex items-start space-x-2 ml-4">
-          <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation(); // prevent card navigation
-              onBookmark?.(job._id);
-            }}
-            className="h-8 w-8 hover:bg-job-tag-bg"
+        {/* Tags Section */}
+        <div className="flex flex-wrap gap-2 mb-4">
+          <Badge
+            variant="outline"
+            className={`capitalize text-xs font-medium ${getJobTypeColor(job.employment_type || job.job_type)}`}
           >
-            <Bookmark className="h-4 w-4 text-job-text-secondary hover:text-job-text-primary" />
+            <Briefcase className="w-3 h-3 mr-1" />
+            {(job.employment_type || job.job_type).replace(/_/g, ' ')}
+          </Badge>
+
+          {job.experience_level && (
+            <Badge
+              variant="outline"
+              className={`text-xs font-medium ${getExperienceColor(job.experience_level)}`}
+            >
+              <Users className="w-3 h-3 mr-1" />
+              {job.experience_level} Level
+            </Badge>
+          )}
+
+          {job.skills_required?.slice(0, isMobile ? 2 : 3).map((skill, index) => (
+            <Badge
+              key={index}
+              variant="secondary"
+              className="text-xs bg-gray-100 text-gray-700 hover:bg-gray-200"
+            >
+              {skill}
+            </Badge>
+          ))}
+
+          {job.skills_required && job.skills_required.length > (isMobile ? 2 : 3) && (
+            <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-600">
+              +{job.skills_required.length - (isMobile ? 2 : 3)} more
+            </Badge>
+          )}
+        </div>
+
+        {/* Footer Section */}
+        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+          {/* Salary */}
+          <div className="flex items-center gap-1">
+            {formatSalary(job.min_salary, job.max_salary, job.currency) ? (
+              <>
+                <DollarSign className="w-4 h-4 text-green-600" />
+                <span className="font-semibold text-green-600 text-sm">
+                  {formatSalary(job.min_salary, job.max_salary, job.currency)}
+                </span>
+                <span className="text-xs text-gray-500">per year</span>
+              </>
+            ) : (
+              <span className="text-sm text-gray-500">Salary negotiable</span>
+            )}
+          </div>
+
+          {/* View Details */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 transition-all duration-200 group/button"
+          >
+            <span className="text-sm font-medium">View Details</span>
+            <ArrowRight className="w-4 h-4 ml-1 group-hover/button:translate-x-0.5 transition-transform duration-200" />
           </Button>
         </div>
       </div>
-    </div>
+    </Card>
   );
 };
 
