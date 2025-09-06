@@ -16,10 +16,11 @@ const navLinks = [
   { name: 'Jobs', href: '/jobs' },
   { name: 'Hire', href: '/hire' },
   { name: 'Products', href: '/products' },
+  { name: 'StartUp', href: '/startup-job' },
   { name: 'Services', href: '/services' },
   { name: 'About', href: '/about' },
   { name: 'Plans', href: '/pricing' },
-  { name: 'StartUp job', href: '/startup-job' },
+  
 ];
 
 const GuestButtons = () => (

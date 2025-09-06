@@ -22,9 +22,11 @@ import {
   CheckCircle,
   Mail,
   Shield,
+  GraduationCap,
+  Rocket,
 } from 'lucide-react';
 
-// Removed student role from frontend - students get credentials from college
+// Now includes student and startup roles for direct registration
 const userTypes = [
   {
     id: 'jobseeker' as UserRole,
@@ -60,6 +62,20 @@ const userTypes = [
     icon: School,
     color: 'from-emerald-500 to-teal-600',
     description: 'Manage placements',
+  },
+  {
+    id: 'Student' as UserRole,
+    label: 'Student',
+    icon: GraduationCap,
+    color: 'from-indigo-500 to-purple-600',
+    description: 'Access placement opportunities',
+  },
+  {
+    id: 'startup' as UserRole,
+    label: 'Startup',
+    icon: Rocket,
+    color: 'from-orange-500 to-red-600',
+    description: 'Build your team',
   },
 ];
 
