@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import axiosInstance from '../utils/axios';
 
 export interface User {
   
@@ -59,21 +59,6 @@ export interface UserResponse {
   totalPages?: number;
 }
 
-const createHeaders = (includeAuth = false) => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-
-  if (includeAuth) {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-
-  return headers;
-};
-
 export const userAPI = {
   // Get all users with pagination and filters
   async getAllUsers(page = 1, limit = 20, filters: Record<string, any> = {}): Promise<UserListResponse> {
@@ -86,16 +71,9 @@ export const userAPI = {
 
       console.log('Fetching users with params:', queryParams.toString());
       
-      const response = await fetch(`${API_BASE_URL}/api/user?${queryParams}`, {
-        method: 'GET',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const response = await axiosInstance.get(`/user?${queryParams}`);
+      const result = response.data;
+      
       console.log('Fetched users:', result);
       
       // Transform _id to id and handle different possible response formats
@@ -150,17 +128,8 @@ export const userAPI = {
   // Get user by ID
   async getUserById(id: string): Promise<User> {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/user/${id}`, {
-        method: 'GET',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      return result.user || result;
+      const response = await axiosInstance.get(`/user/${id}`);
+      return response.data.user || response.data;
     } catch (error) {
       console.error('Error fetching user:', error);
       throw error;
@@ -172,23 +141,13 @@ export const userAPI = {
     try {
       console.log('Creating user:', userData);
       
-      const response = await fetch(`${API_BASE_URL}/api/user/register`, {
-        method: 'POST',
-        headers: createHeaders(false), // Registration doesn't need auth
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Created user:', result);
-      return result.user || result;
-    } catch (error) {
+      const response = await axiosInstance.post('/user/register', userData);
+      
+      console.log('Created user:', response.data);
+      return response.data.user || response.data;
+    } catch (error: any) {
       console.error('Error creating user:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to create user');
     }
   },
 
@@ -197,23 +156,13 @@ export const userAPI = {
     try {
       console.log('Updating user:', id, userData);
       
-      const response = await fetch(`${API_BASE_URL}/api/user/${id}`, {
-        method: 'PUT',
-        headers: createHeaders(true),
-        body: JSON.stringify(userData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Updated user:', result);
-      return result.user || result;
-    } catch (error) {
+      const response = await axiosInstance.put(`/user/${id}`, userData);
+      
+      console.log('Updated user:', response.data);
+      return response.data.user || response.data;
+    } catch (error: any) {
       console.error('Error updating user:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to update user');
     }
   },
 
@@ -222,20 +171,12 @@ export const userAPI = {
     try {
       console.log('Deleting user:', id);
       
-      const response = await fetch(`${API_BASE_URL}/api/user/${id}`, {
-        method: 'DELETE',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
+      await axiosInstance.delete(`/user/${id}`);
+      
       console.log('User deleted successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting user:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to delete user');
     }
   },
 

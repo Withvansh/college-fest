@@ -1,39 +1,50 @@
 // Auth API utilities for making authenticated requests
-import { getToken } from '@/lib/utils/storage';
+import axiosInstance from './axios';
 
 export const makeAuthenticatedRequest = async (url: string, options: RequestInit = {}) => {
-  const token = getToken();
+  // This function is deprecated - use axiosInstance directly instead
+  console.warn('makeAuthenticatedRequest is deprecated, use axiosInstance directly');
   
-  if (!token) {
-    throw new Error('No authentication token found');
+  const method = options.method || 'GET';
+  const data = options.body ? JSON.parse(options.body as string) : undefined;
+  
+  switch (method.toUpperCase()) {
+    case 'GET':
+      return axiosInstance.get(url);
+    case 'POST':
+      return axiosInstance.post(url, data);
+    case 'PUT':
+      return axiosInstance.put(url, data);
+    case 'DELETE':
+      return axiosInstance.delete(url);
+    default:
+      throw new Error(`Unsupported method: ${method}`);
   }
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
-    ...options.headers,
-  };
-
-  return fetch(url, {
-    ...options,
-    headers,
-  });
 };
 
 export const makeAuthenticatedApiCall = async (endpoint: string, method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET', data?: unknown) => {
-  const options: RequestInit = {
-    method,
-  };
-
-  if (data && (method === 'POST' || method === 'PUT')) {
-    options.body = JSON.stringify(data);
+  try {
+    let response;
+    
+    switch (method) {
+      case 'GET':
+        response = await axiosInstance.get(endpoint);
+        break;
+      case 'POST':
+        response = await axiosInstance.post(endpoint, data);
+        break;
+      case 'PUT':
+        response = await axiosInstance.put(endpoint, data);
+        break;
+      case 'DELETE':
+        response = await axiosInstance.delete(endpoint);
+        break;
+      default:
+        throw new Error(`Unsupported method: ${method}`);
+    }
+    
+    return response.data;
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || error.message || `API call failed`);
   }
-
-  const response = await makeAuthenticatedRequest(endpoint, options);
-  
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
-  }
-
-  return response.json();
 };

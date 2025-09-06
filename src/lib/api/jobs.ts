@@ -1,6 +1,5 @@
+import axiosInstance from '../utils/axios';
 import { recruiterDashboardsApi } from './recruiter-dashboard';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 export interface Job {
   id: string;
@@ -43,44 +42,19 @@ export interface JobResponse {
   message?: string;
 }
 
-// Create headers helper
-const createHeaders = (requireAuth = false) => {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  };
-
-  if (requireAuth) {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token');
-    if (token) {
-      headers.Authorization = `Bearer ${token}`;
-    }
-  }
-
-  return headers;
-};
-
 export const jobsApi = {
   // Get all jobs (admin view)
   async getAllJobs(page = 1, limit = 1000, filters = {}): Promise<Job[]> {
     try {
       console.log('Fetching all jobs from admin view...');
-      
       const queryParams = new URLSearchParams({
         page: page.toString(),
         limit: limit.toString(),
         ...filters
       });
 
-      const response = await fetch(`${API_BASE_URL}/api/jobs/list?${queryParams}`, {
-        method: 'GET',
-        headers: createHeaders(false), // Jobs list might be public
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: JobsListResponse = await response.json();
+      const response = await axiosInstance.get(`/jobs/list?${queryParams}`);
+      const result: JobsListResponse = response.data;
       console.log('Fetched all jobs:', result);
       
       // Transform data to ensure consistent ID field
@@ -105,29 +79,21 @@ export const jobsApi = {
     try {
       console.log('Fetching job by ID:', id);
       
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`, {
-        method: 'GET',
-        headers: createHeaders(false),
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: JobResponse = await response.json();
-      console.log('Fetched job by ID:', result.data);
+      const response = await axiosInstance.get(`/api/jobs/${id}`);
+      
+      console.log('Fetched job by ID:', response.data.data);
       
       // Ensure consistent ID field
       const job = {
-        ...result.data,
-        id: result.data.id || (result.data as any)._id
+        ...response.data.data,
+        id: response.data.data.id || response.data.data._id
       };
       
       return job;
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null;
+      }
       console.error('Error fetching job by ID:', error);
       return null;
     }
@@ -137,27 +103,17 @@ export const jobsApi = {
     try {
       console.log('Creating job:', jobData);
       
-      const response = await fetch(`${API_BASE_URL}/api/jobs`, {
-        method: 'POST',
-        headers: createHeaders(true),
-        body: JSON.stringify(jobData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result: JobResponse = await response.json();
-      console.log('Created job:', result.data);
+      const response = await axiosInstance.post('/api/jobs', jobData);
+      
+      console.log('Created job:', response.data.data);
       
       return {
-        ...result.data,
-        id: result.data.id || (result.data as any)._id
+        ...response.data.data,
+        id: response.data.data.id || response.data.data._id
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating job:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to create job');
     }
   },
 
@@ -165,27 +121,17 @@ export const jobsApi = {
     try {
       console.log('Updating job:', id, updates);
       
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`, {
-        method: 'PUT',
-        headers: createHeaders(true),
-        body: JSON.stringify(updates),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
-      const result: JobResponse = await response.json();
-      console.log('Updated job:', result.data);
+      const response = await axiosInstance.put(`/api/jobs/${id}`, updates);
+      
+      console.log('Updated job:', response.data.data);
       
       return {
-        ...result.data,
-        id: result.data.id || (result.data as any)._id
+        ...response.data.data,
+        id: response.data.data.id || response.data.data._id
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating job:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to update job');
     }
   },
 
@@ -193,21 +139,13 @@ export const jobsApi = {
     try {
       console.log('Deleting job:', id);
       
-      const response = await fetch(`${API_BASE_URL}/api/jobs/${id}`, {
-        method: 'DELETE',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-      }
-
+      await axiosInstance.delete(`/api/jobs/${id}`);
+      
       console.log('Deleted job:', id);
       return { id };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting job:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to delete job');
     }
   },
 
@@ -215,26 +153,18 @@ export const jobsApi = {
     try {
       console.log('Fetching recruiter jobs:', recruiterId);
       
-      const response = await fetch(`${API_BASE_URL}/api/jobs/recruiter/${recruiterId}`, {
-        method: 'GET',
-        headers: createHeaders(true),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result: JobsListResponse = await response.json();
-      console.log('Fetched recruiter jobs:', result);
+      const response = await axiosInstance.get(`/api/jobs/recruiter/${recruiterId}`);
+      
+      console.log('Fetched recruiter jobs:', response.data);
       
       // Transform data to ensure consistent ID field
-      const transformedJobs = (result.data || []).map(job => ({
+      const transformedJobs = (response.data.data || []).map(job => ({
         ...job,
-        id: job.id || (job as any)._id
+        id: job.id || job._id
       }));
       
       return transformedJobs;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching recruiter jobs:', error);
       
       // Fallback to existing API if needed

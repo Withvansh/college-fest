@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { Menu, X, User, LogOut, Settings, ShoppingBag, Bell, Search } from 'lucide-react';
-import { Button } from './ui/button';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState, useEffect } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
+import { Menu, X, User, LogOut, ShoppingBag, Bell, Search } from "lucide-react";
+import { Button } from "./ui/button";
+import { useAuth } from "@/hooks/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from './ui/dropdown-menu';
+} from "./ui/dropdown-menu";
 
 const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'Jobs', href: '/jobs' },
-  { name: 'Hire', href: '/hire' },
-  { name: 'Products', href: '/products' },
-  { name: 'StartUp', href: '/startup-job' },
-  { name: 'Services', href: '/services' },
-  { name: 'About', href: '/about' },
-  { name: 'Plans', href: '/pricing' },
+  { name: "Home", href: "/" },
+  { name: "Jobs", href: "/jobs" },
+  { name: "Hire", href: "/hire" },
+  { name: "Products", href: "/products" },
+  { name: "StartUp", href: "/startup-job" },
+  { name: "Services", href: "/services" },
+  { name: "About", href: "/about" },
+  { name: "Plans", href: "/pricing" },
 ];
 
 const GuestButtons = () => (
@@ -46,7 +46,7 @@ const GuestButtons = () => (
 
 const NavbarLinks = ({ onClick }: { onClick?: () => void }) => (
   <>
-    {navLinks.map(link => (
+    {navLinks.map((link) => (
       <NavLink
         key={link.name}
         to={link.href}
@@ -54,18 +54,18 @@ const NavbarLinks = ({ onClick }: { onClick?: () => void }) => (
         className={({ isActive }) =>
           `relative text-sm font-medium transition-all duration-300 flex items-center px-4 py-2 rounded-lg group ${
             isActive
-              ? 'text-blue-600 bg-blue-50/80'
-              : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50/80'
+              ? "text-blue-600 bg-blue-50/80"
+              : "text-gray-600 hover:text-blue-600 hover:bg-gray-50/80"
           }`
         }
       >
-        {link.name === 'Templates Store' && <ShoppingBag className="h-4 w-4 mr-2" />}
+        {link.name === "Templates Store" && (
+          <ShoppingBag className="h-4 w-4 mr-2" />
+        )}
         {link.name}
         {/* Active indicator */}
         <span
-          className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-blue-600 transition-all duration-300 ${({
-            isActive,
-          }) => (isActive ? 'w-full' : 'w-0 group-hover:w-full')}`}
+          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"
         />
       </NavLink>
     ))}
@@ -78,25 +78,22 @@ const Navbar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  // fetching role from localStorage for conditional rendering
-  const role = user?.role || localStorage.getItem('user_role');
-  console.log('Current user role:', role);
+  // role from user or localStorage
+  const role = user?.role || localStorage.getItem("user_role");
 
-  // Handle scroll effect
+  // Scroll shadow effect
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate('/');
+      navigate("/");
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -104,13 +101,13 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50'
-          : 'bg-white/90 backdrop-blur-md shadow-md'
+          ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50"
+          : "bg-white/90 backdrop-blur-md shadow-md"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
-          {/* Logo Section */}
+          {/* Logo */}
           <NavLink to="/" className="flex items-center space-x-3 group">
             <div className="relative">
               <img
@@ -130,23 +127,12 @@ const Navbar = () => {
             <NavbarLinks />
           </div>
 
-          {/* Right Section */}
+          {/* Right Side */}
           <div className="flex items-center space-x-4">
-            {/* Search Icon for larger screens */}
-            {/* <div className="hidden md:block">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100/80"
-              >
-                <Search className="h-4 w-4" />
-              </Button>
-            </div> */}
-
             {user ? (
               <div className="flex items-center space-x-3">
                 {/* Notifications */}
-                <Button
+                {/* <Button
                   variant="ghost"
                   size="sm"
                   className="h-9 w-9 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100/80 relative"
@@ -156,7 +142,7 @@ const Navbar = () => {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500"></span>
                   </span>
-                </Button>
+                </Button> */}
 
                 {/* User Dropdown */}
                 <DropdownMenu>
@@ -173,7 +159,7 @@ const Navbar = () => {
                     align="end"
                   >
                     <DropdownMenuItem
-                      onClick={() => navigate(`${role}/profile`)}
+                      onClick={() => navigate(`/${role}/profile`)}
                       className="cursor-pointer hover:bg-blue-50/80"
                     >
                       <User className="mr-2 h-4 w-4 text-blue-600" />
@@ -213,12 +199,12 @@ const Navbar = () => {
       {isOpen && (
         <div className="lg:hidden animate-in slide-in-from-top duration-300" id="mobile-menu">
           <div className="px-4 pt-4 pb-6 bg-white/95 backdrop-blur-lg border-t border-gray-200/50 shadow-lg">
-            {/* Mobile Navigation Links */}
+            {/* Links */}
             <div className="space-y-2 mb-6">
               <NavbarLinks onClick={() => setIsOpen(false)} />
             </div>
 
-            {/* Mobile Search */}
+            {/* Search */}
             <div className="mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

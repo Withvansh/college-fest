@@ -1,4 +1,6 @@
 // OTP Verification Service
+import axiosInstance from '../lib/utils/axios';
+
 interface OTPResponse {
   success: boolean;
   message: string;
@@ -6,169 +8,88 @@ interface OTPResponse {
 }
 
 class OTPVerificationService {
-  private readonly BASE_URL = 'http://localhost:3000/api/otp';
 
   async sendEmailVerificationOTP(email: string): Promise<OTPResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/send-email-verification`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
+      const response = await axiosInstance.post('/otp/send-email-verification', { email });
       
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Failed to send OTP',
-          error: data.message,
-        };
-      }
-
       return {
         success: true,
-        message: data.message || 'OTP sent successfully',
+        message: response.data.message || 'OTP sent successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: 'Network error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error.response?.data?.message || 'Failed to send OTP',
+        error: error.response?.data?.message || error.message,
       };
     }
   }
 
   async verifyEmailOTP(email: string, otp: string): Promise<OTPResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/verify-email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp }),
-      });
-
-      const data = await response.json();
+      const response = await axiosInstance.post('/api/otp/verify-email', { email, otp });
       
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Failed to verify OTP',
-          error: data.message,
-        };
-      }
-
       return {
         success: true,
-        message: data.message || 'Email verified successfully',
+        message: response.data.message || 'Email verified successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: 'Network error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error.response?.data?.message || 'Failed to verify OTP',
+        error: error.response?.data?.message || error.message,
       };
     }
   }
 
   async resendOTP(email: string, type: 'email_verification' | 'password_reset'): Promise<OTPResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/resend`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, type }),
-      });
-
-      const data = await response.json();
+      const response = await axiosInstance.post('/api/otp/resend', { email, type });
       
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Failed to resend OTP',
-          error: data.message,
-        };
-      }
-
       return {
         success: true,
-        message: data.message || 'OTP resent successfully',
+        message: response.data.message || 'OTP resent successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: 'Network error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error.response?.data?.message || 'Failed to resend OTP',
+        error: error.response?.data?.message || error.message,
       };
     }
   }
 
   async sendPasswordResetOTP(email: string): Promise<OTPResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/send-password-reset`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await response.json();
+      const response = await axiosInstance.post('/api/otp/send-password-reset', { email });
       
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Failed to send password reset OTP',
-          error: data.message,
-        };
-      }
-
       return {
         success: true,
-        message: data.message || 'Password reset OTP sent successfully',
+        message: response.data.message || 'Password reset OTP sent successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: 'Network error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error.response?.data?.message || 'Failed to send password reset OTP',
+        error: error.response?.data?.message || error.message,
       };
     }
   }
 
   async resetPassword(email: string, otp: string, newPassword: string): Promise<OTPResponse> {
     try {
-      const response = await fetch(`${this.BASE_URL}/reset-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, otp, newPassword }),
-      });
-
-      const data = await response.json();
+      const response = await axiosInstance.post('/api/otp/reset-password', { email, otp, newPassword });
       
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'Failed to reset password',
-          error: data.message,
-        };
-      }
-
       return {
         success: true,
-        message: data.message || 'Password reset successfully',
+        message: response.data.message || 'Password reset successfully',
       };
-    } catch (error) {
+    } catch (error: any) {
       return {
         success: false,
-        message: 'Network error occurred',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        message: error.response?.data?.message || 'Failed to reset password',
+        error: error.response?.data?.message || error.message,
       };
     }
   }
