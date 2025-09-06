@@ -29,7 +29,8 @@ const ListYourselfModal = ({ isOpen, onClose, onSubmit }: ListYourselfModalProps
       if (onSubmit) {
         await onSubmit(formData);
       } else {
-        // Default: POST to /api/bookings or /api/user
+        // Note: This endpoint may need to be updated to use the full API URL
+        // Consider using axiosInstance for consistency
         const res = await fetch('/api/bookings', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

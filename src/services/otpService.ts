@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+import axiosInstance from '../lib/utils/axios';
 
 export interface OTPResponse {
   success: boolean;
@@ -10,39 +10,29 @@ export interface OTPResponse {
 export class OTPService {
   private async makeRequest(endpoint: string, method: string = 'GET', body?: any): Promise<OTPResponse> {
     try {
-      const options: RequestInit = {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      };
-
-      if (body) {
-        options.body = JSON.stringify(body);
-      }
-
-      const response = await fetch(`${API_BASE_URL}/api/otp${endpoint}`, options);
-      const data = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          message: data.message || 'An error occurred',
-          error: data.message || 'An error occurred'
-        };
+      let response;
+      
+      if (method === 'GET') {
+        response = await axiosInstance.get(`/otp${endpoint}`);
+      } else if (method === 'POST') {
+        response = await axiosInstance.post(`/otp${endpoint}`, body);
+      } else if (method === 'PUT') {
+        response = await axiosInstance.put(`/otp${endpoint}`, body);
+      } else if (method === 'DELETE') {
+        response = await axiosInstance.delete(`/api/otp${endpoint}`);
       }
 
       return {
         success: true,
-        message: data.message,
-        email: data.email
+        message: response?.data.message,
+        email: response?.data.email
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('OTP Service Error:', error);
       return {
         success: false,
-        message: 'Network error. Please try again.',
-        error: error instanceof Error ? error.message : 'Network error'
+        message: error.response?.data?.message || 'Network error. Please try again.',
+        error: error.response?.data?.message || error.message || 'Network error'
       };
     }
   }
