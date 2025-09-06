@@ -35,6 +35,8 @@ import {
   Calendar,
   TrendingUp,
   Globe,
+  CheckCircle,
+  AlertTriangle,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -98,7 +100,7 @@ export interface UserProfile {
   course_branch?: string;
   total_students?: number;
 
-  // Student specific
+  // Student specific - ALL FIELDS FROM SCHEMA
   enrollment_no?: string;
   course?: string;
   year?: number;
@@ -119,6 +121,9 @@ export interface UserProfile {
   tenth_percentage?: number;
   twelfth_percentage?: number;
   graduation_percentage?: number;
+  verifiedByCollege?: boolean; // ADDED: Verification status
+  panNumber?: string; // ADDED: Missing field
+  aadhaarNumber?: string; // ADDED: Missing field
 
   // Client specific
   client_company_name?: string;
@@ -138,6 +143,7 @@ export interface UserProfile {
   funding_stage?: string;
   employees_count?: number;
   logo_url?: string;
+  description?: string; // ADDED: Missing field
 
   // Common additional fields
   publicProfile?: boolean;
@@ -187,7 +193,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         course_branch: data.course_branch || '',
         total_students: data.total_students || 0,
 
-        // Student specific (all fields from User model)
+        // Student specific (ALL fields from User model including verification)
         enrollment_no: data.enrollment_no || '',
         course: data.course || '',
         year: data.year || 0,
@@ -208,6 +214,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         tenth_percentage: data.tenth_percentage || 0,
         twelfth_percentage: data.twelfth_percentage || 0,
         graduation_percentage: data.graduation_percentage || 0,
+        verifiedByCollege: data.verifiedByCollege ?? false, // ADDED: Verification status
+        panNumber: data.panNumber || '', // ADDED: Missing field
+        aadhaarNumber: data.aadhaarNumber || '', // ADDED: Missing field
 
         // Client specific
         client_company_name: data.client_company_name || '',
@@ -227,6 +236,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         funding_stage: data.funding_stage || '',
         employees_count: data.employees_count || 0,
         logo_url: data.logo_url || '',
+        description: data.description || '', // ADDED: Missing field
 
         publicProfile: data.publicProfile ?? true,
       });
@@ -807,6 +817,30 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'student':
         return (
           <>
+            {/* Verification Status Display */}
+            <div className="mb-6 p-4 rounded-lg border">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {profile?.verifiedByCollege ? (
+                    <div className="flex items-center text-green-700">
+                      <CheckCircle className="h-5 w-5 mr-2" />
+                      <span className="font-medium">College Verified Student</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center text-yellow-700">
+                      <AlertTriangle className="h-5 w-5 mr-2" />
+                      <span className="font-medium">Self Registered Student</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 mt-2">
+                {profile?.verifiedByCollege
+                  ? 'Your account was created and verified by your college. Some fields may be restricted from editing.'
+                  : 'You registered directly on our platform. You have full access to edit your profile information.'}
+              </p>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="enrollment_no">Enrollment Number</Label>
@@ -818,6 +852,31 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   }
                 />
               </div>
+
+              {/* College Name - Restricted editing for verified students */}
+              <div>
+                <Label htmlFor="college_name">
+                  College Name
+                  {profile?.verifiedByCollege && (
+                    <span className="text-xs text-gray-500 ml-2">(Locked - College Verified)</span>
+                  )}
+                </Label>
+                <Input
+                  id="college_name"
+                  value={profile?.college_name || ''}
+                  disabled={profile?.verifiedByCollege}
+                  className={profile?.verifiedByCollege ? 'bg-gray-100 cursor-not-allowed' : ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, college_name: e.target.value } : null))
+                  }
+                />
+                {profile?.verifiedByCollege && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    College name cannot be changed for college-verified accounts
+                  </p>
+                )}
+              </div>
+
               <div>
                 <Label htmlFor="course">Course</Label>
                 <Input
@@ -869,6 +928,34 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   }
                 />
               </div>
+
+              {/* Identity Documents */}
+              <div>
+                <Label htmlFor="panNumber">PAN Number</Label>
+                <Input
+                  id="panNumber"
+                  value={profile?.panNumber || ''}
+                  placeholder="ABCTY1234D"
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, panNumber: e.target.value.toUpperCase() } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="aadhaarNumber">Aadhaar Number</Label>
+                <Input
+                  id="aadhaarNumber"
+                  value={profile?.aadhaarNumber || ''}
+                  placeholder="1234 5678 9012"
+                  maxLength={14}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, aadhaarNumber: e.target.value } : null))
+                  }
+                />
+              </div>
+
               <div>
                 <Label htmlFor="linkedin_url">LinkedIn URL</Label>
                 <Input
@@ -959,6 +1046,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 <Input
                   id="blood_group"
                   value={profile?.blood_group || ''}
+                  placeholder="A+, B-, O+, etc."
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, blood_group: e.target.value } : null))
                   }
@@ -1034,6 +1122,105 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   setProfile(prev => (prev ? { ...prev, address: e.target.value } : null))
                 }
                 rows={3}
+              />
+            </div>
+          </>
+        );
+
+      case 'startup':
+        return (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="startup_name">Startup Name</Label>
+                <Input
+                  id="startup_name"
+                  value={profile?.startup_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, startup_name: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="founder_name">Founder Name</Label>
+                <Input
+                  id="founder_name"
+                  value={profile?.founder_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, founder_name: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="industry">Industry</Label>
+                <Input
+                  id="industry"
+                  value={profile?.industry || ''}
+                  placeholder="e.g., FinTech, HealthTech, EdTech"
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, industry: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="website">Website</Label>
+                <Input
+                  id="website"
+                  type="url"
+                  value={profile?.website || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, website: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="funding_stage">Funding Stage</Label>
+                <Input
+                  id="funding_stage"
+                  value={profile?.funding_stage || ''}
+                  placeholder="e.g., Pre-Seed, Seed, Series A"
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, funding_stage: e.target.value } : null))
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="employees_count">Number of Employees</Label>
+                <Input
+                  id="employees_count"
+                  type="number"
+                  min="1"
+                  value={profile?.employees_count || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, employees_count: parseInt(e.target.value) || 0 } : null
+                    )
+                  }
+                />
+              </div>
+              <div>
+                <Label htmlFor="logo_url">Logo URL</Label>
+                <Input
+                  id="logo_url"
+                  type="url"
+                  value={profile?.logo_url || ''}
+                  placeholder="Link to your startup logo"
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, logo_url: e.target.value } : null))
+                  }
+                />
+              </div>
+            </div>
+            <div className="mt-4">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={profile?.description || ''}
+                placeholder="Tell us about your startup, mission, and vision..."
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, description: e.target.value } : null))
+                }
+                rows={4}
               />
             </div>
           </>
@@ -1204,10 +1391,34 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'student':
         return (
           <>
+            {/* Verification Status Badge */}
+            <div className="flex items-center mb-4">
+              {profile?.verifiedByCollege ? (
+                <div className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  College Verified
+                </div>
+              ) : (
+                <div className="flex items-center px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                  <AlertTriangle className="h-3 w-3 mr-1" />
+                  Self Registered
+                </div>
+              )}
+            </div>
+
             {profile?.enrollment_no && (
               <div className="flex items-center text-sm text-gray-600">
                 <Hash className="h-4 w-4 mr-2" />
                 <span>Enrollment: {profile.enrollment_no}</span>
+              </div>
+            )}
+            {profile?.college_name && (
+              <div className="flex items-center text-sm text-gray-600">
+                <GraduationCap className="h-4 w-4 mr-2" />
+                <span>{profile.college_name}</span>
+                {profile?.verifiedByCollege && (
+                  <CheckCircle className="h-3 w-3 ml-1 text-green-600" />
+                )}
               </div>
             )}
             {profile?.course && (
@@ -1232,6 +1443,24 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               <div className="flex items-center text-sm text-gray-600">
                 <GraduationCap className="h-4 w-4 mr-2" />
                 <span>CGPA: {profile.cgpa.toFixed(2)}</span>
+              </div>
+            )}
+            {profile?.tenth_percentage && profile.tenth_percentage > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Award className="h-4 w-4 mr-2" />
+                <span>10th: {profile.tenth_percentage}%</span>
+              </div>
+            )}
+            {profile?.twelfth_percentage && profile.twelfth_percentage > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Award className="h-4 w-4 mr-2" />
+                <span>12th: {profile.twelfth_percentage}%</span>
+              </div>
+            )}
+            {profile?.graduation_percentage && profile.graduation_percentage > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Award className="h-4 w-4 mr-2" />
+                <span>Graduation: {profile.graduation_percentage}%</span>
               </div>
             )}
             {profile?.linkedin_url && (

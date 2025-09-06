@@ -36,6 +36,7 @@ import {
   Star,
   ExternalLink,
   AlertCircle,
+  AlertTriangle,
   Loader,
   MessageSquare,
 } from 'lucide-react';
@@ -663,6 +664,26 @@ ${applications
                   • Year {dashboardData.student.year}{' '}
                   {dashboardData.student.cgpa ? `• CGPA: ${dashboardData.student.cgpa}` : ''}
                 </p>
+
+                {/* Verification Status Badge */}
+                <div className="mt-3 flex items-center">
+                  {dashboardData.student.verifiedByCollege ? (
+                    <div className="flex items-center px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      College Verified Account
+                    </div>
+                  ) : (
+                    <div className="flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
+                      <AlertTriangle className="h-4 w-4 mr-2" />
+                      Self Registered Account
+                    </div>
+                  )}
+                  {!dashboardData.student.verifiedByCollege && (
+                    <p className="ml-3 text-xs text-gray-500">
+                      Note: Some placement drives may be restricted to college-verified students
+                    </p>
+                  )}
+                </div>
               </div>
               <div className="hidden md:block">
                 <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-full">
@@ -893,6 +914,25 @@ ${applications
                                 </p>
                               </div>
                             )}
+
+                            {/* Verification Status Message */}
+                            {!dashboardData.student.verifiedByCollege && (
+                              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                                <div className="flex items-start space-x-2">
+                                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <p className="text-sm text-amber-800 font-medium">
+                                      Self-Registered Account
+                                    </p>
+                                    <p className="text-xs text-amber-700 mt-1">
+                                      Some companies may prefer college-verified students. Contact
+                                      your college to get verified for better opportunities.
+                                    </p>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+
                             <div className="flex justify-between items-center pt-3">
                               <Link to={`/student/drive/${drive._id}`}>
                                 <Button variant="outline" size="sm">

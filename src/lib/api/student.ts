@@ -5,6 +5,7 @@ export interface StudentProfile {
   full_name: string;
   email: string;
   enrollment_no: string;
+  verifiedByCollege:string;
   course: string;
   year: number;
   department?: string;
