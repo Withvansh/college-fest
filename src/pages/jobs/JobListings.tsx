@@ -17,8 +17,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { CrowdCanvas } from '@/components/CrowdCanva';
-import { Skiper39 } from '@/components/skiper39';
 
 const JobListings = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -363,7 +361,7 @@ const JobListings = () => {
           </main>
         </div>
       </div>
-      <Skiper39 />
+      
     </div>
   );
 };
