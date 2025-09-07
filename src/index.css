@@ -229,45 +229,45 @@
   }
 }
 
-/* Marquee Animations */
+/* Marquee Animations - Ultra smooth infinite loop */
 @keyframes scroll-right {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
+  from {
     transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-25%);
   }
 }
 
 @keyframes scroll-left {
-  0% {
-    transform: translateX(0%);
+  from {
+    transform: translateX(-25%);
   }
-  100% {
-    transform: translateX(-50%);
+  to {
+    transform: translateX(0%);
   }
 }
 
 @keyframes scroll-right-slow {
-  0% {
-    transform: translateX(-25%);
-  }
-  100% {
+  from {
     transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-16.666%);
   }
 }
 
 .animate-scroll-right {
-  animation: scroll-right 30s linear infinite;
-  width: 200%;
+  animation: scroll-right 20s linear infinite;
+  width: 400%;
 }
 
 .animate-scroll-left {
-  animation: scroll-left 25s linear infinite;
-  width: 200%;
+  animation: scroll-left 20s linear infinite;
+  width: 400%;
 }
 
 .animate-scroll-right-slow {
   animation: scroll-right-slow 20s linear infinite;
-  width: 400%;
+  width: 600%;
 }
