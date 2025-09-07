@@ -167,7 +167,7 @@ const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalPro
         <DialogContent className="max-h-[80vh] h-[80vh] overflow-hidden sm:max-w-4xl flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {`${JSON.stringify(category)} `}
+              
               {category?.icon }
               Select Category
             </DialogTitle>
