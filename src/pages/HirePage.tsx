@@ -3,23 +3,15 @@ import axios from '@/lib/utils/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import {
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  User,
+  Briefcase,
+  DollarSign,
   Laptop,
   Smartphone,
   Car,
@@ -38,16 +30,25 @@ import {
   Heart,
   Shield,
   Leaf,
-  Phone,
   BookOpen,
   Megaphone,
-} from 'lucide-react';
+  Search,
+  PlusCircle,
+  ArrowRight,
+  LucideIcon,
+} from "lucide-react";
 import CategoryModal from '@/components/hire/CategoryModal';
-import ListYourselfModal from '@/components/hire/ListYourselfModal';
-import FloatingActionButtons from '@/components/FloatingActionButtons';
-import Footer from '@/components/Footer';
+import { Link } from 'react-router-dom';
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+// Create an icon map with proper typing
+const iconMap: Record<string, LucideIcon> = {
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  User,
+  Briefcase,
+  DollarSign,
   Laptop,
   Smartphone,
   Car,
@@ -66,9 +67,16 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   Heart,
   Shield,
   Leaf,
-  Phone,
   BookOpen,
   Megaphone,
+};
+
+// Dynamic Icon Component
+const DynamicIcon = ({ iconName }: { 
+  iconName: string; 
+}) => {
+  const IconComponent = iconMap[iconName] || Laptop;
+  return <IconComponent className='text-xl text-blue-600' />;
 };
 
 const HirePage = () => {
@@ -83,20 +91,12 @@ const HirePage = () => {
   const [usersError, setUsersError] = useState<string | null>(null);
   const [jobCategories, setJobCategories] = useState<any[]>([]);
 
-  // Fetch categories from backend
   useEffect(() => {
     axios
       .get('/categories')
       .then(res => {
         const categories = Array.isArray(res.data) ? res.data : [];
-        const mapped = categories.map((c: any) => ({
-          _id: c._id,
-          id: c.id,
-          name: c.name,
-          icon: iconMap[c.icon] || Laptop,
-          color: c.color || 'bg-blue-500',
-        }));
-        setJobCategories(mapped);
+        setJobCategories(categories);
       })
       .catch(() => setJobCategories([]));
   }, []);
@@ -134,25 +134,6 @@ const HirePage = () => {
     setShowCategoryModal(true);
   };
 
-  // Example: List yourself (open modal, then POST to API)
-  // const handleListYourself = async (profileData: any) => {
-  //   setLoading(true);
-  //   setApiError(null);
-  //   try {
-  //     const res = await fetch("/api/user", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(profileData),
-  //     });
-  //     if (!res.ok) throw new Error("Failed to list yourself");
-  //     // Optionally handle response
-  //   } catch (err: any) {
-  //     setApiError(err.message);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const filteredCategories = jobCategories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -162,67 +143,84 @@ const HirePage = () => {
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
-            Hire Skilled People in Just a Click
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Hire Skilled <span className="text-blue-600">Professionals</span> in Just a Click
           </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
             Connect with verified professionals and skilled individuals across various categories.
             Find the right person for your needs instantly.
           </p>
 
           {/* Search Bar */}
-          <div className="max-w-md mx-auto mb-8">
+          <div className="max-w-2xl mx-auto mb-8 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <Input
-              placeholder="Search for services..."
+              placeholder="Search for services or professionals..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
-              className="text-lg p-4"
+              className="text-lg pl-10 pr-4 py-6 rounded-full shadow-sm border-blue-200 focus:border-blue-400"
             />
           </div>
         </div>
 
-        {/* Job Categories Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6 mb-12">
-          {filteredCategories.map(category => {
-            const Icon = category.icon;
-            return (
+        {/* Categories Section */}
+        <div className="mb-12">
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Browse by Category</h2>
+            {/* <div className="text-sm text-blue-600 flex items-center">
+              View all categories <ArrowRight size={16} className="ml-1" />
+            </div> */}
+          </div>
+          
+          {/* Job Categories Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {filteredCategories.map(category => (
               <Card
                 key={category.id}
-                className="cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-lg group"
+                className="cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-lg border-blue-100 group bg-white"
                 onClick={() => handleCategoryClick(category.id)}
               >
-                <CardContent className="flex flex-col items-center justify-center p-6 text-center">
+                <CardContent className="flex flex-col items-center justify-center p-4 text-center">
                   <div
-                    className={`${category.color} w-16 h-16 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}
+                    className={`bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors`}
                   >
-                    <Icon className="h-8 w-8 text-white" />
+                    <DynamicIcon iconName={category.icon} />
                   </div>
-                  <h3 className="font-semibold text-sm text-gray-800 group-hover:text-blue-600 transition-colors">
+                  <h3 className="font-medium text-sm text-gray-800 group-hover:text-blue-600 transition-colors">
                     {category.name}
                   </h3>
                 </CardContent>
               </Card>
-            );
-          })}
+            ))}
+          </div>
         </div>
 
-        <Separator className="my-8" />
+        <Separator className="my-8 bg-blue-100" />
 
-        {/*List Yourself Section */}
-        <div className="text-center bg-white rounded-2xl p-8 shadow-lg">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Want to Get Hired?</h2>
-          <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            List yourself in your expertise area and start receiving booking requests from potential
-            clients. Build your professional profile and grow your business.
-          </p>
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3"
-            onClick={() => setShowListYourselfModal(true)}
-          >
-            List Yourself to Get Hired
-          </Button>
-        </div>
+        {/* List Yourself Section */}
+        <Card className="border-0 bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden">
+          <CardContent className="p-8">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <div className="mb-6 md:mb-0 md:mr-6">
+                <h2 className="text-2xl font-bold mb-2">Want to Get Hired?</h2>
+                <p className="max-w-2xl opacity-90">
+                  List yourself in your expertise area and start receiving booking requests from potential
+                  clients. Build your professional profile and grow your business.
+                </p>
+              </div>
+              <Link to={"/auth?tab=signup"}>
+              <Button
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 font-medium rounded-full shadow-md"
+                onClick={() => setShowListYourselfModal(true)}
+              >
+                <PlusCircle size={20} className="mr-2" />
+                List Yourself to Get Hired
+              </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Category Modal */}
         <CategoryModal
@@ -231,45 +229,7 @@ const HirePage = () => {
           onSelect={category => setSelectedCategory(category)}
           category={selectedCategory ? jobCategories.find(c => c.id === selectedCategory) : null}
         />
-
-        {/* Filtered Users Section */}
-        {/* {selectedCategory && (
-          <div className="my-8">
-            <h2 className="text-2xl font-bold mb-4 text-center">
-              Available {jobCategories.find(c => c.id === selectedCategory)?.name} Providers
-            </h2>
-            {usersLoading && <div className="text-gray-500 text-center">Loading users...</div>}
-            {usersError && <div className="text-red-500 text-center">{usersError}</div>}
-            {!usersLoading && !usersError && filteredUsers.length === 0 && (
-              <div className="text-gray-500 text-center">No providers found for this category.</div>
-            )}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredUsers.map((user) => (
-                <Card key={user._id} className="p-4">
-                  <CardHeader>
-                    <CardTitle>{user.full_name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-2 text-sm text-gray-600">{user.email}</div>
-                    <div className="mb-2 text-sm text-gray-600">{user.location}</div>
-                    <div className="mb-2 text-sm text-gray-600">Skills: {user.skills?.join(", ")}</div>
-                    <div className="mb-2 text-sm text-gray-600">Role: {user.role}</div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        )} */}
-
-        {/* List Yourself Modal */}
-        {/* <ListYourselfModal
-          isOpen={showListYourselfModal}
-          onClose={() => setShowListYourselfModal(false)}
-          onSubmit={handleListYourself}
-        /> */}
       </div>
-      {/* <Footer />
-      <FloatingActionButtons /> */}
     </div>
   );
 };

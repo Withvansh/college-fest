@@ -117,6 +117,7 @@ import UniversalProfile from './components/profile/UniversalProfile';
 import ViewPlacementDriveStudent from './pages/student/ViewDrive';
 import StartupsPage from './pages/StartUp';
 import ViewStudentProfile from './pages/college/StudentProfile';
+import Counsellor from './pages/student/Counsellor';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -525,6 +526,14 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['Student']}>
                         <StudentDashboard />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                   <Route
+                    path="/student/counsellor"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <Counsellor />
                       </UnifiedProtectedRoute>
                     }
                   />
