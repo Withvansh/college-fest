@@ -29,7 +29,8 @@ import {
   BriefcaseBusiness,
   Filter,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Plus
 } from "lucide-react";
 import {
   Select,
@@ -39,6 +40,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Link } from "react-router-dom";
 
 type Startup = {
   _id: string;
@@ -165,6 +167,16 @@ const StartupsPage = () => {
             Explore innovative startups, learn about their industries,
             and find potential opportunities to collaborate or work with them.
           </p>
+          
+          {/* Add Your Startup Button */}
+          <div className="flex justify-center">
+            <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+              <Link to="/auth/startup" className="flex items-center gap-2">
+                <Plus className="h-5 w-5" />
+                Add Your Startup
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Search and Filters */}

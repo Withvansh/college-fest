@@ -366,9 +366,9 @@ const UnifiedAuth = () => {
                         })}
                       </div>
 
-                      <div className="text-center text-xs text-gray-500">
+                      {/* <div className="text-center text-xs text-gray-500">
                         Students receive login credentials from their college
-                      </div>
+                      </div> */}
                     </div>
                   ) : signupStep === 2 ? (
                     // Step 2: Email Verification
