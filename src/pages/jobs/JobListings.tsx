@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { jobsService } from '@/services/jobsService';
+import { jobsService, type Job } from '@/services/jobsService';
 import { toast } from 'sonner';
 import JobSearchHero from '@/components/jobs/JobSearchHero';
 import JobFilterTags from '@/components/jobs/JobFilterTags';
@@ -17,26 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-interface Job {
-  _id: string;
-  title: string;
-  company_name: string;
-  location: string;
-  job_type: string;
-  employment_type?: string;
-  min_salary?: number;
-  max_salary?: number;
-  currency?: string;
-  description: string;
-  skills_required?: string[];
-  created_at: string;
-  remote_allowed?: boolean;
-  experience_required?: number;
-  experience_level?: string;
-  urgency_level?: string;
-  benefits?: string[];
-}
+import { CrowdCanvas } from '@/components/CrowdCanva';
+import { Skiper39 } from '@/components/skiper39';
 
 const JobListings = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -97,14 +79,14 @@ const JobListings = () => {
     switch (sortBy) {
       case 'salary':
         return [...jobsToSort].sort((a, b) => {
-          const salaryA = a.max_salary || a.min_salary || 0;
-          const salaryB = b.max_salary || b.min_salary || 0;
+          const salaryA = a.salary_range?.max || a.salary_range?.min || 0;
+          const salaryB = b.salary_range?.max || b.salary_range?.min || 0;
           return salaryB - salaryA;
         });
       case 'relevance':
         return [...jobsToSort].sort((a, b) => {
-          const scoreA = (a.skills_required?.length || 0) + (a.remote_allowed ? 1 : 0);
-          const scoreB = (b.skills_required?.length || 0) + (b.remote_allowed ? 1 : 0);
+          const scoreA = (a.skills_required?.length || 0) + (a.remote_work ? 1 : 0);
+          const scoreB = (b.skills_required?.length || 0) + (b.remote_work ? 1 : 0);
           return scoreB - scoreA;
         });
       case 'newest':
@@ -120,22 +102,21 @@ const JobListings = () => {
       const matchesSearch =
         !searchTerm ||
         job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        job.company_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
         job.description.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesLocation =
         !locationFilter ||
         job.location.toLowerCase().includes(locationFilter.toLowerCase()) ||
-        (locationFilter.toLowerCase() === 'remote' && job.remote_allowed);
+        (locationFilter.toLowerCase() === 'remote' && job.remote_work);
 
       const matchesTags =
         selectedTags.length === 0 ||
         selectedTags.some(
           tag =>
             job.job_type.toLowerCase().includes(tag.toLowerCase()) ||
-            job.employment_type?.toLowerCase().includes(tag.toLowerCase()) ||
             job.skills_required?.some(skill => skill.toLowerCase().includes(tag.toLowerCase())) ||
-            (tag.toLowerCase() === 'remote' && job.remote_allowed)
+            (tag.toLowerCase() === 'remote' && job.remote_work)
         );
 
       // Filter by employment type
@@ -143,18 +124,16 @@ const JobListings = () => {
         filters.employment.length === 0 ||
         filters.employment.some(empType => {
           const normalizedEmpType = empType.toLowerCase().replace(/[-\s]/g, '_');
-          const normalizedJobType = (job.employment_type || job.job_type)
-            .toLowerCase()
-            .replace(/[-\s]/g, '_');
+          const normalizedJobType = job.job_type.toLowerCase().replace(/[-\s]/g, '_');
 
           // Handle specific mappings
           if (empType === 'Full-time') return normalizedJobType === 'full_time';
           if (empType === 'Part-time') return normalizedJobType === 'part_time';
           if (empType === 'Contract') return normalizedJobType === 'contract';
           if (empType === 'Internship') return normalizedJobType === 'internship';
-          if (empType === 'Remote' && job.remote_allowed) return true;
+          if (empType === 'Remote' && job.remote_work) return true;
           if (empType === 'Senior Level')
-            return job.experience_required && job.experience_required >= 3;
+            return job.experience_level === 'senior' || job.experience_level === 'executive';
 
           return normalizedJobType.includes(normalizedEmpType);
         });
@@ -188,7 +167,7 @@ const JobListings = () => {
       <JobSearchHero
         onSearch={handleSearch}
         totalJobs={jobs.length}
-        featuredCompanies={Array.from(new Set(jobs.map(job => job.company_name))).slice(0, 5)}
+        featuredCompanies={Array.from(new Set(jobs.map(job => job.company))).slice(0, 5)}
       />
 
       {/* Enhanced Filter Tags */}
@@ -221,7 +200,7 @@ const JobListings = () => {
                     </div>
                     {filteredJobs.length > 0 && (
                       <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                        {filteredJobs.filter(job => job.urgency_level === 'urgent').length} Urgent
+                        {filteredJobs.filter(job => job.remote_work).length} Remote
                       </Badge>
                     )}
                   </div>
@@ -273,8 +252,8 @@ const JobListings = () => {
                           }{' '}
                           New Today
                         </Badge>
-                        <Badge variant="secondary" className="bg-red-100 text-red-700">
-                          {filteredJobs.filter(job => job.urgency_level === 'urgent').length} Urgent
+                        <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                          {filteredJobs.filter(job => job.remote_work).length} Remote
                         </Badge>
                       </div>
                     )}
@@ -384,6 +363,7 @@ const JobListings = () => {
           </main>
         </div>
       </div>
+      <Skiper39 />
     </div>
   );
 };
