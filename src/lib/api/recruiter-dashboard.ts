@@ -1,4 +1,5 @@
 import BackendAPI from './backend';
+import axiosInstance from '../utils/axios';
 
 export interface RecruiterDashboard {
   _id: string;
@@ -161,27 +162,16 @@ class RecruiterDashboardAPI extends BackendAPI {
     const endpoint = `/jobs/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
     
     try {
-      const response = await fetch(`http://localhost:3000/api${endpoint}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const fullResponse = await response.json();
+      const response = await axiosInstance.get(`${endpoint}`);
       
       return {
-        jobs: fullResponse.data || [],
-        total: fullResponse.total || 0,
-        pagination: fullResponse.pagination || {}
+        jobs: response.data.data || [],
+        total: response.data.total || 0,
+        pagination: response.data.pagination || {}
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error(`API request failed: ${endpoint}`, error);
-      throw error;
+      throw new Error(error.response?.data?.message || error.message || 'Failed to fetch jobs');
     }
   }
 

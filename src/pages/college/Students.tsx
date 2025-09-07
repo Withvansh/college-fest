@@ -1,25 +1,44 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { toast } from "sonner";
-import { Link, useParams } from "react-router-dom";
-import { 
-  Plus, 
-  GraduationCap, 
-  Mail, 
-  Phone, 
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { toast } from 'sonner';
+import { Link, useParams } from 'react-router-dom';
+import {
+  Plus,
+  GraduationCap,
+  Mail,
+  Phone,
   Download,
   Upload,
   Search,
   ArrowLeft,
-  FileText
-} from "lucide-react";
+  FileText,
+} from 'lucide-react';
 import { collegeProfileAPI } from '@/lib/api/collegeProfile';
 
 interface Student {
@@ -47,7 +66,7 @@ const Students = () => {
     phone: '',
     enrollment_no: '',
     department: 'CSE',
-    cgpa: ''
+    cgpa: '',
   });
 
   // Fetch students data on component mount
@@ -58,34 +77,34 @@ const Students = () => {
   const fetchStudentData = async () => {
     try {
       if (!id) {
-        toast.error("College ID is missing");
+        toast.error('College ID is missing');
         return;
       }
-      
+
       const response = await collegeProfileAPI.getStudentsByCollegeId(id);
       // console.log(response)
       setStudents(response.data);
     } catch (error: any) {
-      console.error("Error fetching students:", error);
-      toast.error("Failed to fetch student data");
+      console.error('Error fetching students:', error);
+      toast.error('Failed to fetch student data');
     }
   };
 
   const handleAddStudent = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       const newStudent = {
         _id: students.length + 1,
         ...formData,
         cgpa: parseFloat(formData.cgpa),
         placementStatus: 'Not Registered',
-        company: null
+        company: null,
       };
 
       // Call API to add student
       // await collegeProfileAPI.addStudent(collegeId as string, newStudent);
-      
+
       // Update local state
       setStudents([...students, newStudent]);
       setIsAddModalOpen(false);
@@ -93,15 +112,15 @@ const Students = () => {
         full_name: '',
         email: '',
         phone: '',
-       enrollment_no: '',
+        enrollment_no: '',
         department: 'CSE',
-        cgpa: ''
+        cgpa: '',
       });
-      
-      toast.success("Student added successfully!");
+
+      toast.success('Student added successfully!');
     } catch (error) {
-      console.error("Error adding student:", error);
-      toast.error("Failed to add student");
+      console.error('Error adding student:', error);
+      toast.error('Failed to add student');
     }
   };
 
@@ -115,9 +134,11 @@ const Students = () => {
         student.department,
         student.cgpa,
         student.placementStatus,
-        student.company || 'N/A'
-      ])
-    ].map(row => row.join(',')).join('\n');
+        student.company || 'N/A',
+      ]),
+    ]
+      .map(row => row.join(','))
+      .join('\n');
 
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
@@ -128,8 +149,8 @@ const Students = () => {
     a.click();
     document.body.removeChild(a);
     window.URL.revokeObjectURL(url);
-    
-    toast.success("Student data exported successfully!");
+
+    toast.success('Student data exported successfully!');
   };
 
   const handleBulkImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -143,11 +164,13 @@ const Students = () => {
     }
 
     setUploading(true);
-    
+
     try {
       const formData = new FormData();
       formData.append('file', file);
 
+      // Note: This endpoint uses a different base URL for file uploads
+      // You may need to configure this separately or use a different axios instance
       const response = await fetch('http://localhost:3001/upload-students', {
         method: 'POST',
         body: formData,
@@ -159,10 +182,10 @@ const Students = () => {
 
       const result = await response.json();
       toast.success(`Successfully uploaded ${result.count} students`);
-      
+
       // Refresh student data
       fetchStudentData();
-      
+
       // Reset file input
       event.target.value = '';
     } catch (error) {
@@ -174,18 +197,23 @@ const Students = () => {
   };
 
   const filteredStudents = students.filter(student => {
-    const matchesSearch = student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         student.enrollment_no.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      student.full_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.enrollment_no.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDepartment = departmentFilter === 'all' || student.department === departmentFilter;
     return matchesSearch && matchesDepartment;
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Placed': return 'bg-green-100 text-green-700';
-      case 'Registered': return 'bg-blue-100 text-blue-700';
-      case 'Not Registered': return 'bg-gray-100 text-gray-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'Placed':
+        return 'bg-green-100 text-green-700';
+      case 'Registered':
+        return 'bg-blue-100 text-blue-700';
+      case 'Not Registered':
+        return 'bg-gray-100 text-gray-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -195,7 +223,10 @@ const Students = () => {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link to="/college/dashboard" className="flex items-center text-gray-600 hover:text-gray-900">
+              <Link
+                to="/college/dashboard"
+                className="flex items-center text-gray-600 hover:text-gray-900"
+              >
                 <ArrowLeft className="h-5 w-5 mr-2" />
                 Back to Dashboard
               </Link>
@@ -203,27 +234,27 @@ const Students = () => {
             </div>
             <div className="flex items-center space-x-4">
               <div className="relative">
-    <Button 
-      variant="outline" 
-      onClick={() => document.getElementById('bulk-import-input')?.click()}
-      disabled={uploading}
-    >
-      <Upload className="h-4 w-4 mr-2" />
-      Bulk Import
-    </Button>
-    <Input 
-      id="bulk-import-input"
-      type="file" 
-      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer hidden" 
-      onChange={handleBulkImport}
-      accept=".xlsx,.xls"
-      disabled={uploading}
-    />
-  </div>
-  <Button variant="outline" onClick={handleExportData} disabled={students.length === 0}>
-    <Download className="h-4 w-4 mr-2" />
-    Export Data
-  </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => document.getElementById('bulk-import-input')?.click()}
+                  disabled={uploading}
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Bulk Import
+                </Button>
+                <Input
+                  id="bulk-import-input"
+                  type="file"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer hidden"
+                  onChange={handleBulkImport}
+                  accept=".xlsx,.xls"
+                  disabled={uploading}
+                />
+              </div>
+              <Button variant="outline" onClick={handleExportData} disabled={students.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Export Data
+              </Button>
               <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
                 <DialogTrigger asChild>
                   <Button className="bg-orange-600 hover:bg-orange-700">
@@ -242,7 +273,7 @@ const Students = () => {
                         <Input
                           id="name"
                           value={formData.full_name}
-                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
+                          onChange={e => setFormData({ ...formData, full_name: e.target.value })}
                           placeholder="Enter student name"
                           required
                         />
@@ -253,7 +284,7 @@ const Students = () => {
                           id="email"
                           type="email"
                           value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
+                          onChange={e => setFormData({ ...formData, email: e.target.value })}
                           placeholder="student@college.edu"
                           required
                         />
@@ -263,7 +294,7 @@ const Students = () => {
                         <Input
                           id="phone"
                           value={formData.phone}
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                          onChange={e => setFormData({ ...formData, phone: e.target.value })}
                           placeholder="+91 9876543210"
                           required
                         />
@@ -273,14 +304,19 @@ const Students = () => {
                         <Input
                           id="rollNumber"
                           value={formData.enrollment_no}
-                          onChange={(e) => setFormData({...formData, enrollment_no: e.target.value})}
+                          onChange={e =>
+                            setFormData({ ...formData, enrollment_no: e.target.value })
+                          }
                           placeholder="CSE21001"
                           required
                         />
                       </div>
                       <div>
                         <Label htmlFor="department">Department</Label>
-                        <Select value={formData.department} onValueChange={(value) => setFormData({...formData, department: value})}>
+                        <Select
+                          value={formData.department}
+                          onValueChange={value => setFormData({ ...formData, department: value })}
+                        >
                           <SelectTrigger>
                             <SelectValue />
                           </SelectTrigger>
@@ -302,14 +338,18 @@ const Students = () => {
                           min="0"
                           max="10"
                           value={formData.cgpa}
-                          onChange={(e) => setFormData({...formData, cgpa: e.target.value})}
+                          onChange={e => setFormData({ ...formData, cgpa: e.target.value })}
                           placeholder="8.5"
                           required
                         />
                       </div>
                     </div>
                     <div className="flex gap-2 justify-end">
-                      <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsAddModalOpen(false)}
+                      >
                         Cancel
                       </Button>
                       <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
@@ -334,7 +374,7 @@ const Students = () => {
                 <Input
                   placeholder="Search students..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10 w-64"
                 />
               </div>
@@ -411,7 +451,7 @@ const Students = () => {
               </TableHeader>
               <TableBody>
                 {filteredStudents.length > 0 ? (
-                  filteredStudents.map((student) => (
+                  filteredStudents.map(student => (
                     <TableRow key={student._id}>
                       <TableCell>
                         <div className="flex items-center">
@@ -461,9 +501,9 @@ const Students = () => {
                             <FileText className="h-4 w-4" />
                           </Button>
                           <Link to={`/college/student/${student._id}`}>
-                          <Button size="sm" variant="outline">
-                            View Details
-                          </Button>
+                            <Button size="sm" variant="outline">
+                              View Details
+                            </Button>
                           </Link>
                         </div>
                       </TableCell>
@@ -472,7 +512,10 @@ const Students = () => {
                 ) : (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                      No students found. {searchTerm || departmentFilter !== 'all' ? 'Try adjusting your filters.' : 'Add students to get started.'}
+                      No students found.{' '}
+                      {searchTerm || departmentFilter !== 'all'
+                        ? 'Try adjusting your filters.'
+                        : 'Add students to get started.'}
                     </TableCell>
                   </TableRow>
                 )}
