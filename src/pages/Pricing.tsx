@@ -95,7 +95,7 @@ const Pricing = () => {
 
   const individualPlans = [
     {
-      name: 'Starter',
+      name: 'Free',
       price: 'Free',
       yearlyPrice: 'Free',
       category: 'Job Seekers',
@@ -105,8 +105,8 @@ const Pricing = () => {
       description: 'Perfect for getting started on your career journey',
       features: [
         'Create professional profile',
-        'Apply to unlimited jobs',
-        'Take 3 skill assessment tests',
+        'Apply to jobs',
+        'Basic skill tests (1/month)',
         'Basic job recommendations',
         'Email support',
       ],
@@ -114,351 +114,351 @@ const Pricing = () => {
       ctaLink: '/auth/jobseeker',
     },
     {
-      name: 'Professional',
-      price: '₹299',
-      yearlyPrice: '₹2,990',
+      name: 'Elite',
+      price: '₹699',
+      yearlyPrice: '₹6,990',
       category: 'Job Seekers',
-      icon: <Zap className="h-6 w-6" />,
+      icon: <Crown className="h-6 w-6" />,
       popular: true,
       gradient: 'from-blue-500 to-indigo-600',
-      description: 'Accelerate your career with premium features',
+      description: 'AI-powered career acceleration with coaching',
       features: [
-        'Everything in Starter',
-        'Unlimited skill assessments',
-        'AI-powered resume optimization',
-        'Priority application status',
-        'Interview preparation toolkit',
-        'Salary negotiation guide',
-        'Premium job alerts',
-        'Career coaching sessions (2/month)',
+        'Everything in Free',
+        'AI Resume Feedback',
+        'Unlimited Applications',
+        'Career Coaching',
+        'Premium Training',
+        'Interview Preparation',
+        'Unlimited skill tests',
+        'Priority support',
       ],
       cta: 'Start Free Trial',
       ctaLink: '/auth/jobseeker',
     },
     {
-      name: 'Executive',
-      price: '₹599',
-      yearlyPrice: '₹5,990',
-      category: 'Job Seekers',
-      icon: <Crown className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-purple-500 to-pink-600',
-      description: 'For senior professionals seeking leadership roles',
-      features: [
-        'Everything in Professional',
-        'Executive job search portal',
-        'Personal brand development',
-        'LinkedIn profile optimization',
-        '1-on-1 career mentoring (weekly)',
-        'Executive resume writing service',
-        'Network introductions',
-        'Confidential job search',
-      ],
-      cta: 'Go Executive',
-      ctaLink: '/auth/jobseeker',
-    },
-    {
-      name: 'Freelancer Starter',
+      name: 'Basic',
       price: 'Free',
       yearlyPrice: 'Free',
       category: 'Freelancers',
       icon: <Briefcase className="h-6 w-6" />,
       popular: false,
       gradient: 'from-orange-400 to-red-500',
-      description: 'Start your freelancing journey',
+      description: 'Explore freelancing opportunities',
       features: [
-        'Create freelancer profile',
-        'Apply to 10 projects/month',
-        'Basic project management',
-        'Client communication tools',
-        'Payment protection (up to ₹5,000)',
+        'Explore available gigs',
+        'Build freelancer profile',
+        'Basic project browsing',
+        'Contact freelancers',
+        'Community access',
       ],
-      cta: 'Start Freelancing',
+      cta: 'Start Free',
       ctaLink: '/freelancer-login',
     },
     {
-      name: 'Freelancer Pro',
-      price: '₹399',
-      yearlyPrice: '₹3,990',
+      name: 'Pro',
+      price: '₹599',
+      yearlyPrice: '₹5,990',
       category: 'Freelancers',
       icon: <Rocket className="h-6 w-6" />,
       popular: false,
       gradient: 'from-cyan-400 to-blue-500',
-      description: 'Scale your freelance business',
+      description: 'Professional freelancing with full features',
       features: [
-        'Everything in Starter',
-        'Unlimited project applications',
-        'Advanced project tracking',
-        'Priority proposal visibility',
-        'Custom portfolio showcase',
-        'Payment protection (unlimited)',
-        'Tax document generation',
-        'Client testimonial management',
+        'Everything in Basic',
+        'Apply to gigs',
+        'Unlimited bids',
+        'Portfolio hosting',
+        'Payment protection',
+        'Project management tools',
+        'Priority support',
       ],
       cta: 'Upgrade to Pro',
       ctaLink: '/freelancer-login',
+    },
+    {
+      name: 'Client Free',
+      price: 'Free',
+      yearlyPrice: 'Free',
+      category: 'Clients (Hiring Freelancers)',
+      icon: <Building2 className="h-6 w-6" />,
+      popular: false,
+      gradient: 'from-purple-400 to-pink-500',
+      description: 'Start hiring freelancers',
+      features: [
+        'Post projects',
+        'Browse freelancers',
+        'Basic communication',
+        'View portfolios',
+        'Community access',
+      ],
+      cta: 'Start Hiring',
+      ctaLink: '/client-login',
+    },
+    {
+      name: 'Client Pro',
+      price: '₹599',
+      yearlyPrice: '₹5,990',
+      category: 'Clients (Hiring Freelancers)',
+      icon: <Shield className="h-6 w-6" />,
+      popular: false,
+      gradient: 'from-indigo-500 to-purple-600',
+      description: 'Advanced project management for clients',
+      features: [
+        'Everything in Free',
+        'Project management dashboard',
+        'Milestone tracking',
+        'Escrow payments',
+        'Advanced freelancer search',
+        'Priority support',
+      ],
+      cta: 'Upgrade to Pro',
+      ctaLink: '/client-login',
     },
   ];
 
   const businessPlans = [
     {
-      name: 'Campus Basic',
+      name: 'HR Free',
       price: 'Free',
       yearlyPrice: 'Free',
-      category: 'Educational Institutions',
-      icon: <GraduationCap className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-green-400 to-emerald-500',
-      description: 'Essential tools for small colleges and institutes',
-      features: [
-        'Register up to 500 students',
-        'Basic placement tracking',
-        'Student profile management',
-        'Job posting board',
-        'Basic analytics dashboard',
-        'Email notifications',
-      ],
-      cta: 'Start Free',
-      ctaLink: '/college-login',
-    },
-    {
-      name: 'Campus Pro',
-      price: '₹4,999',
-      yearlyPrice: '₹49,990',
-      category: 'Educational Institutions',
-      icon: <Shield className="h-6 w-6" />,
-      popular: true,
-      gradient: 'from-indigo-500 to-purple-600',
-      description: 'Complete placement management solution',
-      features: [
-        'Everything in Campus Basic',
-        'Unlimited student registrations',
-        'Advanced placement analytics',
-        'Custom assessment creation',
-        'Automated placement drives',
-        'Employer relationship management',
-        'Student skill gap analysis',
-        'Branded college portal',
-        'API integration support',
-        'Dedicated account manager',
-      ],
-      cta: 'Upgrade to Pro',
-      ctaLink: '/college-login',
-    },
-    {
-      name: 'Campus Enterprise',
-      price: 'Custom',
-      yearlyPrice: 'Custom',
-      category: 'Educational Institutions',
+      category: 'HR / Recruiters',
       icon: <Building2 className="h-6 w-6" />,
       popular: false,
-      gradient: 'from-slate-600 to-slate-800',
-      description: 'Tailored solutions for large universities',
+      gradient: 'from-green-400 to-emerald-500',
+      description: 'Essential hiring tools for small teams',
       features: [
-        'Everything in Campus Pro',
-        'Multi-campus management',
-        'Custom integrations',
-        'Advanced reporting suite',
-        'White-label solutions',
-        'On-premise deployment option',
-        'Dedicated technical support',
-        'Custom feature development',
-        'Training and onboarding',
+        'Post jobs',
+        'View applicants',
+        'Basic candidate management',
+        'Email notifications',
+        'Basic analytics',
       ],
-      cta: 'Contact Sales',
-      ctaLink: '#contact',
+      cta: 'Start Free',
+      ctaLink: '/auth/recruiter',
     },
     {
-      name: 'Startup',
+      name: 'HRMS',
+      price: '₹599',
+      yearlyPrice: '₹5,990',
+      category: 'HR / Recruiters',
+      icon: <Shield className="h-6 w-6" />,
+      popular: false,
+      gradient: 'from-blue-500 to-cyan-500',
+      description: 'Complete HR management system',
+      features: [
+        'Everything in Free',
+        'Attendance management',
+        'Payroll processing',
+        'Leave management',
+        'Employee database',
+        'HR analytics',
+        'Document management',
+      ],
+      cta: 'Get HRMS',
+      ctaLink: '/auth/recruiter',
+    },
+    {
+      name: 'AI Screening & Interview',
+      price: '₹1,499',
+      yearlyPrice: '₹14,990',
+      category: 'HR / Recruiters',
+      icon: <Sparkles className="h-6 w-6" />,
+      popular: true,
+      gradient: 'from-purple-500 to-pink-600',
+      description: 'AI-powered recruitment automation',
+      features: [
+        'Everything in HRMS',
+        'AI-driven candidate shortlisting',
+        'Automated interview scheduling',
+        'Video interview platform',
+        'AI assessment tools',
+        'Candidate scoring',
+        'Interview automation',
+      ],
+      cta: 'Try AI Screening',
+      ctaLink: '/auth/recruiter',
+    },
+    {
+      name: 'Complete Package',
       price: '₹1,999',
       yearlyPrice: '₹19,990',
-      category: 'Corporate Hiring',
-      icon: <Sparkles className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-rose-400 to-pink-500',
-      description: 'Perfect for growing startups and small teams',
-      features: [
-        'Post up to 25 active jobs',
-        'Access to 50,000+ candidates',
-        'Basic ATS functionality',
-        'Standard assessment tests',
-        'Interview scheduling',
-        'Candidate communication tools',
-        'Basic hiring analytics',
-      ],
-      cta: 'Start Hiring',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'Growth',
-      price: '₹4,999',
-      yearlyPrice: '₹49,990',
-      category: 'Corporate Hiring',
-      icon: <Rocket className="h-6 w-6" />,
-      popular: true,
-      gradient: 'from-blue-500 to-cyan-500',
-      description: 'Scale your hiring with advanced features',
-      features: [
-        'Everything in Startup',
-        'Unlimited job postings',
-        'Custom assessment creation',
-        'Advanced candidate filtering',
-        'Team collaboration tools',
-        'Automated workflow management',
-        'Advanced analytics dashboard',
-        'API access',
-        'Priority candidate sourcing',
-        'Dedicated customer success',
-      ],
-      cta: 'Scale Up',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'Enterprise',
-      price: 'Custom',
-      yearlyPrice: 'Custom',
-      category: 'Corporate Hiring',
+      category: 'HR / Recruiters',
       icon: <Crown className="h-6 w-6" />,
       popular: false,
-      gradient: 'from-amber-400 to-orange-500',
-      description: 'Complete HRMS solution for large organizations',
+      gradient: 'from-indigo-600 to-purple-700',
+      description: 'All-in-one HR & recruitment solution',
+      features: [
+        'HRMS + AI Screening',
+        'Advanced job posting',
+        'Compliance management',
+        'Advanced analytics',
+        'Custom integrations',
+        'Priority support',
+        'Training & onboarding',
+      ],
+      cta: 'Get Complete Package',
+      ctaLink: '/auth/recruiter',
+    },
+    {
+      name: 'Campus Basic',
+      price: '₹199',
+      yearlyPrice: '₹1,990',
+      category: 'Campus (Colleges / CRC)',
+      icon: <GraduationCap className="h-6 w-6" />,
+      popular: false,
+      gradient: 'from-emerald-400 to-green-500',
+      description: 'Essential placement management for colleges',
+      features: [
+        'Placement Drive Manager (1 drive/month)',
+        'Student dashboard',
+        'Basic analytics',
+        'Email notifications',
+        'Student registration',
+      ],
+      cta: 'Start Basic',
+      ctaLink: '/college-login',
+    },
+    {
+      name: 'Campus Growth',
+      price: '₹699',
+      yearlyPrice: '₹6,990',
+      category: 'Campus (Colleges / CRC)',
+      icon: <Rocket className="h-6 w-6" />,
+      popular: false,
+      gradient: 'from-blue-500 to-indigo-600',
+      description: 'Expand placement opportunities',
+      features: [
+        'Everything in Basic',
+        'Multiple placement drives',
+        'Recruiter connect',
+        'Advanced analytics',
+        'Student performance tracking',
+        'Company management',
+      ],
+      cta: 'Upgrade to Growth',
+      ctaLink: '/college-login',
+    },
+    {
+      name: 'Campus Elite',
+      price: '₹1,499',
+      yearlyPrice: '₹14,990',
+      category: 'Campus (Colleges / CRC)',
+      icon: <Crown className="h-6 w-6" />,
+      popular: true,
+      gradient: 'from-purple-500 to-pink-600',
+      description: 'Complete campus placement automation',
       features: [
         'Everything in Growth',
-        'Full HRMS integration',
-        'Multi-location management',
-        'Custom branding',
-        'Advanced security features',
-        'Compliance management',
+        'Unlimited placement drives',
+        'Automated scheduling',
+        'AI skill gap analysis',
+        'Recruiter CRM',
         'Custom reporting',
-        'Dedicated infrastructure',
-        'SLA guarantees',
-        '24/7 priority support',
+        'Dedicated support',
       ],
-      cta: 'Request Demo',
-      ctaLink: '#contact',
-    },
-  ];
-
-  const addOns = [
-    {
-      name: 'AI Interview Coach',
-      price: '₹199/month',
-      icon: <Sparkles className="h-5 w-5" />,
-      description: 'Personalized mock interviews with AI feedback and improvement suggestions',
-      features: [
-        'Unlimited practice sessions',
-        'Industry-specific scenarios',
-        'Real-time feedback',
-      ],
-    },
-    {
-      name: 'Personal Brand Builder',
-      price: '₹299/month',
-      icon: <Crown className="h-5 w-5" />,
-      description: 'Professional brand development with LinkedIn optimization and content strategy',
-      features: ['LinkedIn profile makeover', 'Content calendar', 'Personal website builder'],
-    },
-    {
-      name: 'Executive Search Access',
-      price: '₹999/month',
-      icon: <Shield className="h-5 w-5" />,
-      description: 'Access to exclusive executive-level opportunities and headhunter network',
-      features: ['C-suite job access', 'Executive headhunter network', 'Confidential search'],
-    },
-    {
-      name: 'Custom Assessment Suite',
-      price: '₹1,499/month',
-      icon: <Zap className="h-5 w-5" />,
-      description: 'Build unlimited custom assessments with advanced analytics and insights',
-      features: ['Custom test builder', 'Advanced analytics', 'Candidate benchmarking'],
+      cta: 'Go Elite',
+      ctaLink: '/college-login',
     },
   ];
 
   const comparisonFeatures = [
     {
-      category: 'Profile & Applications',
+      category: 'Individual Plans',
       features: [
         {
-          name: 'Professional Profile Creation',
-          free: true,
-          pro: true,
-          campus: true,
-          corporate: true,
-          freelancer: true,
+          name: 'Create Profile',
+          free: '✅',
+          elite: '✅',
+          freelancerPro: '✅',
+          clientPro: '✅',
         },
         {
-          name: 'Job/Project Applications',
-          free: '10/month',
-          pro: 'Unlimited',
-          campus: '–',
-          corporate: '–',
-          freelancer: 'Unlimited',
+          name: 'Apply to Jobs/Gigs',
+          free: '5/month',
+          elite: 'Unlimited',
+          freelancerPro: 'Unlimited',
+          clientPro: 'Unlimited Projects',
         },
         {
-          name: 'Resume Templates',
-          free: '3 basic',
-          pro: '20+ premium',
-          campus: 'Institutional',
-          corporate: 'Custom',
-          freelancer: '15+ designs',
-        },
-      ],
-    },
-    {
-      category: 'Assessments & Skills',
-      features: [
-        {
-          name: 'Skill Assessments',
-          free: '3 per month',
-          pro: 'Unlimited',
-          campus: 'Bulk testing',
-          corporate: 'Custom tests',
-          freelancer: 'Skill verification',
-        },
-        {
-          name: 'AI Feedback',
-          free: false,
-          pro: true,
-          campus: true,
-          corporate: true,
-          freelancer: true,
-        },
-        {
-          name: 'Certification Tracking',
-          free: false,
-          pro: true,
-          campus: true,
-          corporate: false,
-          freelancer: true,
-        },
-      ],
-    },
-    {
-      category: 'Advanced Features',
-      features: [
-        {
-          name: 'Priority Support',
-          free: false,
-          pro: 'Email',
-          campus: 'Phone + Email',
-          corporate: 'Dedicated manager',
-          freelancer: 'Chat + Email',
-        },
-        {
-          name: 'Analytics Dashboard',
+          name: 'Resume/Portfolio Builder',
           free: 'Basic',
-          pro: 'Advanced',
-          campus: 'Comprehensive',
-          corporate: 'Enterprise',
-          freelancer: 'Project insights',
+          elite: 'AI-enhanced',
+          freelancerPro: 'Advanced Portfolio',
+          clientPro: '—',
         },
         {
-          name: 'API Access',
-          free: false,
-          pro: false,
-          campus: 'Limited',
-          corporate: 'Full access',
-          freelancer: false,
+          name: 'Skill Tests',
+          free: '1/month',
+          elite: 'Unlimited + Coaching',
+          freelancerPro: 'Verified Skills',
+          clientPro: '—',
+        },
+        {
+          name: 'Project Management',
+          free: '—',
+          elite: '—',
+          freelancerPro: 'Basic',
+          clientPro: 'Advanced',
+        },
+        {
+          name: 'Payment Protection',
+          free: '—',
+          elite: '—',
+          freelancerPro: '✅',
+          clientPro: '✅',
+        },
+      ],
+    },
+    {
+      category: 'Organization Plans',
+      features: [
+        {
+          name: 'Job Posting',
+          hrFree: '✅',
+          hrms: '✅',
+          aiInterview: '✅',
+          complete: '✅',
+          campusElite: '✅',
+        },
+        {
+          name: 'HRMS (Payroll, Attendance)',
+          hrFree: '—',
+          hrms: '✅',
+          aiInterview: '✅',
+          complete: '✅',
+          campusElite: '—',
+        },
+        {
+          name: 'AI Screening & Interview',
+          hrFree: '—',
+          hrms: '—',
+          aiInterview: '✅',
+          complete: '✅',
+          campusElite: '—',
+        },
+        {
+          name: 'Compliance Kit',
+          hrFree: '—',
+          hrms: '—',
+          aiInterview: '—',
+          complete: '✅',
+          campusElite: '—',
+        },
+        {
+          name: 'Placement Drive Manager',
+          hrFree: '—',
+          hrms: '—',
+          aiInterview: '—',
+          complete: '—',
+          campusElite: '✅ (Unlimited)',
+        },
+        {
+          name: 'Recruiter CRM',
+          hrFree: '—',
+          hrms: '—',
+          aiInterview: '—',
+          complete: '—',
+          campusElite: '✅',
         },
       ],
     },
@@ -466,44 +466,44 @@ const Pricing = () => {
 
   const faqs = [
     {
-      question: 'How does the free trial work?',
+      question: 'Can I start with a free plan and upgrade later?',
       answer:
-        'All paid plans include a 14-day free trial with full access to premium features. No credit card required to start, and you can cancel anytime during the trial period.',
+        'Yes! You can start free and upgrade anytime without losing data. All your profiles, applications, and progress will be preserved when you upgrade.',
     },
     {
-      question: 'Can I switch between plans?',
+      question: 'Do colleges get onboarding support?',
       answer:
-        "Absolutely! You can upgrade or downgrade your plan anytime. Changes take effect immediately, and we'll prorate any billing adjustments.",
+        'Campus Growth and Elite plans include dedicated onboarding support and training sessions. Our team will help you set up placement drives and train your staff.',
+    },
+    {
+      question: 'How does billing work for teams?',
+      answer:
+        'Team plans are billed monthly or annually. You can add or remove team members anytime, and billing adjustments are made automatically on your next cycle.',
+    },
+    {
+      question: 'Do freelancers/clients get secure payment options?',
+      answer:
+        'Yes. All Pro freelancer & client plans include escrow-based payment protection to ensure secure transactions and milestone-based payments.',
+    },
+    {
+      question: 'Is billing monthly or yearly?',
+      answer:
+        'Monthly by default, with discounts available for yearly subscriptions. Annual plans save you up to 16% compared to monthly billing.',
     },
     {
       question: 'What payment methods do you accept?',
       answer:
-        'We accept all major credit cards, debit cards, UPI, net banking, and digital wallets. Enterprise customers can also pay via bank transfer or purchase orders.',
+        'We accept all major credit cards, debit cards, UPI, net banking, and digital wallets. Enterprise customers can also pay via bank transfer.',
     },
     {
       question: 'Is my data secure?',
       answer:
-        'Yes, we use enterprise-grade security with 256-bit SSL encryption, regular security audits, and comply with data protection regulations. Your data is never shared without your permission.',
+        'Yes, we use enterprise-grade security with 256-bit SSL encryption, regular security audits, and comply with data protection regulations.',
     },
     {
-      question: 'Do you offer educational discounts?',
+      question: 'Can I cancel anytime?',
       answer:
-        'Yes! Students get 50% off on all individual plans, and educational institutions receive special nonprofit pricing. Contact our education team for custom quotes.',
-    },
-    {
-      question: 'What happens if I exceed my plan limits?',
-      answer:
-        "We'll notify you before you reach your limits and offer easy upgrade options. For occasional overages, we provide flexible usage-based billing without service interruption.",
-    },
-    {
-      question: 'Can I get a refund?',
-      answer:
-        "We offer a 30-day money-back guarantee for all paid plans. If you're not satisfied, contact our support team for a full refund, no questions asked.",
-    },
-    {
-      question: 'Do you provide onboarding support?',
-      answer:
-        'Yes! All paid plans include onboarding assistance. Pro and Enterprise customers get dedicated onboarding specialists and training sessions for their teams.',
+        "Yes, you can cancel your subscription anytime. You'll continue to have access until the end of your current billing period, then automatically switch to the free plan.",
     },
   ];
 
@@ -962,7 +962,7 @@ const Pricing = () => {
                     className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl transition-all duration-300 text-xs sm:text-sm"
                   >
                     <Building2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                    Business Plans
+                    Business & Campus
                   </TabsTrigger>
                 </TabsList>
               </div>
@@ -980,9 +980,9 @@ const Pricing = () => {
 
                 {/* Individual Plans Grid */}
                 <div className="relative px-2 sm:px-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 xl:gap-8 justify-items-center">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8 justify-items-center max-w-7xl mx-auto">
                     {individualPlans.map((plan, index) => (
-                      <div key={index} className="w-full max-w-[280px] xl:max-w-none">
+                      <div key={index} className="w-full max-w-[320px]">
                         <PricingCard plan={plan} isPopular={plan.popular} />
                       </div>
                     ))}
@@ -1015,71 +1015,6 @@ const Pricing = () => {
           </div>
         </section>
 
-        {/* Add-ons Section */}
-        <section className="relative z-10 py-20 bg-gradient-to-br from-gray-50 to-blue-50/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200/50 text-purple-700 text-sm font-semibold mb-6">
-                <Sparkles className="w-5 h-5 mr-2" />
-                Premium Add-ons
-              </div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Supercharge Your Experience</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Take your career or hiring process to the next level with these powerful add-on
-                features
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {addOns.map((addon, index) => (
-                <Card
-                  key={index}
-                  className="relative overflow-hidden group hover:shadow-2xl transition-all duration-500 border-0 shadow-lg bg-white/80 backdrop-blur-sm"
-                >
-                  {/* Gradient Border Effect */}
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-lg" />
-
-                  <CardHeader className="relative z-10 text-center pb-4">
-                    <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 text-white mb-4 mx-auto shadow-lg group-hover:scale-110 transition-transform duration-300">
-                      {addon.icon}
-                    </div>
-                    <CardTitle className="text-xl font-bold text-gray-900 mb-2">
-                      {addon.name}
-                    </CardTitle>
-                    <div className="text-2xl font-bold text-blue-600 mb-3">{addon.price}</div>
-                  </CardHeader>
-
-                  <CardContent className="relative z-10 px-6 pb-4">
-                    <p className="text-gray-600 text-sm leading-relaxed mb-4">
-                      {addon.description}
-                    </p>
-                    <ul className="space-y-2">
-                      {addon.features.map((feature, featureIndex) => (
-                        <li key={featureIndex} className="flex items-center text-sm text-gray-700">
-                          <div className="w-4 h-4 rounded-full bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center mr-2 flex-shrink-0">
-                            <Check className="h-2.5 w-2.5 text-white" />
-                          </div>
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-
-                  <CardFooter className="relative z-10 px-6 pb-6">
-                    <Button
-                      variant="outline"
-                      className="w-full border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300 group-hover:shadow-lg"
-                    >
-                      Add to Plan
-                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* Comparison Table */}
         <section className="relative z-10 py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -1095,68 +1030,144 @@ const Pricing = () => {
             </div>
 
             <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-              {comparisonFeatures.map((category, categoryIndex) => (
-                <div
-                  key={categoryIndex}
-                  className={categoryIndex > 0 ? 'border-t border-gray-100' : ''}
-                >
-                  {/* Category Header */}
-                  <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-6 py-4">
-                    <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
-                  </div>
+              <Tabs defaultValue="individuals" className="w-full">
+                <TabsList className="grid w-full h-auto max-w-md mx-auto grid-cols-2 m-6 bg-white shadow-lg border border-gray-200 p-2 rounded-2xl">
+                  <TabsTrigger
+                    value="individuals"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-300 text-sm"
+                  >
+                    Individual Plans
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="organizations"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-300 text-sm"
+                  >
+                    Organization Plans
+                  </TabsTrigger>
+                </TabsList>
 
-                  {/* Feature Rows */}
-                  {category.features.map((feature, featureIndex) => (
-                    <div key={featureIndex} className="border-b border-gray-50 last:border-b-0">
-                      {featureIndex === 0 && (
-                        <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50/50 text-sm font-semibold text-gray-700 border-b border-gray-100">
+                <TabsContent value="individuals">
+                  {comparisonFeatures
+                    .filter(category => category.category === 'Individual Plans')
+                    .map((category, categoryIndex) => (
+                      <div key={categoryIndex}>
+                        {/* Category Header */}
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-6 py-4">
+                          <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
+                        </div>
+
+                        {/* Header Row */}
+                        <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50/50 text-sm font-semibold text-gray-700 border-b border-gray-100">
                           <div className="col-span-1">Feature</div>
                           <div className="text-center">Free</div>
-                          <div className="text-center">Pro</div>
-                          <div className="text-center">Campus</div>
-                          <div className="text-center">Corporate</div>
-                          <div className="text-center">Freelancer</div>
+                          <div className="text-center">Elite (₹699)</div>
+                          <div className="text-center">Freelancer Pro (₹599)</div>
+                          <div className="text-center">Client Pro (₹599)</div>
                         </div>
-                      )}
 
-                      <div className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors duration-200">
-                        <div className="col-span-1 font-medium text-gray-900">{feature.name}</div>
-
-                        {[
-                          feature.free,
-                          feature.pro,
-                          feature.campus,
-                          feature.corporate,
-                          feature.freelancer,
-                        ].map((value, valueIndex) => (
+                        {/* Feature Rows */}
+                        {category.features.map((feature, featureIndex) => (
                           <div
-                            key={valueIndex}
-                            className="text-center flex items-center justify-center"
+                            key={featureIndex}
+                            className="border-b border-gray-50 last:border-b-0"
                           >
-                            {typeof value === 'boolean' ? (
-                              value ? (
-                                <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
-                                  <Check className="h-4 w-4 text-green-600" />
+                            <div className="grid grid-cols-5 gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors duration-200">
+                              <div className="col-span-1 font-medium text-gray-900">
+                                {feature.name}
+                              </div>
+
+                              {[
+                                feature.free,
+                                feature.elite,
+                                feature.freelancerPro,
+                                feature.clientPro,
+                              ].map((value, valueIndex) => (
+                                <div
+                                  key={valueIndex}
+                                  className="text-center flex items-center justify-center"
+                                >
+                                  {value === '✅' ? (
+                                    <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    </div>
+                                  ) : value === '—' ? (
+                                    <X className="h-4 w-4 text-gray-400" />
+                                  ) : (
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {value}
+                                    </span>
+                                  )}
                                 </div>
-                              ) : (
-                                <X className="h-4 w-4 text-gray-400" />
-                              )
-                            ) : (
-                              <span
-                                className={`text-sm font-medium ${
-                                  value === '–' ? 'text-gray-400' : 'text-gray-700'
-                                }`}
-                              >
-                                {value}
-                              </span>
-                            )}
+                              ))}
+                            </div>
                           </div>
                         ))}
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
+                    ))}
+                </TabsContent>
+
+                <TabsContent value="organizations">
+                  {comparisonFeatures
+                    .filter(category => category.category === 'Organization Plans')
+                    .map((category, categoryIndex) => (
+                      <div key={categoryIndex}>
+                        {/* Category Header */}
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-6 py-4">
+                          <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
+                        </div>
+
+                        {/* Header Row */}
+                        <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50/50 text-sm font-semibold text-gray-700 border-b border-gray-100">
+                          <div className="col-span-1">Feature</div>
+                          <div className="text-center">HR Free</div>
+                          <div className="text-center">HRMS (₹599)</div>
+                          <div className="text-center">AI + Interview (₹1499)</div>
+                          <div className="text-center">Complete (₹1999)</div>
+                          <div className="text-center">Campus Elite (₹1499)</div>
+                        </div>
+
+                        {/* Feature Rows */}
+                        {category.features.map((feature, featureIndex) => (
+                          <div
+                            key={featureIndex}
+                            className="border-b border-gray-50 last:border-b-0"
+                          >
+                            <div className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors duration-200">
+                              <div className="col-span-1 font-medium text-gray-900">
+                                {feature.name}
+                              </div>
+
+                              {[
+                                feature.hrFree,
+                                feature.hrms,
+                                feature.aiInterview,
+                                feature.complete,
+                                feature.campusElite,
+                              ].map((value, valueIndex) => (
+                                <div
+                                  key={valueIndex}
+                                  className="text-center flex items-center justify-center"
+                                >
+                                  {value === '✅' || value?.includes('✅') ? (
+                                    <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    </div>
+                                  ) : value === '—' ? (
+                                    <X className="h-4 w-4 text-gray-400" />
+                                  ) : (
+                                    <span className="text-sm font-medium text-gray-700">
+                                      {value}
+                                    </span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ))}
+                </TabsContent>
+              </Tabs>
             </div>
 
             <div className="text-center mt-12">

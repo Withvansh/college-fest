@@ -359,7 +359,7 @@ const SocialMediaSection = () => {
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 px-4 sm:px-0">
             <a
-              href="https://www.instagram.com/minutehire?igsh=aG03NmhlZGZqOHZi"
+              href="https://www.instagram.com/minutehire/"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
@@ -370,7 +370,7 @@ const SocialMediaSection = () => {
               </Button>
             </a>
             <a
-              href="https://www.twitter.com"
+              href="https://x.com/MinuteHire"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
@@ -390,7 +390,7 @@ const SocialMediaSection = () => {
               </Button>
             </a>
             <a
-              href="https://www.linkedin.com/company/minute-hire/about/"
+              href="https://www.linkedin.com/company/minute-hire"
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto"
@@ -407,6 +407,26 @@ const SocialMediaSection = () => {
                   <path d="M4.98 3.5C4.98 4.88 3.88 6 2.5 6S0 4.88 0 3.5 1.12 1 2.5 1 4.98 2.12 4.98 3.5zM.5 8.5h4v13h-4v-13zM8.5 8.5h3.5v1.72c.49-.89 1.74-1.82 3.6-1.82 3.85 0 4.57 2.53 4.57 5.82v7.28h-4v-6.45c0-1.54-.03-3.52-2.15-3.52s-2.48 1.67-2.48 3.4v6.57h-4v-13z" />
                 </svg>
                 LinkedIn
+              </Button>
+            </a>
+            <a
+              href="https://www.facebook.com/profile.php?id=61579000265753"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto"
+            >
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl sm:rounded-2xl transform hover:scale-105 transition duration-300 shadow-lg"
+              >
+                <svg
+                  className="w-4 h-4 sm:w-5 sm:h-5 mr-2 sm:mr-3"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                Facebook
               </Button>
             </a>
           </div>
