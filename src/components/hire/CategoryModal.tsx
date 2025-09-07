@@ -10,7 +10,35 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Phone, Mail, MapPin, Star, User, Briefcase, DollarSign } from 'lucide-react';
+import {
+  Phone,
+  Mail,
+  MapPin,
+  Star,
+  User,
+  Briefcase,
+  DollarSign,
+  Laptop,
+  Smartphone,
+  Car,
+  Home,
+  ChefHat,
+  Hammer,
+  Scale,
+  Calculator,
+  Users,
+  Paintbrush,
+  Palette,
+  Settings,
+  Zap,
+  Scissors,
+  Baby,
+  Heart,
+  Shield,
+  Leaf,
+  BookOpen,
+  Megaphone,
+} from "lucide-react";
 
 interface CategoryModalProps {
   isOpen: boolean;
@@ -18,6 +46,37 @@ interface CategoryModalProps {
   onSelect: (category: string) => void;
   category?: any;
 }
+
+// Icon mapping object
+// const iconMap = {
+//   Phone,
+//   Mail,
+//   MapPin,
+//   Star,
+//   User,
+//   Briefcase,
+//   DollarSign,
+//   Laptop,
+//   Smartphone,
+//   Car,
+//   Home,
+//   ChefHat,
+//   Hammer,
+//   Scale,
+//   Calculator,
+//   Users,
+//   Paintbrush,
+//   Palette,
+//   Settings,
+//   Zap,
+//   Scissors,
+//   Baby,
+//   Heart,
+//   Shield,
+//   Leaf,
+//   BookOpen,
+//   Megaphone,
+// };
 
 const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalProps) => {
   const [usersByCategory, setUsersByCategory] = useState<Record<string, any[]>>({});
@@ -27,7 +86,7 @@ const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalPro
   const [filterPrice, setFilterPrice] = useState('');
   const [userInfoOpen, setUserInfoOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
-
+// console.log(category);
   useEffect(() => {
     if (!isOpen) return;
     setLoading(true);
@@ -96,12 +155,22 @@ const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalPro
     }
   };
 
+  // // Get icon component based on icon name
+  // const getIconComponent = (iconName: string) => {
+  //   const IconComponent = iconMap[iconName as keyof typeof iconMap] || User;
+  //   return <IconComponent className="h-5 w-5" />;
+  // };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-h-[80vh] h-[80vh] overflow-hidden sm:max-w-4xl flex flex-col">
           <DialogHeader>
-            <DialogTitle>Select Category</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {`${JSON.stringify(category)} `}
+              {category?.icon }
+              Select Category
+            </DialogTitle>
             <DialogDescription>
               Choose a category to see available users grouped by their expertise.
             </DialogDescription>
@@ -143,7 +212,11 @@ const CategoryModal = ({ isOpen, onClose, onSelect, category }: CategoryModalPro
                   if (filteredUsers.length === 0) return null;
                   return (
                     <div key={groupKey} className="border rounded-lg p-3 mb-3 mt-6">
-                      <div className="font-semibold mb-3">{groupKey}</div>
+                      <div className="font-semibold mb-3 flex items-center gap-2">
+                          {`${JSON.stringify(category)} `}
+                        {`${category?.icon }`}
+                        {groupKey}
+                      </div>
                       <div className="flex gap-4 overflow-x-auto pb-2 snap-x snap-mandatory [-ms-overflow-style:none] [scrollbar-width:none]">
                         <style>{`.no-scrollbar::-webkit-scrollbar{display:none;}`}</style>
                         {filteredUsers.map(user => (

@@ -1336,7 +1336,7 @@ ${applications
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Career Counselling</h2>
                 <Button
-                  onClick={() => navigate('/student/profile')}
+                  onClick={() => navigate('/student/counsellor')}
                   className="bg-purple-600 hover:bg-purple-700"
                 >
                   <MessageSquare className="h-4 w-4 mr-2" />
