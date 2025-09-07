@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Search,
   ChevronDown,
@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Slider } from '@/components/ui/slider';
-import { type Job } from '@/services/jobsService';
+import { type Job } from '@/lib/api/recruiter-dashboard';
 
 interface JobSidebarProps {
   filters: {
@@ -39,7 +39,7 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
   // Calculate dynamic filter options based on actual job data
   const getEmploymentOptions = () => {
     const employmentCounts: { [key: string]: number } = {};
-    const remoteCount = jobs.filter(job => job.remote_work).length;
+    const remoteCount = jobs.filter(job => job.remote_allowed).length;
 
     jobs.forEach(job => {
       employmentCounts[job.job_type] = (employmentCounts[job.job_type] || 0) + 1;
@@ -194,7 +194,7 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
 
   const getSalaryRange = () => {
     const salaries = jobs
-      .map(job => [job.salary_range?.min, job.salary_range?.max])
+      .map(job => [job.min_salary, job.max_salary])
       .flat()
       .filter(salary => salary !== undefined && salary !== null) as number[];
 
@@ -209,15 +209,17 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
     };
   };
 
-  const dynamicSalaryRange = getSalaryRange();
-  const employmentOptions = getEmploymentOptions();
-  const experienceOptions = getExperienceOptions();
-  const locationOptions = getLocationOptions();
+  const dynamicSalaryRange = useMemo(() => getSalaryRange(), [jobs]);
+  const employmentOptions = useMemo(() => getEmploymentOptions(), [jobs]);
+  const experienceOptions = useMemo(() => getExperienceOptions(), [jobs]);
+  const locationOptions = useMemo(() => getLocationOptions(), [jobs]);
 
   // Initialize salary range based on actual data
-  if (salaryRange[0] === 0 && salaryRange[1] === 2000000 && jobs.length > 0) {
-    setSalaryRange([dynamicSalaryRange.min, dynamicSalaryRange.max]);
-  }
+  useEffect(() => {
+    if (salaryRange[0] === 0 && salaryRange[1] === 2000000 && jobs.length > 0) {
+      setSalaryRange([dynamicSalaryRange.min, dynamicSalaryRange.max]);
+    }
+  }, [jobs.length, dynamicSalaryRange.min, dynamicSalaryRange.max, salaryRange]);
 
   const clearAllFilters = () => {
     // Reset all filters

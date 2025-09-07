@@ -30,8 +30,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const [currentSkill, setCurrentSkill] = useState('');
   const [currentBenefit, setCurrentBenefit] = useState('');
 
-  const defaultCompanyName =
-    user?.full_name === '' || user?.role === '' ? '' : '';
+  const defaultCompanyName = user?.full_name === '' || user?.role === '' ? '' : '';
 
   const {
     register,
@@ -244,12 +243,11 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Fulltime">Full Time</SelectItem>
-                      <SelectItem value="Parttime">Part Time</SelectItem>
-                      <SelectItem value="Contract">Contract</SelectItem>
-                      <SelectItem value="Internship">Internship</SelectItem>
-                      <SelectItem value="Freelance">Freelance</SelectItem>
-                      <SelectItem value="Senior Level">Senior Level</SelectItem>
+                      <SelectItem value="full_time">Full Time</SelectItem>
+                      <SelectItem value="part_time">Part Time</SelectItem>
+                      <SelectItem value="contract">Contract</SelectItem>
+                      <SelectItem value="internship">Internship</SelectItem>
+                      <SelectItem value="freelance">Freelance</SelectItem>
                     </SelectContent>
                   </Select>
                 )}

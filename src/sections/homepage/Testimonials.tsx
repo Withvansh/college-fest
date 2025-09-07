@@ -19,7 +19,7 @@ const Testimonials = () => {
         </div>
 
         {/* Floating testimonial cards with different animations */}
-        <div className="relative max-w-7xl mx-auto h-auto sm:h-[400px] lg:h-[450px] overflow-hidden">
+        <div className="relative max-w-7xl mx-auto h-auto sm:h-[400px] lg:h-[300px] overflow-hidden">
           <div className="flex items-center justify-center">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full animate-float px-4 sm:px-0">
               {[

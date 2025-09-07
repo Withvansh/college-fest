@@ -79,7 +79,7 @@ export const jobsApi = {
     try {
       console.log('Fetching job by ID:', id);
       
-      const response = await axiosInstance.get(`/api/jobs/${id}`);
+      const response = await axiosInstance.get(`/jobs/${id}`);
       
       console.log('Fetched job by ID:', response.data.data);
       
