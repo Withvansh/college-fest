@@ -174,17 +174,19 @@ const LiveFeedsSection = () => {
         const transformedJobs: JobListing[] = (jobsData || []).slice(0, 6).map(job => ({
           _id: job._id,
           title: job.title,
-          company: job.company_name,
+          company: (job as any).company_name || job.company,
           location: job.location,
           postedTime: getTimeAgo(job.created_at || ''),
-          type: formatJobType(job.job_type),
-          salary: formatSalary(job.min_salary, job.max_salary),
+          type: formatJobType((job as any).job_type || job.job_type),
+          salary: formatSalary((job as any).min_salary, (job as any).max_salary),
           description: job.description,
-          requirements: job.requirements
-            ? job.requirements.split('\n').filter(req => req.trim())
+          requirements: (job as any).requirements
+            ? typeof (job as any).requirements === 'string'
+              ? (job as any).requirements.split('\n').filter((req: string) => req.trim())
+              : job.requirements
             : ['No specific requirements listed'],
-          benefits: job.benefits || ['Competitive package'],
-          skills: job.skills_required || [],
+          benefits: (job as any).benefits || ['Competitive package'],
+          skills: (job as any).skills_required || job.skills_required || [],
         }));
 
         setJobListings(transformedJobs);
@@ -777,259 +779,270 @@ const LiveFeedsSection = () => {
                   ))}
                 </div>
               ) : (
-                freelanceProjects.map(project => (
-                  <Card
-                    key={project._id}
-                    className="group hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:scale-[1.02] bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden hover:bg-white/95 hover:border-purple-200/50"
-                  >
-                    <CardContent className="p-4 sm:p-6">
-                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3">
-                        <h4 className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors leading-tight">
-                          {project.title}
-                        </h4>
-                        <Badge className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 border-0 hover:scale-105 transition-transform self-start">
-                          {project.projectType}
-                        </Badge>
-                      </div>
+                //   (
+                //   freelanceProjects.map(project => (
+                //     <Card
+                //       key={project._id}
+                //       className="group hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:scale-[1.02] bg-white/90 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden hover:bg-white/95 hover:border-purple-200/50"
+                //     >
+                //       <CardContent className="p-4 sm:p-6">
+                //         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-3">
+                //           <h4 className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors leading-tight">
+                //             {project.title}
+                //           </h4>
+                //           <Badge className="bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 border-0 hover:scale-105 transition-transform self-start">
+                //             {project.projectType}
+                //           </Badge>
+                //         </div>
 
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-lg flex items-center justify-center">
-                            <IndianRupee className="h-4 w-4 text-emerald-600" />
-                          </div>
-                          <span className="text-emerald-700 font-semibold text-sm">
-                            {project.budget}
-                          </span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
-                            <User className="h-4 w-4 text-blue-600" />
-                          </div>
-                          <span className="text-blue-700 font-medium text-sm">
-                            {project.clientName}
-                          </span>
-                        </div>
-                      </div>
+                //         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-3">
+                //           <div className="flex items-center space-x-2">
+                //             <div className="w-8 h-8 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded-lg flex items-center justify-center">
+                //               <IndianRupee className="h-4 w-4 text-emerald-600" />
+                //             </div>
+                //             <span className="text-emerald-700 font-semibold text-sm">
+                //               {project.budget}
+                //             </span>
+                //           </div>
+                //           <div className="flex items-center space-x-2">
+                //             <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center">
+                //               <User className="h-4 w-4 text-blue-600" />
+                //             </div>
+                //             <span className="text-blue-700 font-medium text-sm">
+                //               {project.clientName}
+                //             </span>
+                //           </div>
+                //         </div>
 
-                      {project.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mb-4">
-                          {project.skills.slice(0, 3).map((skill, index) => (
-                            <Badge
-                              key={index}
-                              variant="secondary"
-                              className="text-xs bg-gray-100 hover:bg-gray-200 transition-colors"
-                            >
-                              {skill}
-                            </Badge>
-                          ))}
-                          {project.skills.length > 3 && (
-                            <Badge variant="secondary" className="text-xs bg-gray-100">
-                              +{project.skills.length - 3} more
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                //         {project.skills.length > 0 && (
+                //           <div className="flex flex-wrap gap-2 mb-4">
+                //             {project.skills.slice(0, 3).map((skill, index) => (
+                //               <Badge
+                //                 key={index}
+                //                 variant="secondary"
+                //                 className="text-xs bg-gray-100 hover:bg-gray-200 transition-colors"
+                //               >
+                //                 {skill}
+                //               </Badge>
+                //             ))}
+                //             {project.skills.length > 3 && (
+                //               <Badge variant="secondary" className="text-xs bg-gray-100">
+                //                 +{project.skills.length - 3} more
+                //               </Badge>
+                //             )}
+                //           </div>
+                //         )}
 
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600 mb-4">
-                        <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-lg">
-                          <Clock className="h-4 w-4 text-gray-500" />
-                          <span>{project.postedTime}</span>
-                        </div>
-                        <div className="flex items-center space-x-2 bg-yellow-50 px-3 py-1 rounded-lg">
-                          <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                          <span className="text-yellow-600 font-medium">
-                            {project.clientRating}
-                          </span>
-                        </div>
-                      </div>
+                //         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-sm text-gray-600 mb-4">
+                //           <div className="flex items-center space-x-2 bg-gray-50 px-3 py-1 rounded-lg">
+                //             <Clock className="h-4 w-4 text-gray-500" />
+                //             <span>{project.postedTime}</span>
+                //           </div>
+                //           <div className="flex items-center space-x-2 bg-yellow-50 px-3 py-1 rounded-lg">
+                //             <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                //             <span className="text-yellow-600 font-medium">
+                //               {project.clientRating}
+                //             </span>
+                //           </div>
+                //         </div>
 
-                      <div className="flex flex-col sm:flex-row gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                        {isAuthenticated ? (
-                          <Button
-                            className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                            size="sm"
-                            onClick={() => handleViewProject(project._id)}
-                          >
-                            View Project
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Button>
-                        ) : (
-                          <Button
-                            className="flex-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg transition-all duration-300"
-                            size="sm"
-                            onClick={() => {
-                              toast.error('Please login to view project details');
-                              navigate('/freelancer-login');
-                            }}
-                          >
-                            <LogIn className="w-4 h-4 mr-2" />
-                            Login to View
-                          </Button>
-                        )}
+                //         <div className="flex flex-col sm:flex-row gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                //           {isAuthenticated ? (
+                //             <Button
+                //               className="flex-1 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-lg hover:shadow-xl transition-all duration-300"
+                //               size="sm"
+                //               onClick={() => handleViewProject(project._id)}
+                //             >
+                //               View Project
+                //               <ArrowRight className="w-4 h-4 ml-2" />
+                //             </Button>
+                //           ) : (
+                //             <Button
+                //               className="flex-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white shadow-lg transition-all duration-300"
+                //               size="sm"
+                //               onClick={() => {
+                //                 toast.error('Please login to view project details');
+                //                 navigate('/freelancer-login');
+                //               }}
+                //             >
+                //               <LogIn className="w-4 h-4 mr-2" />
+                //               Login to View
+                //             </Button>
+                //           )}
 
-                        {isAuthenticated ? (
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedProject(project)}
-                                className="border-2 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
-                              >
-                                Submit Proposal
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-                              <DialogHeader>
-                                <DialogTitle className="text-2xl font-bold text-gray-900">
-                                  {selectedProject?.title}
-                                </DialogTitle>
-                              </DialogHeader>
-                              {selectedProject && (
-                                <div className="space-y-6">
-                                  {/* Project Details */}
-                                  <div className="grid md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center space-x-2">
-                                      <IndianRupee className="h-4 w-4 text-gray-500" />
-                                      <span className="font-medium text-green-600">
-                                        {selectedProject.budget}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <User className="h-4 w-4 text-gray-500" />
-                                      <span className="font-medium">
-                                        {selectedProject.clientName}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center space-x-2">
-                                      <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                      <span className="font-medium">
-                                        {selectedProject.clientRating}
-                                      </span>
-                                    </div>
-                                  </div>
+                //           {isAuthenticated ? (
+                //             <Dialog>
+                //               <DialogTrigger asChild>
+                //                 <Button
+                //                   variant="outline"
+                //                   size="sm"
+                //                   onClick={() => setSelectedProject(project)}
+                //                   className="border-2 border-purple-200 text-purple-600 hover:bg-purple-50 hover:border-purple-300 transition-all duration-300"
+                //                 >
+                //                   Submit Proposal
+                //                 </Button>
+                //               </DialogTrigger>
+                //               <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                //                 <DialogHeader>
+                //                   <DialogTitle className="text-2xl font-bold text-gray-900">
+                //                     {selectedProject?.title}
+                //                   </DialogTitle>
+                //                 </DialogHeader>
+                //                 {selectedProject && (
+                //                   <div className="space-y-6">
+                //                     {/* Project Details */}
+                //                     <div className="grid md:grid-cols-3 gap-4 p-4 bg-gray-50 rounded-lg">
+                //                       <div className="flex items-center space-x-2">
+                //                         <IndianRupee className="h-4 w-4 text-gray-500" />
+                //                         <span className="font-medium text-green-600">
+                //                           {selectedProject.budget}
+                //                         </span>
+                //                       </div>
+                //                       <div className="flex items-center space-x-2">
+                //                         <User className="h-4 w-4 text-gray-500" />
+                //                         <span className="font-medium">
+                //                           {selectedProject.clientName}
+                //                         </span>
+                //                       </div>
+                //                       <div className="flex items-center space-x-2">
+                //                         <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                //                         <span className="font-medium">
+                //                           {selectedProject.clientRating}
+                //                         </span>
+                //                       </div>
+                //                     </div>
 
-                                  {/* Description */}
-                                  <div>
-                                    <h3 className="text-lg font-semibold mb-3">
-                                      Project Description
-                                    </h3>
-                                    <p className="text-gray-700 leading-relaxed">
-                                      {selectedProject.description}
-                                    </p>
-                                  </div>
+                //                     {/* Description */}
+                //                     <div>
+                //                       <h3 className="text-lg font-semibold mb-3">
+                //                         Project Description
+                //                       </h3>
+                //                       <p className="text-gray-700 leading-relaxed">
+                //                         {selectedProject.description}
+                //                       </p>
+                //                     </div>
 
-                                  {/* Requirements */}
-                                  <div>
-                                    <h3 className="text-lg font-semibold mb-3">Requirements</h3>
-                                    <ul className="space-y-2">
-                                      {selectedProject.requirements.map((req, index) => (
-                                        <li key={index} className="flex items-start space-x-2">
-                                          <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
-                                          <span className="text-gray-700">{req}</span>
-                                        </li>
-                                      ))}
-                                    </ul>
-                                  </div>
+                //                     {/* Requirements */}
+                //                     <div>
+                //                       <h3 className="text-lg font-semibold mb-3">Requirements</h3>
+                //                       <ul className="space-y-2">
+                //                         {selectedProject.requirements.map((req, index) => (
+                //                           <li key={index} className="flex items-start space-x-2">
+                //                             <div className="w-2 h-2 bg-purple-600 rounded-full mt-2 flex-shrink-0"></div>
+                //                             <span className="text-gray-700">{req}</span>
+                //                           </li>
+                //                         ))}
+                //                       </ul>
+                //                     </div>
 
-                                  {/* Skills */}
-                                  <div>
-                                    <h3 className="text-lg font-semibold mb-3">Required Skills</h3>
-                                    <div className="flex flex-wrap gap-2">
-                                      {selectedProject.skills.map((skill, index) => (
-                                        <Badge key={index} variant="outline">
-                                          {skill}
-                                        </Badge>
-                                      ))}
-                                    </div>
-                                  </div>
+                //                     {/* Skills */}
+                //                     <div>
+                //                       <h3 className="text-lg font-semibold mb-3">Required Skills</h3>
+                //                       <div className="flex flex-wrap gap-2">
+                //                         {selectedProject.skills.map((skill, index) => (
+                //                           <Badge key={index} variant="outline">
+                //                             {skill}
+                //                           </Badge>
+                //                         ))}
+                //                       </div>
+                //                     </div>
 
-                                  {/* Proposal Form */}
-                                  <div className="border-t pt-6">
-                                    <h3 className="text-lg font-semibold mb-4">
-                                      Submit Your Proposal
-                                    </h3>
-                                    <div className="space-y-4">
-                                      <div>
-                                        <Label htmlFor="projectCoverLetter">Cover Letter *</Label>
-                                        <Textarea
-                                          id="projectCoverLetter"
-                                          placeholder="Explain why you're the perfect fit for this project..."
-                                          value={projectBidData.coverLetter}
-                                          onChange={e =>
-                                            setProjectBidData({
-                                              ...projectBidData,
-                                              coverLetter: e.target.value,
-                                            })
-                                          }
-                                          rows={4}
-                                        />
-                                      </div>
-                                      <div className="grid md:grid-cols-2 gap-4">
-                                        <div>
-                                          <Label htmlFor="bidAmount">Your Bid Amount *</Label>
-                                          <Input
-                                            id="bidAmount"
-                                            placeholder="e.g., ₹2,10,000"
-                                            value={projectBidData.bidAmount}
-                                            onChange={e =>
-                                              setProjectBidData({
-                                                ...projectBidData,
-                                                bidAmount: e.target.value,
-                                              })
-                                            }
-                                          />
-                                        </div>
-                                        <div>
-                                          <Label htmlFor="deliveryTime">Delivery Time *</Label>
-                                          <Input
-                                            id="deliveryTime"
-                                            placeholder="e.g., 2 weeks"
-                                            value={projectBidData.deliveryTime}
-                                            onChange={e =>
-                                              setProjectBidData({
-                                                ...projectBidData,
-                                                deliveryTime: e.target.value,
-                                              })
-                                            }
-                                          />
-                                        </div>
-                                      </div>
-                                      <Button
-                                        onClick={handleProjectBid}
-                                        className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
-                                      >
-                                        <Send className="w-4 h-4 mr-2" />
-                                        Submit Proposal
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </DialogContent>
-                          </Dialog>
-                        ) : (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              toast.error('Please login to submit proposal');
-                              navigate('/freelancer-login');
-                            }}
-                            className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50"
-                          >
-                            <LogIn className="w-4 h-4 mr-2" />
-                            Login to Apply
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                //                     {/* Proposal Form */}
+                //                     <div className="border-t pt-6">
+                //                       <h3 className="text-lg font-semibold mb-4">
+                //                         Submit Your Proposal
+                //                       </h3>
+                //                       <div className="space-y-4">
+                //                         <div>
+                //                           <Label htmlFor="projectCoverLetter">Cover Letter *</Label>
+                //                           <Textarea
+                //                             id="projectCoverLetter"
+                //                             placeholder="Explain why you're the perfect fit for this project..."
+                //                             value={projectBidData.coverLetter}
+                //                             onChange={e =>
+                //                               setProjectBidData({
+                //                                 ...projectBidData,
+                //                                 coverLetter: e.target.value,
+                //                               })
+                //                             }
+                //                             rows={4}
+                //                           />
+                //                         </div>
+                //                         <div className="grid md:grid-cols-2 gap-4">
+                //                           <div>
+                //                             <Label htmlFor="bidAmount">Your Bid Amount *</Label>
+                //                             <Input
+                //                               id="bidAmount"
+                //                               placeholder="e.g., ₹2,10,000"
+                //                               value={projectBidData.bidAmount}
+                //                               onChange={e =>
+                //                                 setProjectBidData({
+                //                                   ...projectBidData,
+                //                                   bidAmount: e.target.value,
+                //                                 })
+                //                               }
+                //                             />
+                //                           </div>
+                //                           <div>
+                //                             <Label htmlFor="deliveryTime">Delivery Time *</Label>
+                //                             <Input
+                //                               id="deliveryTime"
+                //                               placeholder="e.g., 2 weeks"
+                //                               value={projectBidData.deliveryTime}
+                //                               onChange={e =>
+                //                                 setProjectBidData({
+                //                                   ...projectBidData,
+                //                                   deliveryTime: e.target.value,
+                //                                 })
+                //                               }
+                //                             />
+                //                           </div>
+                //                         </div>
+                //                         <Button
+                //                           onClick={handleProjectBid}
+                //                           className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800"
+                //                         >
+                //                           <Send className="w-4 h-4 mr-2" />
+                //                           Submit Proposal
+                //                         </Button>
+                //                       </div>
+                //                     </div>
+                //                   </div>
+                //                 )}
+                //               </DialogContent>
+                //             </Dialog>
+                //           ) : (
+                //             <Button
+                //               variant="outline"
+                //               size="sm"
+                //               onClick={() => {
+                //                 toast.error('Please login to submit proposal');
+                //                 navigate('/freelancer-login');
+                //               }}
+                //               className="border-2 border-gray-200 text-gray-600 hover:bg-gray-50"
+                //             >
+                //               <LogIn className="w-4 h-4 mr-2" />
+                //               Login to Apply
+                //             </Button>
+                //           )}
+                //         </div>
+                //       </CardContent>
+                //     </Card>
+                //   ))
+                // )}
+
+                //coming soon card
+                
+                <div className="bg-white/70 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-gray-200/50 max-w-md mx-auto shadow-lg shadow-gray-900/5 text-center">
+                  <Sparkles className="w-12 h-12 mx-auto mb-4 text-purple-600" />
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Coming Soon!</h3>
+                </div>
               )}
+              
             </div>
 
             {/* Explore More Projects Button */}
+            {/* 
             <div className="text-center pt-6">
               <Button
                 asChild
@@ -1039,6 +1052,16 @@ const LiveFeedsSection = () => {
                   Explore All Projects
                   <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Link>
+              </Button>
+            </div>
+            */}
+            <div className="text-center pt-6">
+              <Button
+                disabled
+                className="bg-gradient-to-r from-gray-400 to-gray-500 text-white px-6 sm:px-8 py-3 rounded-xl shadow-lg cursor-not-allowed flex items-center"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Coming Soon
               </Button>
             </div>
           </div>
