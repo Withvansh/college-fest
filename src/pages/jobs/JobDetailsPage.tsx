@@ -17,7 +17,7 @@ import {
   ArrowLeft,
   MapPin,
   Clock,
-  DollarSign,
+  
   Building2,
   Users,
   Calendar,
@@ -497,7 +497,7 @@ const JobDetailsPage = () => {
                     {(job.min_salary || job.max_salary) && (
                       <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                         <div className="flex items-center justify-center sm:justify-start gap-2">
-                          <DollarSign className="h-5 w-5 text-green-600" />
+                          {/* <DollarSign className="h-5 w-5 text-green-600" /> */}
                           <span className="text-lg md:text-xl font-bold text-green-700">
                             {formatSalary(job.min_salary, job.max_salary, job.currency)}
                             <span className="text-sm font-normal text-green-600 ml-1">
@@ -821,7 +821,7 @@ const JobDetailsPage = () => {
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <DollarSign className="h-5 w-5 text-green-600 flex-shrink-0" />
+                      {/* <DollarSign className="h-5 w-5 text-green-600 flex-shrink-0" /> */}
                       <span className="text-sm font-medium text-green-700">Salary Range</span>
                     </div>
                   </div>
@@ -937,13 +937,13 @@ const JobDetailsPage = () => {
                         <Send className="h-4 w-4 mr-2" />
                         Apply Now
                       </Button>
-                      <Button
+                      {/* <Button
                         variant="outline"
                         className="w-full text-sm md:text-base border-blue-200 text-blue-700 hover:bg-blue-50"
                       >
                         <Bookmark className="h-4 w-4 mr-2" />
                         Save for Later
-                      </Button>
+                      </Button> */}
                     </div>
                   )}
                 </CardContent>
@@ -1129,7 +1129,7 @@ const JobDetailsPage = () => {
                       htmlFor="expectedSalary"
                       className="text-sm md:text-base font-semibold text-gray-900 flex items-center gap-2"
                     >
-                      <DollarSign className="h-4 w-4 text-green-600" />
+                      {/* <DollarSign className="h-4 w-4 text-green-600" /> */}
                       Expected Salary *
                     </Label>
                     <Input

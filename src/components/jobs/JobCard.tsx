@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { type Job } from '@/services/jobsService';
+import { type Job } from '@/lib/api/recruiter-dashboard';
 
 interface JobCardProps {
   job: Job;
@@ -39,9 +39,9 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  const getTimeAgo = (dateString: string) => {
+  const getTimeAgo = (dateString: string | Date) => {
     const now = new Date();
-    const posted = new Date(dateString);
+    const posted = typeof dateString === 'string' ? new Date(dateString) : dateString;
     const diffInHours = Math.floor((now.getTime() - posted.getTime()) / (1000 * 60 * 60));
 
     if (diffInHours < 1) return 'Just posted';
@@ -95,10 +95,12 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
   };
 
   // Simple heuristic: jobs posted in last 3 days are considered urgent
-  const isUrgent = new Date(job.created_at) > new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
-  const isNew = new Date(job.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const createdAt = typeof job.created_at === 'string' ? new Date(job.created_at) : job.created_at;
+  const isUrgent = createdAt > new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  const isNew = createdAt > new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const getCompanyInitials = (company: string) => {
+    if (!company) return 'NA';
     return company
       .split(' ')
       .map(word => word[0])
@@ -151,7 +153,7 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
             {/* Company Avatar */}
             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
-                {getCompanyInitials(job.company)}
+                {getCompanyInitials(job.company_name)}
               </AvatarFallback>
             </Avatar>
 
@@ -165,14 +167,14 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
 
               <div className="flex items-center gap-2 mb-2">
                 <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <span className="text-sm text-gray-600 font-medium">{job.company}</span>
+                <span className="text-sm text-gray-600 font-medium">{job.company_name}</span>
               </div>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">{job.location}</span>
-                  {job.remote_work && (
+                  {job.remote_allowed && (
                     <Badge
                       variant="outline"
                       className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border-green-200"
@@ -248,19 +250,11 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           {/* Salary */}
           <div className="flex items-center gap-1">
-            {formatSalary(
-              job.salary_range?.min,
-              job.salary_range?.max,
-              job.salary_range?.currency
-            ) ? (
+            {formatSalary(job.min_salary, job.max_salary, job.currency) ? (
               <>
-                <DollarSign className="w-4 h-4 text-green-600" />
+                {/* <DollarSign className="w-4 h-4 text-green-600" /> */}
                 <span className="font-semibold text-green-600 text-sm">
-                  {formatSalary(
-                    job.salary_range?.min,
-                    job.salary_range?.max,
-                    job.salary_range?.currency
-                  )}
+                  {formatSalary(job.min_salary, job.max_salary, job.currency)}
                 </span>
                 <span className="text-xs text-gray-500">per year</span>
               </>
