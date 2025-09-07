@@ -1,4 +1,4 @@
-import axiosInstance from "../utils/axios";
+import axiosInstance from '../utils/axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -90,12 +90,12 @@ export const blogApi = {
           author_id: '1',
           published_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         },
         {
           id: '2',
           title: 'Best Practices for Remote Hiring',
-          content: 'Discover effective strategies for hiring remote talent in today\'s market.',
+          content: "Discover effective strategies for hiring remote talent in today's market.",
           excerpt: 'Essential tips for successful remote recruitment',
           featured_image_url: null,
           status: 'published',
@@ -104,8 +104,8 @@ export const blogApi = {
           author_id: '1',
           published_at: new Date().toISOString(),
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }
+          updated_at: new Date().toISOString(),
+        },
       ];
     }
   },
@@ -142,12 +142,16 @@ export const blogApi = {
   },
 
   // Admin API methods (authentication required)
-  async getAllPosts(page: number = 1, limit: number = 20, filters?: {
-    status?: string;
-    author_id?: string;
-    tags?: string;
-    search?: string;
-  }): Promise<BlogListResponse['data']> {
+  async getAllPosts(
+    page: number = 1,
+    limit: number = 20,
+    filters?: {
+      status?: string;
+      author_id?: string;
+      tags?: string;
+      search?: string;
+    }
+  ): Promise<BlogListResponse['data']> {
     try {
       console.log('Fetching all blog posts...');
       const params: any = {
@@ -182,12 +186,12 @@ export const blogApi = {
             author_id: '1',
             published_at: new Date().toISOString(),
             created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }
+            updated_at: new Date().toISOString(),
+          },
         ],
         total: 1,
         pages: 1,
-        currentPage: 1
+        currentPage: 1,
       };
     }
   },
@@ -195,7 +199,7 @@ export const blogApi = {
   async createPost(post: BlogCreateData): Promise<BlogPost> {
     try {
       console.log('Creating blog post:', post);
-      const response = await axiosInstance.post('/admin/blog', { post });
+      const response = await axiosInstance.post('/admin/blog', post);
 
       const result: BlogResponse = response.data;
       console.log('Created blog post:', result.data);
@@ -261,8 +265,8 @@ export const blogApi = {
       return {
         total: 0,
         published: 0,
-        draft: 0
+        draft: 0,
       };
     }
-  }
+  },
 };

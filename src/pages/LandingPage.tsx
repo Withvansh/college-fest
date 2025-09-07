@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import LiveFeedsSection from '@/components/LiveFeedsSection';
 import FloatingActionButtons from '@/components/FloatingActionButtons';
 import BlogSection from '@/components/BlogSection';
+import MarqueeSection from '@/components/MarqueeSection';
 import SocialMediaSection from '@/components/SocialMediaSection';
 import WhyChooseUs from '@/sections/homepage/WhyChooseUs';
 import HowItWorks from '@/sections/homepage/HowItWorks';
@@ -290,6 +291,7 @@ const LandingPage = () => {
       <WhyChooseUs />
       <HowItWorks />
       <BlogSection />
+      <MarqueeSection />
       <SocialMediaSection />
       <Testimonials />
       <CTA />
