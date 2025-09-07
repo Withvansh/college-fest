@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Slider } from '@/components/ui/slider';
+import { type Job } from '@/services/jobsService';
 
 interface JobSidebarProps {
   filters: {
@@ -24,23 +25,7 @@ interface JobSidebarProps {
     salaryType: string[];
   };
   onFilterChange: (category: string, value: string, checked: boolean) => void;
-  jobs?: Array<{
-    _id: string;
-    title: string;
-    company_name: string;
-    location: string;
-    job_type: string;
-    employment_type?: string;
-    min_salary?: number;
-    max_salary?: number;
-    currency?: string;
-    experience_required?: number;
-    experience_level?: string;
-    skills_required?: string[];
-    remote_allowed?: boolean;
-    urgency_level?: string;
-    created_at: string;
-  }>;
+  jobs?: Job[];
 }
 
 const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => {
@@ -54,15 +39,14 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
   // Calculate dynamic filter options based on actual job data
   const getEmploymentOptions = () => {
     const employmentCounts: { [key: string]: number } = {};
-    const remoteCount = jobs.filter(job => job.remote_allowed).length;
+    const remoteCount = jobs.filter(job => job.remote_work).length;
 
     jobs.forEach(job => {
-      const empType = job.employment_type || job.job_type;
-      employmentCounts[empType] = (employmentCounts[empType] || 0) + 1;
+      employmentCounts[job.job_type] = (employmentCounts[job.job_type] || 0) + 1;
     });
 
     const seniorCount = jobs.filter(
-      job => job.experience_required && job.experience_required >= 3
+      job => job.experience_level === 'senior' || job.experience_level === 'executive'
     ).length;
 
     const options = [];
@@ -210,7 +194,7 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
 
   const getSalaryRange = () => {
     const salaries = jobs
-      .map(job => [job.min_salary, job.max_salary])
+      .map(job => [job.salary_range?.min, job.salary_range?.max])
       .flat()
       .filter(salary => salary !== undefined && salary !== null) as number[];
 
@@ -277,8 +261,6 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
 
       <CardContent className="space-y-6">
         {/* Job Statistics Summary */}
-        
-        
 
         {/* Filter Search */}
         <div className="relative">

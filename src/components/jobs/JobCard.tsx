@@ -16,26 +16,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-
-interface Job {
-  _id: string;
-  title: string;
-  company_name: string;
-  location: string;
-  job_type: string;
-  employment_type?: string;
-  min_salary?: number;
-  max_salary?: number;
-  currency?: string;
-  description: string;
-  skills_required?: string[];
-  created_at: string;
-  remote_allowed?: boolean;
-  experience_required?: number;
-  experience_level?: string;
-  urgency_level?: string;
-  benefits?: string[];
-}
+import { type Job } from '@/services/jobsService';
 
 interface JobCardProps {
   job: Job;
@@ -113,7 +94,8 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
     }
   };
 
-  const isUrgent = job.urgency_level === 'urgent';
+  // Simple heuristic: jobs posted in last 3 days are considered urgent
+  const isUrgent = new Date(job.created_at) > new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
   const isNew = new Date(job.created_at) > new Date(Date.now() - 24 * 60 * 60 * 1000);
 
   const getCompanyInitials = (company: string) => {
@@ -169,7 +151,7 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
             {/* Company Avatar */}
             <Avatar className="h-12 w-12 border-2 border-white shadow-md">
               <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-sm">
-                {getCompanyInitials(job.company_name)}
+                {getCompanyInitials(job.company)}
               </AvatarFallback>
             </Avatar>
 
@@ -183,14 +165,14 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
 
               <div className="flex items-center gap-2 mb-2">
                 <Building2 className="w-4 h-4 text-gray-500 flex-shrink-0" />
-                <span className="text-sm text-gray-600 font-medium">{job.company_name}</span>
+                <span className="text-sm text-gray-600 font-medium">{job.company}</span>
               </div>
 
               <div className="flex items-center gap-4 text-sm text-gray-500">
                 <div className="flex items-center gap-1">
                   <MapPin className="w-4 h-4 flex-shrink-0" />
                   <span className="truncate">{job.location}</span>
-                  {job.remote_allowed && (
+                  {job.remote_work && (
                     <Badge
                       variant="outline"
                       className="ml-2 px-2 py-0.5 text-xs bg-green-50 text-green-700 border-green-200"
@@ -229,10 +211,10 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
         <div className="flex flex-wrap gap-2 mb-4">
           <Badge
             variant="outline"
-            className={`capitalize text-xs font-medium ${getJobTypeColor(job.employment_type || job.job_type)}`}
+            className={`capitalize text-xs font-medium ${getJobTypeColor(job.job_type)}`}
           >
             <Briefcase className="w-3 h-3 mr-1" />
-            {(job.employment_type || job.job_type).replace(/_/g, ' ')}
+            {job.job_type.replace(/_/g, ' ')}
           </Badge>
 
           {job.experience_level && (
@@ -266,11 +248,19 @@ const JobCard = ({ job, onBookmark }: JobCardProps) => {
         <div className="flex items-center justify-between pt-4 border-t border-gray-100">
           {/* Salary */}
           <div className="flex items-center gap-1">
-            {formatSalary(job.min_salary, job.max_salary, job.currency) ? (
+            {formatSalary(
+              job.salary_range?.min,
+              job.salary_range?.max,
+              job.salary_range?.currency
+            ) ? (
               <>
                 <DollarSign className="w-4 h-4 text-green-600" />
                 <span className="font-semibold text-green-600 text-sm">
-                  {formatSalary(job.min_salary, job.max_salary, job.currency)}
+                  {formatSalary(
+                    job.salary_range?.min,
+                    job.salary_range?.max,
+                    job.salary_range?.currency
+                  )}
                 </span>
                 <span className="text-xs text-gray-500">per year</span>
               </>
