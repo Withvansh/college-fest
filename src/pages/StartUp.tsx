@@ -1,26 +1,16 @@
 // src/pages/StartupsPage.tsx
-import React, { useEffect, useState } from "react";
-import axios from "@/lib/utils/axios";
+import React, { useEffect, useState } from 'react';
+import axios from '@/lib/utils/axios';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { 
-  Building2, 
-  MapPin, 
-  Users, 
-  Globe, 
+  Building2,
+  MapPin,
+  Users,
+  Globe,
   Calendar,
   DollarSign,
   User,
@@ -30,17 +20,17 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
-  Plus
-} from "lucide-react";
+  Plus,
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Link } from 'react-router-dom';
 
 type Startup = {
   _id: string;
@@ -68,19 +58,19 @@ const StartupsPage = () => {
   const [startups, setStartups] = useState<Startup[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedStartup, setSelectedStartup] = useState<Startup | null>(null);
   const [pagination, setPagination] = useState<PaginationInfo>({
     currentPage: 1,
     totalPages: 1,
     totalStartups: 0,
     hasNext: false,
-    hasPrev: false
+    hasPrev: false,
   });
   const [filters, setFilters] = useState({
     page: 1,
     limit: 9,
-    search: ""
+    search: '',
   });
 
   const fetchStartups = async () => {
@@ -95,17 +85,17 @@ const StartupsPage = () => {
 
       const response = await axios.get(`/startups?${params.toString()}`);
       const data = response.data.data;
-      
+
       setStartups(data.startups);
       setPagination({
         currentPage: data.currentPage,
         totalPages: data.totalPages,
         totalStartups: data.totalStartups,
         hasNext: data.hasNext,
-        hasPrev: data.hasPrev
+        hasPrev: data.hasPrev,
       });
     } catch (err: any) {
-      setError(err.message || "Failed to fetch startups");
+      setError(err.message || 'Failed to fetch startups');
     } finally {
       setLoading(false);
     }
@@ -119,14 +109,14 @@ const StartupsPage = () => {
     setFilters(prev => ({
       ...prev,
       search: searchTerm,
-      page: 1 // Reset to first page when searching
+      page: 1, // Reset to first page when searching
     }));
   };
 
   const handlePageChange = (newPage: number) => {
     setFilters(prev => ({
       ...prev,
-      page: newPage
+      page: newPage,
     }));
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -135,7 +125,7 @@ const StartupsPage = () => {
     setFilters(prev => ({
       ...prev,
       limit: parseInt(newLimit),
-      page: 1 // Reset to first page when changing limit
+      page: 1, // Reset to first page when changing limit
     }));
   };
 
@@ -148,10 +138,10 @@ const StartupsPage = () => {
   // Format date to a more readable format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
     });
   };
 
@@ -164,13 +154,16 @@ const StartupsPage = () => {
             Discover Startups
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-6">
-            Explore innovative startups, learn about their industries,
-            and find potential opportunities to collaborate or work with them.
+            Explore innovative startups, learn about their industries, and find potential
+            opportunities to collaborate or work with them.
           </p>
-          
+
           {/* Add Your Startup Button */}
           <div className="flex justify-center">
-            <Button asChild className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300">
+            <Button
+              asChild
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+            >
               <Link to="/auth/startup" className="flex items-center gap-2">
                 <Plus className="h-5 w-5" />
                 Add Your Startup
@@ -192,21 +185,18 @@ const StartupsPage = () => {
                   id="search"
                   placeholder="Search by name, industry, or description..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   onKeyPress={handleKeyPress}
                   className="text-lg pl-10 pr-4 py-4"
                 />
               </div>
             </div>
-            
+
             <div className="w-full md:w-48">
               <Label htmlFor="limit" className="text-sm font-medium text-gray-700 mb-2">
                 Items per page
               </Label>
-              <Select
-                value={filters.limit.toString()}
-                onValueChange={handleLimitChange}
-              >
+              <Select value={filters.limit.toString()} onValueChange={handleLimitChange}>
                 <SelectTrigger id="limit" className="h-12">
                   <SelectValue placeholder="Select limit" />
                 </SelectTrigger>
@@ -219,10 +209,7 @@ const StartupsPage = () => {
               </Select>
             </div>
 
-            <Button 
-              onClick={handleSearch}
-              className="h-12 bg-blue-600 hover:bg-blue-700"
-            >
+            <Button onClick={handleSearch} className="h-12 bg-blue-600 hover:bg-blue-700">
               <Search className="h-5 w-5 mr-2" />
               Search
             </Button>
@@ -252,11 +239,7 @@ const StartupsPage = () => {
         {error && (
           <div className="text-center text-red-500 py-12 bg-red-50 rounded-lg mx-auto max-w-2xl">
             <p className="font-medium">{error}</p>
-            <Button 
-              onClick={() => fetchStartups()} 
-              className="mt-4"
-              variant="outline"
-            >
+            <Button onClick={() => fetchStartups()} className="mt-4" variant="outline">
               Try Again
             </Button>
           </div>
@@ -271,7 +254,7 @@ const StartupsPage = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {startups.map((startup) => (
+          {startups.map(startup => (
             <Card
               key={startup._id}
               className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-blue-50 overflow-hidden group"
@@ -281,8 +264,8 @@ const StartupsPage = () => {
               <CardHeader className="pb-3">
                 <div className="flex items-start gap-4">
                   {startup.logo_url ? (
-                    <img 
-                      src={startup.logo_url} 
+                    <img
+                      src={startup.logo_url}
                       alt={startup.startup_name}
                       className="h-12 w-12 rounded-lg object-cover border border-gray-200"
                     />
@@ -295,23 +278,19 @@ const StartupsPage = () => {
                     <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
                       {startup.startup_name}
                     </CardTitle>
-                    <p className="text-sm text-blue-600 font-medium mt-1">
-                      {startup.industry}
-                    </p>
+                    <p className="text-sm text-blue-600 font-medium mt-1">{startup.industry}</p>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
-                <p className="text-sm text-gray-600 line-clamp-3 mb-4">
-                  {startup.description}
-                </p>
-                
+                <p className="text-sm text-gray-600 line-clamp-3 mb-4">{startup.description}</p>
+
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-1">
                     <MapPin className="h-3.5 w-3.5" />
                     <span>{startup.location}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     {startup.employees_count && (
                       <div className="flex items-center gap-1">
@@ -319,7 +298,7 @@ const StartupsPage = () => {
                         <span>{startup.employees_count}</span>
                       </div>
                     )}
-                    
+
                     <div className="flex items-center gap-1">
                       <DollarSign className="h-3.5 w-3.5" />
                       <span>{startup.funding_stage}</span>
@@ -344,12 +323,12 @@ const StartupsPage = () => {
               <ChevronLeft className="h-4 w-4" />
               Previous
             </Button>
-            
+
             <div className="flex items-center gap-1">
               {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(page => (
                 <Button
                   key={page}
-                  variant={page === pagination.currentPage ? "default" : "outline"}
+                  variant={page === pagination.currentPage ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handlePageChange(page)}
                   className="w-8 h-8 p-0"
@@ -358,7 +337,7 @@ const StartupsPage = () => {
                 </Button>
               ))}
             </div>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -373,16 +352,13 @@ const StartupsPage = () => {
         )}
 
         {/* Startup Details Modal */}
-        <Dialog
-          open={!!selectedStartup}
-          onOpenChange={() => setSelectedStartup(null)}
-        >
+        <Dialog open={!!selectedStartup} onOpenChange={() => setSelectedStartup(null)}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <div className="flex items-start gap-4">
                 {selectedStartup?.logo_url ? (
-                  <img 
-                    src={selectedStartup.logo_url} 
+                  <img
+                    src={selectedStartup.logo_url}
                     alt={selectedStartup.startup_name}
                     className="h-16 w-16 rounded-xl object-cover border border-gray-200"
                   />
@@ -395,21 +371,17 @@ const StartupsPage = () => {
                   <DialogTitle className="text-2xl font-bold text-gray-900">
                     {selectedStartup?.startup_name}
                   </DialogTitle>
-                  <p className="text-blue-600 font-medium mt-1">
-                    {selectedStartup?.industry}
-                  </p>
+                  <p className="text-blue-600 font-medium mt-1">{selectedStartup?.industry}</p>
                 </div>
               </div>
             </DialogHeader>
-            
+
             {selectedStartup && (
               <div className="space-y-6">
-                <p className="text-gray-700 leading-relaxed">
-                  {selectedStartup.description}
-                </p>
-                
+                <p className="text-gray-700 leading-relaxed">{selectedStartup.description}</p>
+
                 <Separator />
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
@@ -420,7 +392,7 @@ const StartupsPage = () => {
                       <p className="font-semibold">{selectedStartup.founder_name}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <MapPin className="h-5 w-5 text-blue-600" />
@@ -430,7 +402,7 @@ const StartupsPage = () => {
                       <p className="font-semibold">{selectedStartup.location}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Users className="h-5 w-5 text-blue-600" />
@@ -438,11 +410,11 @@ const StartupsPage = () => {
                     <div>
                       <p className="text-sm font-medium text-gray-500">Team Size</p>
                       <p className="font-semibold">
-                        {selectedStartup.employees_count || "N/A"} employees
+                        {selectedStartup.employees_count || 'N/A'} employees
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <DollarSign className="h-5 w-5 text-blue-600" />
@@ -452,7 +424,7 @@ const StartupsPage = () => {
                       <p className="font-semibold">{selectedStartup.funding_stage}</p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <Calendar className="h-5 w-5 text-blue-600" />
@@ -462,7 +434,7 @@ const StartupsPage = () => {
                       <p className="font-semibold">{formatDate(selectedStartup.created_at)}</p>
                     </div>
                   </div>
-                  
+
                   {selectedStartup.website && (
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-blue-100 rounded-lg">
@@ -482,7 +454,7 @@ const StartupsPage = () => {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="pt-4 flex justify-end">
                   <Button
                     onClick={() => setSelectedStartup(null)}
