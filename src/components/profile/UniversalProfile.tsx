@@ -276,7 +276,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       // 1. Define the payload with all possible keys from your profile state
       const payload = {
         full_name: profile.name,
-        email: profile.email,
+        // email is not included since it's verified and should not be changed
         phone: userRole === 'college' ? undefined : profile.phone,
         location: userRole === 'college' ? undefined : profile.location,
         bio: profile.bio,
@@ -1694,15 +1694,24 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      Email
+                      <div className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3 text-green-600" />
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-green-100 text-green-700 border-green-200"
+                        >
+                          Verified
+                        </Badge>
+                      </div>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       value={profile.email}
-                      onChange={e =>
-                        setProfile(prev => (prev ? { ...prev, email: e.target.value } : null))
-                      }
-                      disabled={!isEditing}
+                      disabled={true} // Always disabled since email is verified
+                      className="bg-gray-50 cursor-not-allowed"
                     />
                   </div>
                 </div>

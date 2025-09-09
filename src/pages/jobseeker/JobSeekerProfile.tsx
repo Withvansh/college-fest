@@ -7,6 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import {
   ArrowLeft,
@@ -22,6 +29,7 @@ import {
   Award,
   BookOpen,
   Briefcase,
+  CheckCircle,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -33,6 +41,8 @@ interface UserProfile {
   phone: string;
   location: string;
   bio: string;
+  gender: string;
+  availableForRole: string;
   skills: string[];
   resumeUrl?: string;
   avatarUrl?: string;
@@ -70,9 +80,18 @@ interface TestScore {
   completedAt: string;
 }
 
+interface Category {
+  _id: string;
+  id: string;
+  name: string;
+  icon?: string;
+  color?: string;
+}
+
 const JobSeekerProfile = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newSkill, setNewSkill] = useState('');
@@ -93,6 +112,17 @@ const JobSeekerProfile = () => {
     gpa: '',
   });
 
+  // Load categories
+  const loadCategories = useCallback(async () => {
+    try {
+      const res = await axios.get('/categories');
+      setCategories(res.data);
+    } catch (error) {
+      console.error('Error loading categories:', error);
+      toast.error('Failed to load job categories');
+    }
+  }, []);
+
   const loadProfile = useCallback(async () => {
     if (!user?._id) return;
 
@@ -111,6 +141,8 @@ const JobSeekerProfile = () => {
         phone: data.phone || '',
         location: data.location || '',
         bio: data.bio || '',
+        gender: data.gender || 'Not Specified',
+        availableForRole: data.availableForRole || 'all-roles',
         skills: data.skills || [],
         resumeUrl: data.resume_url || '',
         avatarUrl: data.avatar_url || '',
@@ -130,8 +162,9 @@ const JobSeekerProfile = () => {
   useEffect(() => {
     if (user?._id) {
       loadProfile();
+      loadCategories();
     }
-  }, [user?._id, loadProfile]);
+  }, [user?._id, loadProfile, loadCategories]);
 
   const handleSaveProfile = async () => {
     if (!profile || !user?._id) return;
@@ -140,10 +173,12 @@ const JobSeekerProfile = () => {
     try {
       const payload = {
         full_name: profile.name,
-        email: profile.email,
+        // email is not included since it's verified and should not be changed
         phone: profile.phone,
         location: profile.location,
         bio: profile.bio,
+        gender: profile.gender,
+        availableForRole: profile.availableForRole === 'all-roles' ? '' : profile.availableForRole,
         skills: profile.skills,
         avatar_url: profile.avatarUrl,
         resume_url: profile.resumeUrl,
@@ -390,6 +425,16 @@ const JobSeekerProfile = () => {
                     <MapPin className="h-4 w-4 mr-2 text-gray-500" />
                     <span>{profile.location}</span>
                   </div>
+                  <div className="flex items-center">
+                    <User className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{profile.gender}</span>
+                  </div>
+                  {profile.availableForRole && profile.availableForRole !== 'all-roles' && (
+                    <div className="flex items-center">
+                      <Briefcase className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="truncate">{profile.availableForRole}</span>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 pt-6 border-t">
@@ -466,15 +511,24 @@ const JobSeekerProfile = () => {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email" className="flex items-center gap-2">
+                      Email
+                      <div className="flex items-center gap-1">
+                        <CheckCircle className="h-3 w-3 text-green-600" />
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-green-100 text-green-700 border-green-200"
+                        >
+                          Verified
+                        </Badge>
+                      </div>
+                    </Label>
                     <Input
                       id="email"
                       type="email"
                       value={profile.email}
-                      onChange={e =>
-                        setProfile(prev => (prev ? { ...prev, email: e.target.value } : null))
-                      }
-                      disabled={!isEditing}
+                      disabled={true} // Always disabled since email is verified
+                      className="bg-gray-50 cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -500,6 +554,50 @@ const JobSeekerProfile = () => {
                       }
                       disabled={!isEditing}
                     />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select
+                      value={profile.gender}
+                      onValueChange={value =>
+                        setProfile(prev => (prev ? { ...prev, gender: value } : null))
+                      }
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Not Specified">Not Specified</SelectItem>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="availableForRole">Available for Role</Label>
+                    <Select
+                      value={profile.availableForRole}
+                      onValueChange={value =>
+                        setProfile(prev => (prev ? { ...prev, availableForRole: value } : null))
+                      }
+                      disabled={!isEditing}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select role type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all-roles">All Roles</SelectItem>
+                        {categories.map(category => (
+                          <SelectItem key={category.id} value={category.name}>
+                            {category.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div>
