@@ -36,7 +36,7 @@ import {
   PlusCircle,
   ArrowRight,
   LucideIcon,
-} from "lucide-react";
+} from 'lucide-react';
 import CategoryModal from '@/components/hire/CategoryModal';
 import { Link } from 'react-router-dom';
 
@@ -72,11 +72,9 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 // Dynamic Icon Component
-const DynamicIcon = ({ iconName }: { 
-  iconName: string; 
-}) => {
+const DynamicIcon = ({ iconName }: { iconName: string }) => {
   const IconComponent = iconMap[iconName] || Laptop;
-  return <IconComponent className='text-xl text-blue-600' />;
+  return <IconComponent className="text-xl text-blue-600" />;
 };
 
 const HirePage = () => {
@@ -86,51 +84,51 @@ const HirePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [filteredUsers, setFilteredUsers] = useState<any[]>([]);
-  const [usersLoading, setUsersLoading] = useState(false);
-  const [usersError, setUsersError] = useState<string | null>(null);
   const [jobCategories, setJobCategories] = useState<any[]>([]);
+  const [jobseekersCount, setJobseekersCount] = useState<Record<string, number>>({});
 
+  // Load categories and jobseeker counts
   useEffect(() => {
-    axios
-      .get('/categories')
-      .then(res => {
-        const categories = Array.isArray(res.data) ? res.data : [];
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        // Load categories
+        const categoriesRes = await axios.get('/categories');
+        const categories = Array.isArray(categoriesRes.data) ? categoriesRes.data : [];
         setJobCategories(categories);
-      })
-      .catch(() => setJobCategories([]));
-  }, []);
 
-  // Fetch users for selected category
-  useEffect(() => {
-    if (!selectedCategory) {
-      setFilteredUsers([]);
-      return;
-    }
-    setUsersLoading(true);
-    setUsersError(null);
-    axios
-      .get(`/user`)
-      .then(res => {
-        const payload = res.data;
-        const allUsers = Array.isArray(payload?.data)
+        // Load jobseekers to get counts per category
+        const usersRes = await axios.get('/user?role=jobseeker&limit=1000');
+        const payload = usersRes.data;
+        const jobseekers = Array.isArray(payload?.data)
           ? payload.data
           : Array.isArray(payload)
             ? payload
             : [];
-        const filtered = allUsers.filter((u: any) => u.availableForRole === selectedCategory);
-        setFilteredUsers(filtered);
-      })
-      .catch(err => {
-        setUsersError(err.message);
-        setFilteredUsers([]);
-      })
-      .finally(() => setUsersLoading(false));
-  }, [selectedCategory]);
 
-  // Example: Send booking request when a category is selected
-  const handleCategoryClick = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+        // Count jobseekers by availableForRole
+        const counts: Record<string, number> = {};
+        jobseekers.forEach((user: any) => {
+          if (user.availableForRole) {
+            counts[user.availableForRole] = (counts[user.availableForRole] || 0) + 1;
+          }
+        });
+        setJobseekersCount(counts);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        setJobCategories([]);
+        setJobseekersCount({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
+
+  // Handle category selection
+  const handleCategoryClick = (category: any) => {
+    setSelectedCategory(category);
     setShowCategoryModal(true);
   };
 
@@ -153,7 +151,10 @@ const HirePage = () => {
 
           {/* Search Bar */}
           <div className="max-w-2xl mx-auto mb-8 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              size={20}
+            />
             <Input
               placeholder="Search for services or professionals..."
               value={searchTerm}
@@ -171,27 +172,50 @@ const HirePage = () => {
               View all categories <ArrowRight size={16} className="ml-1" />
             </div> */}
           </div>
-          
+
           {/* Job Categories Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {filteredCategories.map(category => (
-              <Card
-                key={category.id}
-                className="cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-lg border-blue-100 group bg-white"
-                onClick={() => handleCategoryClick(category.id)}
-              >
-                <CardContent className="flex flex-col items-center justify-center p-4 text-center">
-                  <div
-                    className={`bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors`}
+            {loading
+              ? // Loading skeleton
+                Array.from({ length: 12 }).map((_, index) => (
+                  <Card key={index} className="animate-pulse">
+                    <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+                      <div className="bg-gray-200 w-14 h-14 rounded-full mb-3"></div>
+                      <div className="bg-gray-200 h-4 w-20 rounded mb-1"></div>
+                      <div className="bg-gray-200 h-3 w-12 rounded"></div>
+                    </CardContent>
+                  </Card>
+                ))
+              : filteredCategories.map(category => (
+                  <Card
+                    key={category.id}
+                    className="cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-lg border-blue-100 group bg-white relative"
+                    onClick={() => handleCategoryClick(category)}
                   >
-                    <DynamicIcon iconName={category.icon} />
-                  </div>
-                  <h3 className="font-medium text-sm text-gray-800 group-hover:text-blue-600 transition-colors">
-                    {category.name}
-                  </h3>
-                </CardContent>
-              </Card>
-            ))}
+                    <CardContent className="flex flex-col items-center justify-center p-4 text-center">
+                      <div
+                        className={`bg-blue-50 w-14 h-14 rounded-full flex items-center justify-center mb-3 group-hover:bg-blue-100 transition-colors`}
+                      >
+                        <DynamicIcon iconName={category.icon} />
+                      </div>
+                      <h3 className="font-medium text-sm text-gray-800 group-hover:text-blue-600 transition-colors mb-1">
+                        {category.name}
+                      </h3>
+                      {jobseekersCount[category.name] && (
+                        <div className="text-xs text-blue-600 font-medium">
+                          {jobseekersCount[category.name]} available
+                        </div>
+                      )}
+                    </CardContent>
+                    {jobseekersCount[category.name] && (
+                      <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-semibold">
+                        {jobseekersCount[category.name] > 99
+                          ? '99+'
+                          : jobseekersCount[category.name]}
+                      </div>
+                    )}
+                  </Card>
+                ))}
           </div>
         </div>
 
@@ -204,19 +228,19 @@ const HirePage = () => {
               <div className="mb-6 md:mb-0 md:mr-6">
                 <h2 className="text-2xl font-bold mb-2">Want to Get Hired?</h2>
                 <p className="max-w-2xl opacity-90">
-                  List yourself in your expertise area and start receiving booking requests from potential
-                  clients. Build your professional profile and grow your business.
+                  List yourself in your expertise area and start receiving booking requests from
+                  potential clients. Build your professional profile and grow your business.
                 </p>
               </div>
-              <Link to={"/auth?tab=signup"}>
-              <Button
-                size="lg"
-                className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 font-medium rounded-full shadow-md"
-                onClick={() => setShowListYourselfModal(true)}
-              >
-                <PlusCircle size={20} className="mr-2" />
-                List Yourself to Get Hired
-              </Button>
+              <Link to={'/auth?tab=signup'}>
+                <Button
+                  size="lg"
+                  className="bg-white text-blue-600 hover:bg-blue-50 px-6 py-3 font-medium rounded-full shadow-md"
+                  onClick={() => setShowListYourselfModal(true)}
+                >
+                  <PlusCircle size={20} className="mr-2" />
+                  List Yourself to Get Hired
+                </Button>
               </Link>
             </div>
           </CardContent>
@@ -225,9 +249,12 @@ const HirePage = () => {
         {/* Category Modal */}
         <CategoryModal
           isOpen={showCategoryModal}
-          onClose={() => setShowCategoryModal(false)}
+          onClose={() => {
+            setShowCategoryModal(false);
+            setSelectedCategory(null);
+          }}
           onSelect={category => setSelectedCategory(category)}
-          category={selectedCategory ? jobCategories.find(c => c.id === selectedCategory) : null}
+          category={selectedCategory}
         />
       </div>
     </div>
