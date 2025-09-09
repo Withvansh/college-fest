@@ -48,6 +48,7 @@ import studentAPI, {
   StudentApplication,
   StudentNotification,
 } from '@/lib/api/student';
+import { counsellorAPI, ICounsellor } from '@/lib/api/counsellor';
 
 // Helper function to get notification icon and color based on type
 const getNotificationIcon = (type: string) => {
@@ -131,11 +132,12 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(false);
   const [loadingDrives, setLoadingDrives] = useState(false);
-
+const [counsellorData,SetCounsellorData]=useState<ICounsellor[]>([])
   // Load dashboard data
   useEffect(() => {
     if (user?._id) {
       loadDashboardData();
+      getCounsellor()
     }
   }, [user, showAllNotifications]); // Add showAllNotifications as dependency
 
@@ -181,98 +183,10 @@ const StudentDashboard = () => {
       } catch (error) {
         // If API fails, use mock notifications for demo purposes
         console.warn('Using mock notifications:', error);
-        const mockNotifications = [
-          {
-            _id: '1',
-            title: 'Placement Drive Update',
-            message:
-              'New placement drive from TechCorp has been posted. Applications are now open.',
-            type: 'placement_drive',
-            is_read: false,
-            created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-          },
-          {
-            _id: '2',
-            title: 'Application Status Update',
-            message:
-              'Your application for Software Developer at InnovateSoft has been shortlisted.',
-            type: 'application_update',
-            is_read: false,
-            created_at: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
-          },
-          {
-            _id: '3',
-            title: 'Interview Scheduled',
-            message: 'Interview scheduled for tomorrow at 10:00 AM for DataDriven Technologies.',
-            type: 'interview',
-            is_read: false,
-            created_at: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), // 7 hours ago
-          },
-          {
-            _id: '4',
-            title: 'Application Deadline Reminder',
-            message: 'Reminder: Application deadline for Microsoft is tomorrow.',
-            type: 'deadline',
-            is_read: true,
-            created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-          },
-          {
-            _id: '5',
-            title: 'Selection Result',
-            message: 'Congratulations! You have been selected for the role at Google.',
-            type: 'selection',
-            is_read: true,
-            created_at: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-          },
-        ];
-
+     
         // Add more mock notifications when showing all
-        if (showAllNotifications) {
-          mockNotifications.push(
-            {
-              _id: '6',
-              title: 'Profile Update Required',
-              message: 'Please update your profile with your latest achievements.',
-              type: 'reminder',
-              is_read: true,
-              created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              _id: '7',
-              title: 'New Training Available',
-              message: 'React.js training session is now available for enrollment.',
-              type: 'drive',
-              is_read: true,
-              created_at: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              _id: '8',
-              title: 'Assessment Test Reminder',
-              message: 'Complete your aptitude test before the deadline.',
-              type: 'deadline',
-              is_read: true,
-              created_at: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              _id: '9',
-              title: 'Job Fair Announcement',
-              message: 'Virtual job fair scheduled for next week. Register now!',
-              type: 'placement_drive',
-              is_read: true,
-              created_at: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-              _id: '10',
-              title: 'Resume Feedback Available',
-              message: 'Your resume has been reviewed by our career counselor.',
-              type: 'result',
-              is_read: true,
-              created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-            }
-          );
-        }
-
-        setNotifications(mockNotifications as any);
+       
+ 
       }
     } catch (error) {
       toast.error('Failed to load dashboard data');
@@ -380,7 +294,14 @@ ${applications
     navigate('/student/analytics');
     toast.info('Loading analytics...');
   };
-
+const getCounsellor= async()=>{
+  try {
+   const response=await  counsellorAPI.getAllCounsellors();
+SetCounsellorData(response)
+  } catch (error) {
+    toast.error('Unable to fetch counsellor data');
+  }
+}
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
@@ -1332,34 +1253,58 @@ ${applications
             </TabsContent>
 
             {/* Counselling */}
-            <TabsContent value="profile" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Career Counselling</h2>
-                <Button
-                  onClick={() => navigate('/student/counsellor')}
-                  className="bg-purple-600 hover:bg-purple-700"
-                >
-                  <MessageSquare className="h-4 w-4 mr-2" />
-                  Book Session
-                </Button>
-              </div>
+        <TabsContent value="profile" className="space-y-6 animate-fade-in">
+  <div className="flex items-center justify-between">
+    <h2 className="text-2xl font-bold text-gray-900">Career Counselling</h2>
+    <Button
+      onClick={() => navigate('/student/counsellor')}
+      className="bg-purple-600 hover:bg-purple-700"
+    >
+      <MessageSquare className="h-4 w-4 mr-2" />
+      Book Session
+    </Button>
+  </div>
 
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-purple-100 rounded-full flex items-center justify-center">
-                    <MessageSquare className="h-16 w-16 text-green-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
-                  <p className="text-gray-600 max-w-md">
-                    One-on-one career counselling sessions with industry experts will be available
-                    here.
-                  </p>
-                  <Badge variant="secondary" className="bg-green-100 text-green-700">
-                    In Development
-                  </Badge>
-                </div>
-              </div>
-            </TabsContent>
+  {counsellorData.length > 0 ? (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
+      {counsellorData.map(counsellor => (
+        <div 
+          key={counsellor._id} 
+          className="relative group cursor-pointer flex flex-col items-center"
+          onClick={() => navigate('/student/counsellor')}
+        >
+          <div className="w-32 h-32 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-white shadow-lg group-hover:border-purple-500 transition-all duration-300">
+            <img 
+              src={counsellor.image || `https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
+              alt={counsellor.name}
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            />
+          </div>
+          <div className="mt-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <p className="text-gray-800 font-medium">{counsellor.name}</p>
+            <p className="text-purple-600 text-sm">{counsellor.specialization}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="flex items-center justify-center h-96">
+      <div className="text-center space-y-4">
+        <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-purple-100 rounded-full flex items-center justify-center">
+          <MessageSquare className="h-16 w-16 text-green-500" />
+        </div>
+        <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
+        <p className="text-gray-600 max-w-md">
+          One-on-one career counselling sessions with industry experts will be available
+          here.
+        </p>
+        <Badge variant="secondary" className="bg-green-100 text-green-700">
+          In Development
+        </Badge>
+      </div>
+    </div>
+  )}
+</TabsContent>
 
             {/* Analytics */}
             <TabsContent value="analytics" className="space-y-6 animate-fade-in">

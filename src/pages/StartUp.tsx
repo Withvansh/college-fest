@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  IndianRupeeIcon,
 } from 'lucide-react';
 import {
   Select,
@@ -300,7 +301,7 @@ const StartupsPage = () => {
                     )}
 
                     <div className="flex items-center gap-1">
-                      <DollarSign className="h-3.5 w-3.5" />
+                      <IndianRupeeIcon className="h-3.5 w-3.5" />
                       <span>{startup.funding_stage}</span>
                     </div>
                   </div>
@@ -417,7 +418,7 @@ const StartupsPage = () => {
 
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">
-                      {/* <DollarSign className="h-5 w-5 text-blue-600" /> */}
+                      <IndianRupeeIcon className="h-5 w-5 text-blue-600" />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Funding Stage</p>
