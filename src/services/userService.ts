@@ -37,7 +37,7 @@ export const uploadProfilePicture = async (userId: string, file: File): Promise<
     };
   } catch (error: any) {
     console.error('Profile picture upload error:', error);
-    
+
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Failed to upload profile picture',
@@ -58,7 +58,7 @@ export const deleteProfilePicture = async (userId: string): Promise<UploadResult
     };
   } catch (error: any) {
     console.error('Profile picture deletion error:', error);
-    
+
     return {
       success: false,
       message: error.response?.data?.message || error.message || 'Failed to delete profile picture',

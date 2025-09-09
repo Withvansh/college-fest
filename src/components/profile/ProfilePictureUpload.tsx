@@ -49,30 +49,30 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
   const handleUpload = async (file: File) => {
     setIsUploading(true);
-    
+
     try {
       const result = await uploadProfilePicture(userId, file);
-      
+
       if (result.success && result.avatar_url) {
         toast({
-          title: "Success",
+          title: 'Success',
           description: result.message,
         });
         setPreviewUrl(null);
         onAvatarUpdate(result.avatar_url);
       } else {
         toast({
-          title: "Upload Failed",
+          title: 'Upload Failed',
           description: result.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
         setPreviewUrl(null);
       }
     } catch (error: any) {
       toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload profile picture",
-        variant: "destructive",
+        title: 'Upload Failed',
+        description: error.message || 'Failed to upload profile picture',
+        variant: 'destructive',
       });
       setPreviewUrl(null);
     } finally {
@@ -86,28 +86,28 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
   const handleDelete = async () => {
     setIsDeleting(true);
-    
+
     try {
       const result = await deleteProfilePicture(userId);
-      
+
       if (result.success) {
         toast({
-          title: "Success",
+          title: 'Success',
           description: result.message,
         });
         onAvatarUpdate(null);
       } else {
         toast({
-          title: "Delete Failed",
+          title: 'Delete Failed',
           description: result.message,
-          variant: "destructive",
+          variant: 'destructive',
         });
       }
     } catch (error: any) {
       toast({
-        title: "Delete Failed",
-        description: error.message || "Failed to delete profile picture",
-        variant: "destructive",
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete profile picture',
+        variant: 'destructive',
       });
     } finally {
       setIsDeleting(false);
@@ -123,12 +123,16 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
   return (
     <div className={`relative inline-block ${className}`}>
       {/* Avatar Display */}
-      <div 
+      <div
         className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-100 border-2 border-gray-200 relative ${
           isEditing ? 'cursor-pointer group' : 'cursor-default'
         }`}
         onClick={handleClick}
-        title={isEditing ? 'Click to change profile picture' : 'Enable edit mode to change profile picture'}
+        title={
+          isEditing
+            ? 'Click to change profile picture'
+            : 'Enable edit mode to change profile picture'
+        }
       >
         {/* Loading Overlay */}
         {(isUploading || isDeleting) && (
@@ -139,17 +143,9 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
 
         {/* Image */}
         {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="Preview"
-            className="w-full h-full object-cover"
-          />
+          <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
         ) : currentAvatarUrl ? (
-          <img
-            src={currentAvatarUrl}
-            alt="Profile"
-            className="w-full h-full object-cover"
-          />
+          <img src={currentAvatarUrl} alt="Profile" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-400">
             <User className="w-8 h-8" />
@@ -176,7 +172,7 @@ const ProfilePictureUpload: React.FC<ProfilePictureUploadProps> = ({
           >
             <Upload className="w-4 h-4" />
           </Button>
-          
+
           {currentAvatarUrl && (
             <Button
               size="sm"

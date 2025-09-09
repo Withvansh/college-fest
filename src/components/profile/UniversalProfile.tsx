@@ -376,11 +376,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   };
 
   const handleAvatarUpdate = (newAvatarUrl: string | null) => {
-    setProfile(prev =>
-      prev
-        ? { ...prev, avatarUrl: newAvatarUrl || '' }
-        : null
-    );
+    setProfile(prev => (prev ? { ...prev, avatarUrl: newAvatarUrl || '' } : null));
   };
 
   const getDashboardPath = () => {
