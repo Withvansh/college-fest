@@ -41,6 +41,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from '@/lib/utils/axios';
+import ProfilePictureUpload from './ProfilePictureUpload';
 
 interface PlacementDrive {
   _id: string;
@@ -248,26 +249,23 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     }
   }, [user?._id]);
 
-  const loadPlacementDrives = useCallback(async () => {
-    if (!user?._id || userRole !== 'student') return;
+  // const loadPlacementDrives = useCallback(async () => {
+  //   if (!user?._id || userRole !== 'student') return;
 
-    try {
-      const res = await axios.get(`/placement-drives/student/${user._id}`);
-      setPlacementDrives(res.data.drives || []);
-    } catch (error) {
-      console.error('Error loading placement drives:', error);
-      // Don't show error toast for placement drives as it's not critical
-    }
-  }, [user?._id, userRole]);
+  //   try {
+  //     const res = await axios.get(`/placement-drives/student/${user._id}`);
+  //     setPlacementDrives(res.data.drives || []);
+  //   } catch (error) {
+  //     console.error('Error loading placement drives:', error);
+  //     // Don't show error toast for placement drives as it's not critical
+  //   }
+  // }, [user?._id, userRole]);
 
   useEffect(() => {
     if (user?._id) {
       loadProfile();
-      if (userRole === 'student') {
-        loadPlacementDrives();
-      }
     }
-  }, [user?._id, loadProfile, loadPlacementDrives, userRole]);
+  }, [user?._id, loadProfile, userRole]);
 
   const handleSaveProfile = async () => {
     if (!profile || !user?._id) return;
@@ -375,6 +373,10 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         ? { ...prev, skills: (prev.skills || []).filter(skill => skill !== skillToRemove) }
         : null
     );
+  };
+
+  const handleAvatarUpdate = (newAvatarUrl: string | null) => {
+    setProfile(prev => (prev ? { ...prev, avatarUrl: newAvatarUrl || '' } : null));
   };
 
   const getDashboardPath = () => {
@@ -1625,8 +1627,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
           <div className="lg:col-span-1">
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-12 w-12 text-white" />
+                <div className="mb-4 flex justify-center">
+                  <ProfilePictureUpload
+                    userId={profile.id}
+                    currentAvatarUrl={profile.avatarUrl}
+                    onAvatarUpdate={handleAvatarUpdate}
+                    size="large"
+                    isEditing={isEditing}
+                  />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
                 <p className="text-gray-600 mb-2">{profile.email}</p>
@@ -1796,7 +1804,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
             )}
 
             {/* Placement Drives - Only for Students */}
-            {userRole === 'student' && (
+            {/* {userRole === 'student' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Available Placement Drives</CardTitle>
@@ -1846,7 +1854,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   )}
                 </CardContent>
               </Card>
-            )}
+            )} */}
           </div>
         </div>
       </div>
