@@ -185,7 +185,9 @@ const RecruiterDashboardDynamic = () => {
 
         // Updated to use the correct response structure
         const applicationsArray = applicationsResponse.applications || [];
-        totalApplicationsCount = applicationsResponse?.total || 0;
+        totalApplicationsCount = Array.isArray(applicationsResponse.total)
+          ? applicationsResponse.total.length
+          : applicationsResponse.total || 0;
 
         // console.log(
         //   `📊 Found ${totalApplicationsCount} total applications, showing ${applicationsArray?.length} recent ones`
@@ -200,7 +202,7 @@ const RecruiterDashboardDynamic = () => {
             // Handle the actual API response structure
             const applicantName = application?.applicant_id?.full_name || 'Unknown Applicant';
             const applicantEmail = application?.applicant_id?.email || 'No email';
-            const applicantPhone = application?.applican_id?.phone || '';
+            const applicantPhone = application?.applicant_id?.phone || '';
             const jobTitle = application?.job_id?.title || 'Unknown Position';
             const jobCompany = application?.job_id?.company_name || 'Unknown Company';
             const jobLocation = application?.job_id?.location || '';
@@ -263,15 +265,21 @@ const RecruiterDashboardDynamic = () => {
         totalJobs: userDashboard.totalJobs || realJobs.length || 0,
         activeJobs:
           userDashboard.activeJobs || realJobs.filter(job => job.status === 'Active').length || 0,
-        totalApplications: userDashboard.totalApplications || totalApplicationsCount || 0,
+        totalApplications: Array.isArray(userDashboard.totalApplications)
+          ? userDashboard.totalApplications.length
+          : userDashboard.totalApplications || totalApplicationsCount || 0,
         pendingApplications: userDashboard.pendingApplications || pendingApplicationsCount || 0,
         stats: {
           totalJobs: userDashboard.totalJobs || realJobs.length || 0,
           activeJobs:
             userDashboard.activeJobs || realJobs.filter(job => job.status === 'Active').length || 0,
-          totalApplications: userDashboard.totalApplications || totalApplicationsCount || 0,
+          totalApplications: Array.isArray(userDashboard.totalApplications)
+            ? userDashboard.totalApplications.length
+            : userDashboard.totalApplications || totalApplicationsCount || 0,
           pendingApplications: userDashboard.pendingApplications || pendingApplicationsCount || 0,
-          applications: userDashboard.totalApplications || totalApplicationsCount || 0,
+          applications: Array.isArray(userDashboard.totalApplications)
+            ? userDashboard.totalApplications.length
+            : userDashboard.totalApplications || totalApplicationsCount || 0,
           testsCreated: 5, // Mock data
           interviewsScheduled: 12, // Mock data
         },

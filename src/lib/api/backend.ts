@@ -1,5 +1,5 @@
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
-import axiosInstance from '../utils/axios'; 
+import axiosInstance from '../utils/axios';
 
 class BackendAPI {
   private async request<T>(
@@ -16,12 +16,10 @@ class BackendAPI {
         ...options,
       });
 
-      return (response.data as any).data || response.data;
+      return response.data;
     } catch (error: any) {
       const status = error.response?.status;
-      const message =
-        error.response?.data?.message ||
-        `HTTP error! status: ${status || 'unknown'}`;
+      const message = error.response?.data?.message || `HTTP error! status: ${status || 'unknown'}`;
 
       if (status === 401) {
         console.warn(`Auth issue for ${endpoint}: ${message}`);

@@ -78,14 +78,14 @@ export interface ApplicantRef {
 }
 
 export type ApplicationStatus =
-  | "applied"
-  | "reviewed"
-  | "shortlisted"
-  | "interview_scheduled"
-  | "interviewed"
-  | "selected"
-  | "rejected"
-  | "withdrawn";
+  | 'applied'
+  | 'reviewed'
+  | 'shortlisted'
+  | 'interview_scheduled'
+  | 'interviewed'
+  | 'selected'
+  | 'rejected'
+  | 'withdrawn';
 
 export interface JobApplication {
   _id: string;
@@ -106,7 +106,6 @@ export interface JobApplication {
   created_at: Date;
   updated_at: Date;
 }
-
 
 export interface AssessmentTest {
   _id: string;
@@ -140,7 +139,10 @@ class RecruiterDashboardAPI extends BackendAPI {
     return this.get<RecruiterDashboard>(`/recruiter-dashboard/${recruiterId}/init`);
   }
 
-  async updateDashboard(recruiterId: string, data: Partial<RecruiterDashboard>): Promise<RecruiterDashboard> {
+  async updateDashboard(
+    recruiterId: string,
+    data: Partial<RecruiterDashboard>
+  ): Promise<RecruiterDashboard> {
     return this.put<RecruiterDashboard>(`/recruiter-dashboard/${recruiterId}`, data);
   }
 
@@ -157,17 +159,33 @@ class RecruiterDashboardAPI extends BackendAPI {
     return this.post<Job>('/jobs', jobData);
   }
 
-  async getJobs(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ jobs: Job[], total: number, pagination: any }> {
-    // We need to override the base request method to get the full response
-    const endpoint = `/jobs/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
-    
+  async getJobs(
+    recruiterId: string,
+    page: number = 1,
+    limit: number = 20,
+    filters: any = {}
+  ): Promise<{ jobs: Job[]; total: number; pagination: any }> {
+    let endpoint = `/jobs/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
+
+    // Add filter parameters
+    if (filters.status) endpoint += `&status=${filters.status}`;
+    if (filters.jobType) endpoint += `&job_type=${filters.jobType}`;
+    if (filters.location) endpoint += `&location=${filters.location}`;
+    if (filters.companyName) endpoint += `&company_name=${filters.companyName}`;
+    if (filters.title) endpoint += `&title=${filters.title}`;
+    if (filters.experienceLevel) endpoint += `&experience_level=${filters.experienceLevel}`;
+    if (filters.department) endpoint += `&department=${filters.department}`;
+    if (filters.remoteAllowed !== undefined) endpoint += `&remote_allowed=${filters.remoteAllowed}`;
+
     try {
       const response = await axiosInstance.get(`${endpoint}`);
-      
+
+      const data = response.data.data || response.data;
+
       return {
-        jobs: response.data.data || [],
-        total: response.data.total || 0,
-        pagination: response.data.pagination || {}
+        jobs: data.data || data || [],
+        total: data.total || 0,
+        pagination: data.pagination || {},
       };
     } catch (error: any) {
       console.error(`API request failed: ${endpoint}`, error);
@@ -196,16 +214,31 @@ class RecruiterDashboardAPI extends BackendAPI {
   }
 
   // Job Application endpoints
-  async getApplications(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ applications:any, total: number, pagination: any }> {
-    const endpoint = `/job-applications/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
-    
+  async getApplications(
+    recruiterId: string,
+    page: number = 1,
+    limit: number = 20,
+    filters: any = {}
+  ): Promise<{ applications: any[]; total: number; pagination: any }> {
+    let endpoint = `/job-applications/recruiter/${recruiterId}?page=${page}&limit=${limit}`;
+
+    // Add filter parameters
+    if (filters.status) endpoint += `&status=${filters.status}`;
+    if (filters.jobTitle) endpoint += `&job_title=${filters.jobTitle}`;
+    if (filters.applicantName) endpoint += `&applicant_name=${filters.applicantName}`;
+    if (filters.companyName) endpoint += `&company_name=${filters.companyName}`;
+    if (filters.location) endpoint += `&location=${filters.location}`;
+    if (filters.jobType) endpoint += `&job_type=${filters.jobType}`;
+
     try {
       const fullResponse: any = await this.get(endpoint);
-      
+
+      const data = fullResponse.data || fullResponse;
+
       return {
-        applications: fullResponse || [],
-        total: fullResponse.total || 0,
-        pagination: fullResponse.pagination || {}
+        applications: data.data || data || [],
+        total: data.total || 0,
+        pagination: data.pagination || {},
       };
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
@@ -213,20 +246,24 @@ class RecruiterDashboardAPI extends BackendAPI {
     }
   }
 
-  async getApplicationsByJob(jobId: string, page: number = 1, limit: number = 20): Promise<{ applications: JobApplication[], total: number, pagination: any }> {
+  async getApplicationsByJob(
+    jobId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{ applications: JobApplication[]; total: number; pagination: any }> {
     const endpoint = `/job-applications/job/${jobId}?page=${page}&limit=${limit}`;
-    
+
     try {
       const fullResponse: any = await this.get(endpoint);
-      console.log(".....................................................................")
-          console.log(".....................................................................")
+      console.log('.....................................................................');
+      console.log('.....................................................................');
       console.log(fullResponse);
-      console.log("..........................................................................")
-          console.log(".....................................................................")
+      console.log('..........................................................................');
+      console.log('.....................................................................');
       return {
         applications: fullResponse || [],
         total: fullResponse.total || 0,
-        pagination: fullResponse.pagination || {}
+        pagination: fullResponse.pagination || {},
       };
     } catch (error) {
       console.error(`API request failed: ${endpoint}`, error);
@@ -238,20 +275,27 @@ class RecruiterDashboardAPI extends BackendAPI {
     return this.get<JobApplication>(`/job-applications/${applicationId}`);
   }
 
-  async updateApplicationStatus(applicationId: string, status: JobApplication['status']): Promise<JobApplication> {
+  async updateApplicationStatus(
+    applicationId: string,
+    status: JobApplication['status']
+  ): Promise<JobApplication> {
     return this.patch<JobApplication>(`/job-applications/${applicationId}/status`, { status });
   }
 
-  async scheduleInterview(applicationId: string, interviewDate: Date, notes?: string): Promise<JobApplication> {
+  async scheduleInterview(
+    applicationId: string,
+    interviewDate: Date,
+    notes?: string
+  ): Promise<JobApplication> {
     return this.patch<JobApplication>(`/job-applications/${applicationId}/interview`, {
       interview_date: interviewDate,
-      interview_notes: notes
+      interview_notes: notes,
     });
   }
 
   async rejectApplication(applicationId: string, reason: string): Promise<JobApplication> {
     return this.patch<JobApplication>(`/job-applications/${applicationId}/reject`, {
-      rejection_reason: reason
+      rejection_reason: reason,
     });
   }
 
@@ -264,11 +308,17 @@ class RecruiterDashboardAPI extends BackendAPI {
   }
 
   // Assessment Test endpoints
-  async createTest(testData: Omit<AssessmentTest, '_id' | 'created_at' | 'updated_at'>): Promise<AssessmentTest> {
+  async createTest(
+    testData: Omit<AssessmentTest, '_id' | 'created_at' | 'updated_at'>
+  ): Promise<AssessmentTest> {
     return this.post<AssessmentTest>('/assessment-tests', testData);
   }
 
-  async getTests(recruiterId: string, page: number = 1, limit: number = 20): Promise<{ tests: AssessmentTest[], total: number, pagination: any }> {
+  async getTests(
+    recruiterId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{ tests: AssessmentTest[]; total: number; pagination: any }> {
     return this.get(`/assessment-tests/recruiter/${recruiterId}?page=${page}&limit=${limit}`);
   }
 
@@ -296,12 +346,17 @@ class RecruiterDashboardAPI extends BackendAPI {
     return this.post<AssessmentTest>(`/assessment-tests/${testId}/duplicate`, { title: newTitle });
   }
 
-  async searchTests(query: string, filters?: any, page: number = 1, limit: number = 20): Promise<{ tests: AssessmentTest[], total: number, pagination: any }> {
+  async searchTests(
+    query: string,
+    filters?: any,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{ tests: AssessmentTest[]; total: number; pagination: any }> {
     const params = new URLSearchParams({
       q: query,
       page: page.toString(),
       limit: limit.toString(),
-      ...filters
+      ...filters,
     });
     return this.get(`/assessment-tests/search?${params}`);
   }

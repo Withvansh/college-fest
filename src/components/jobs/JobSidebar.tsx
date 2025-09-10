@@ -9,6 +9,7 @@ import {
   Briefcase,
   Users,
   Calendar,
+  IndianRupee,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -392,7 +393,7 @@ const JobSidebar = ({ filters, onFilterChange, jobs = [] }: JobSidebarProps) => 
               className="w-full justify-between p-0 h-auto font-medium text-gray-900 hover:bg-transparent group"
             >
               <div className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-green-600" />
+                <IndianRupee className="w-4 h-4 text-green-600" />
                 <span>Salary Range</span>
               </div>
               <ChevronDown

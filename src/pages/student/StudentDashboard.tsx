@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
@@ -39,6 +40,7 @@ import {
   AlertTriangle,
   Loader,
   MessageSquare,
+  MapPin,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -49,6 +51,7 @@ import studentAPI, {
   StudentNotification,
 } from '@/lib/api/student';
 import { counsellorAPI, ICounsellor } from '@/lib/api/counsellor';
+import CalendarView from '@/components/student/CalendarView';
 
 // Helper function to get notification icon and color based on type
 const getNotificationIcon = (type: string) => {
@@ -132,12 +135,12 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [loadingApplications, setLoadingApplications] = useState(false);
   const [loadingDrives, setLoadingDrives] = useState(false);
-const [counsellorData,SetCounsellorData]=useState<ICounsellor[]>([])
+  const [counsellorData, SetCounsellorData] = useState<ICounsellor[]>([]);
   // Load dashboard data
   useEffect(() => {
     if (user?._id) {
       loadDashboardData();
-      getCounsellor()
+      getCounsellor();
     }
   }, [user, showAllNotifications]); // Add showAllNotifications as dependency
 
@@ -164,15 +167,19 @@ const [counsellorData,SetCounsellorData]=useState<ICounsellor[]>([])
     try {
       setLoading(true);
       const data = await studentAPI.getStudentDashboard(user!._id);
-      setDashboardData(data);
+
+      console.log('student dashboard', data);
+
+      setDashboardData(data.data);
 
       // Load available drives
       const drivesData = await studentAPI.getAvailableDrives(user!._id, { limit: 10 });
-      setAvailableDrives(drivesData.drives);
+      console.log('available drives', drivesData);
+      setAvailableDrives(drivesData.data.drives);
 
       // Load applications
       const appsData = await studentAPI.getStudentApplications(user!._id, { limit: 10 });
-      setApplications(appsData.applications);
+      setApplications(appsData.data.applications);
 
       // Load notifications
       try {
@@ -183,10 +190,8 @@ const [counsellorData,SetCounsellorData]=useState<ICounsellor[]>([])
       } catch (error) {
         // If API fails, use mock notifications for demo purposes
         console.warn('Using mock notifications:', error);
-     
+
         // Add more mock notifications when showing all
-       
- 
       }
     } catch (error) {
       toast.error('Failed to load dashboard data');
@@ -294,14 +299,15 @@ ${applications
     navigate('/student/analytics');
     toast.info('Loading analytics...');
   };
-const getCounsellor= async()=>{
-  try {
-   const response=await  counsellorAPI.getAllCounsellors();
-SetCounsellorData(response)
-  } catch (error) {
-    toast.error('Unable to fetch counsellor data');
-  }
-}
+
+  const getCounsellor = async () => {
+    try {
+      const response = await counsellorAPI.getAllCounsellors();
+      SetCounsellorData(response);
+    } catch (error) {
+      toast.error('Unable to fetch counsellor data');
+    }
+  };
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
@@ -331,25 +337,28 @@ SetCounsellorData(response)
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Enhanced Header */}
       <div className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
               <Link
                 to="/"
-                className="flex items-center space-x-3 hover:opacity-80 transition-opacity"
+                className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity"
               >
                 <img
                   src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
                   alt="MinuteHire Logo"
-                  className="h-8 w-auto"
+                  className="h-6 w-6 sm:h-8 sm:w-auto"
                 />
-                <span className="text-lg font-bold text-gray-800">MinuteHire</span>
+                <span className="text-base sm:text-lg font-bold text-gray-800">MinuteHire</span>
               </Link>
-              <Badge variant="secondary" className="bg-purple-100 text-purple-700 animate-pulse">
+              <Badge
+                variant="secondary"
+                className="bg-purple-100 text-purple-700 animate-pulse text-xs sm:text-sm"
+              >
                 Student Dashboard
               </Badge>
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -357,9 +366,9 @@ SetCounsellorData(response)
                   className="relative hover:bg-purple-50 notification-button"
                   onClick={() => setShowNotificationPanel(!showNotificationPanel)}
                 >
-                  <Bell className="h-5 w-5" />
-                  {dashboardData.stats.unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {dashboardData.stats?.unreadNotifications > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
                       {dashboardData.stats.unreadNotifications}
                     </span>
                   )}
@@ -369,24 +378,24 @@ SetCounsellorData(response)
                 {showNotificationPanel && (
                   <div
                     className={`absolute top-12 right-0 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
-                      showAllNotifications ? 'w-96' : 'w-80'
+                      showAllNotifications ? 'w-80 sm:w-96' : 'w-72 sm:w-80'
                     }`}
                   >
-                    <div className="p-4 border-b flex items-center justify-between">
+                    <div className="p-3 sm:p-4 border-b flex items-center justify-between">
                       <div className="flex items-center space-x-2">
-                        <h3 className="text-lg font-semibold text-gray-900">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
                           {showAllNotifications ? 'All Notifications' : 'Notifications'}
                         </h3>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-600">
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
                           {notifications.length}
                         </Badge>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1 sm:space-x-2">
                         {notifications.some(notif => !notif.is_read) && (
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
                             onClick={() => {
                               // Mark all notifications as read
                               const unreadNotifications = notifications.filter(
@@ -404,7 +413,7 @@ SetCounsellorData(response)
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
                             onClick={() => setShowAllNotifications(true)}
                           >
                             View all
@@ -414,7 +423,7 @@ SetCounsellorData(response)
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50"
+                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
                             onClick={() => setShowAllNotifications(false)}
                           >
                             Show less
@@ -534,11 +543,11 @@ SetCounsellorData(response)
                     </div>
 
                     {!showAllNotifications && (
-                      <div className="border-t p-3 text-center">
+                      <div className="border-t p-2 sm:p-3 text-center">
                         <Button
                           variant="ghost"
                           size="sm"
-                          className="text-blue-600 hover:text-blue-700"
+                          className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
                           onClick={() => setShowAllNotifications(true)}
                         >
                           View all notifications
@@ -552,17 +561,17 @@ SetCounsellorData(response)
                 variant="outline"
                 size="sm"
                 onClick={() => setActiveTab('resume')}
-                className="hover:scale-105 transition-transform"
+                className="hover:scale-105 transition-transform text-xs sm:text-sm px-2 sm:px-3"
               >
-                <Download className="h-4 w-4 mr-2" />
-                {dashboardData.student.resume_url ? 'View Resume' : 'Add Resume'}
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                {dashboardData.student?.resume_url ? 'View Resume' : 'Add Resume'}
               </Button>
               <Button
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all"
+                className="bg-purple-600 hover:bg-purple-700 hover:scale-105 transition-all text-xs sm:text-sm px-2 sm:px-3"
                 onClick={() => navigate('/student/profile')}
               >
-                <User className="h-4 w-4 mr-2" />
+                <User className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Profile
               </Button>
             </div>
@@ -571,15 +580,15 @@ SetCounsellorData(response)
       </div>
 
       <ScrollArea className="h-[calc(100vh-80px)]">
-        <div className="container mx-auto px-6 py-8 space-y-8">
+        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
           {/* Welcome Section with Animation */}
-          <div className="mb-8 animate-fade-in">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="mb-6 sm:mb-8 animate-fade-in">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+              <div className="w-full lg:w-auto">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                   Welcome back, {dashboardData.student.full_name}! 👋
                 </h1>
-                <p className="text-gray-600 text-lg">
+                <p className="text-gray-600 text-sm sm:text-base lg:text-lg">
                   {dashboardData.student.course}{' '}
                   {dashboardData.student.department ? `• ${dashboardData.student.department}` : ''}{' '}
                   • Year {dashboardData.student.year}{' '}
@@ -587,26 +596,26 @@ SetCounsellorData(response)
                 </p>
 
                 {/* Verification Status Badge */}
-                <div className="mt-3 flex items-center">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   {dashboardData.student.verifiedByCollege ? (
-                    <div className="flex items-center px-3 py-1.5 bg-green-100 text-green-800 rounded-full text-sm font-medium">
-                      <CheckCircle className="h-4 w-4 mr-2" />
+                    <div className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 bg-green-100 text-green-800 rounded-full text-xs sm:text-sm font-medium">
+                      <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       College Verified Account
                     </div>
                   ) : (
-                    <div className="flex items-center px-3 py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-sm font-medium">
-                      <AlertTriangle className="h-4 w-4 mr-2" />
+                    <div className="flex items-center px-2 sm:px-3 py-1 sm:py-1.5 bg-yellow-100 text-yellow-800 rounded-full text-xs sm:text-sm font-medium">
+                      <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       Self Registered Account
                     </div>
                   )}
                   {!dashboardData.student.verifiedByCollege && (
-                    <p className="ml-3 text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 max-w-md">
                       Note: Some placement drives may be restricted to college-verified students
                     </p>
                   )}
                 </div>
               </div>
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <div className="flex items-center space-x-2 bg-green-50 px-4 py-2 rounded-full">
                   <Star className="h-5 w-5 text-green-600" />
                   <span className="text-green-700 font-semibold">
@@ -620,7 +629,7 @@ SetCounsellorData(response)
           </div>
 
           {/* Enhanced Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
             <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg">
               <CardHeader className="pb-2">
                 <CardTitle className="text-lg flex items-center justify-between">
@@ -696,66 +705,68 @@ SetCounsellorData(response)
 
           {/* Enhanced Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7 bg-white shadow-sm border">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 bg-white shadow-sm border h-auto p-1">
               <TabsTrigger
                 value="drives"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Available Drives
               </TabsTrigger>
               <TabsTrigger
                 value="applied"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Applications
               </TabsTrigger>
               <TabsTrigger
                 value="tests"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Tests
               </TabsTrigger>
               <TabsTrigger
                 value="resume"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Resume
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Training
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
                 Counselling
               </TabsTrigger>
               <TabsTrigger
-                value="analytics"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all"
+                value="applied-jobs"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
               >
-                Analytics
+                Applied Jobs
               </TabsTrigger>
             </TabsList>
 
             {/* Available Drives */}
-            <TabsContent value="drives" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Available Placement Drives</h2>
+            <TabsContent value="drives" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  Available Placement Drives
+                </h2>
                 <Button
                   variant="outline"
                   onClick={() => setShowCalendarView(true)}
-                  className="hover:scale-105 transition-transform shadow-sm"
+                  className="hover:scale-105 transition-transform shadow-sm w-full sm:w-auto"
                 >
                   <Calendar className="h-4 w-4 mr-2" />
                   Calendar View
                 </Button>
               </div>
 
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-[500px] sm:h-[600px] pr-2 sm:pr-4">
                 <div className="space-y-4">
                   {loadingDrives ? (
                     <div className="text-center py-8">
@@ -775,29 +786,32 @@ SetCounsellorData(response)
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <CardHeader>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-12 h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center">
-                                <Building2 className="h-6 w-6 text-purple-600" />
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="flex items-center space-x-3 w-full sm:w-auto">
+                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
                               </div>
-                              <div>
-                                <CardTitle className="text-lg flex items-center">
-                                  {drive.company}
+                              <div className="min-w-0 flex-1">
+                                <CardTitle className="text-base sm:text-lg flex flex-col sm:flex-row sm:items-center gap-2">
+                                  <span className="truncate">{drive.company}</span>
                                   {studentAPI.isDeadlineUrgent(drive.registration_deadline) && (
-                                    <Badge variant="destructive" className="ml-2 animate-pulse">
+                                    <Badge
+                                      variant="destructive"
+                                      className="animate-pulse text-xs w-fit"
+                                    >
                                       Urgent
                                     </Badge>
                                   )}
                                 </CardTitle>
-                                <CardDescription className="text-base">
+                                <CardDescription className="text-sm sm:text-base truncate">
                                   {drive.role}
                                 </CardDescription>
                               </div>
                             </div>
-                            <div className="text-right">
+                            <div className="text-left sm:text-right w-full sm:w-auto">
                               <Badge
                                 variant="secondary"
-                                className={`mb-2 ${
+                                className={`mb-2 text-xs sm:text-sm ${
                                   drive.status === 'Open'
                                     ? 'bg-green-100 text-green-700'
                                     : 'bg-gray-100 text-gray-700'
@@ -806,7 +820,7 @@ SetCounsellorData(response)
                                 {drive.status}
                               </Badge>
                               {drive.salary_package && (
-                                <p className="text-xl font-bold text-green-600">
+                                <p className="text-lg sm:text-xl font-bold text-green-600">
                                   {drive.salary_package}
                                 </p>
                               )}
@@ -815,14 +829,16 @@ SetCounsellorData(response)
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-3">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
                               <div className="flex items-center text-gray-600">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                <span>{studentAPI.formatDate(drive.drive_date)}</span>
+                                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
+                                <span className="truncate">
+                                  {studentAPI.formatDate(drive.drive_date)}
+                                </span>
                               </div>
                               <div className="flex items-center text-gray-600">
-                                <Clock className="h-4 w-4 mr-2" />
-                                <span>
+                                <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
+                                <span className="truncate">
                                   Deadline: {studentAPI.formatDate(drive.registration_deadline)}
                                 </span>
                               </div>
@@ -854,16 +870,16 @@ SetCounsellorData(response)
                               </div>
                             )}
 
-                            <div className="flex justify-between items-center pt-3">
-                              <Link to={`/student/drive/${drive._id}`}>
-                                <Button variant="outline" size="sm">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-3 gap-3">
+                              <Link to={`/student/drive/${drive._id}`} className="w-full sm:w-auto">
+                                <Button variant="outline" size="sm" className="w-full sm:w-auto">
                                   View Details
                                 </Button>
                               </Link>
                               {hasAlreadyApplied(drive._id) ? (
-                                <div className="flex items-center space-x-2">
+                                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                                   <Badge
-                                    className={`font-semibold ${
+                                    className={`font-semibold text-xs sm:text-sm ${
                                       getApplicationStatus(drive._id) === 'Selected'
                                         ? 'bg-green-100 text-green-700'
                                         : getApplicationStatus(drive._id) === 'Rejected'
@@ -876,7 +892,7 @@ SetCounsellorData(response)
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="cursor-not-allowed opacity-60"
+                                    className="cursor-not-allowed opacity-60 w-full sm:w-auto"
                                     disabled
                                   >
                                     <CheckCircle className="h-4 w-4 mr-2" />
@@ -886,7 +902,7 @@ SetCounsellorData(response)
                               ) : (
                                 <Button
                                   size="sm"
-                                  className="bg-purple-600 hover:bg-purple-700"
+                                  className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
                                   onClick={() => handleApplyToDrive(drive._id)}
                                 >
                                   Apply Now
@@ -903,20 +919,20 @@ SetCounsellorData(response)
             </TabsContent>
 
             {/* Applications */}
-            <TabsContent value="applied" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">My Applications</h2>
+            <TabsContent value="applied" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">My Applications</h2>
                 <Button
                   variant="outline"
                   onClick={handleDownloadReport}
-                  className="hover:scale-105 transition-transform shadow-sm"
+                  className="hover:scale-105 transition-transform shadow-sm w-full sm:w-auto"
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   Download Report
                 </Button>
               </div>
 
-              <ScrollArea className="h-[600px] pr-4">
+              <ScrollArea className="h-[500px] sm:h-[600px] pr-2 sm:pr-4">
                 <div className="space-y-4">
                   {loadingApplications ? (
                     <div className="text-center py-8">
@@ -961,28 +977,30 @@ SetCounsellorData(response)
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="grid md:grid-cols-4 gap-4 items-center">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-start">
                             <div>
-                              <p className="text-sm text-gray-600 mb-1">Applied Date</p>
-                              <p className="font-semibold">
+                              <p className="text-xs sm:text-sm text-gray-600 mb-1">Applied Date</p>
+                              <p className="font-semibold text-sm sm:text-base truncate">
                                 {studentAPI.formatDate(application.registration_date)}
                               </p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 mb-1">CGPA</p>
-                              <p className="font-semibold">{application.cgpa.toFixed(2)}</p>
+                              <p className="text-xs sm:text-sm text-gray-600 mb-1">CGPA</p>
+                              <p className="font-semibold text-sm sm:text-base">
+                                {application.cgpa.toFixed(2)}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-sm text-gray-600 mb-1">Package</p>
-                              <p className="font-semibold text-green-600">
+                              <p className="text-xs sm:text-sm text-gray-600 mb-1">Package</p>
+                              <p className="font-semibold text-green-600 text-sm sm:text-base truncate">
                                 {application.placement_drive_id.salary_package || 'Not disclosed'}
                               </p>
                             </div>
-                            <div className="flex justify-end space-x-2">
+                            <div className="flex justify-start sm:justify-end lg:col-span-1">
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="hover:scale-105 transition-transform"
+                                className="hover:scale-105 transition-transform w-full sm:w-auto text-xs sm:text-sm"
                               >
                                 View Details
                               </Button>
@@ -1013,26 +1031,26 @@ SetCounsellorData(response)
             </TabsContent>
 
             {/* Tests */}
-            <TabsContent value="tests" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Assessment Tests</h2>
+            <TabsContent value="tests" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Assessment Tests</h2>
                 <Button
                   variant="outline"
                   onClick={() => navigate('/student/tests')}
-                  className="hover:scale-105 transition-transform shadow-sm"
+                  className="hover:scale-105 transition-transform shadow-sm w-full sm:w-auto"
                 >
                   <Target className="h-4 w-4 mr-2" />
                   Take Practice Test
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
-                    <Target className="h-16 w-16 text-purple-500" />
+              <div className="flex items-center justify-center h-64 sm:h-96">
+                <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto px-4">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center">
+                    <Target className="h-12 w-12 sm:h-16 sm:w-16 text-purple-500" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
-                  <p className="text-gray-600 max-w-md">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">
                     Assessment tests feature is under development. Stay tuned for comprehensive
                     testing capabilities.
                   </p>
@@ -1044,9 +1062,9 @@ SetCounsellorData(response)
             </TabsContent>
 
             {/* Resume */}
-            <TabsContent value="resume" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Resume Management</h2>
+            <TabsContent value="resume" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Resume Management</h2>
                 <Dialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
                   <DialogTrigger asChild>
                     <Button
@@ -1094,7 +1112,7 @@ SetCounsellorData(response)
                 </Dialog>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center">
@@ -1227,21 +1245,21 @@ SetCounsellorData(response)
             </TabsContent>
 
             {/* Training */}
-            <TabsContent value="notifications" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Training Programs</h2>
-                <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+            <TabsContent value="notifications" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Training Programs</h2>
+                <Badge variant="secondary" className="bg-blue-100 text-blue-700 w-fit">
                   Available Training
                 </Badge>
               </div>
 
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-blue-500" />
+              <div className="flex items-center justify-center h-64 sm:h-96">
+                <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto px-4">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto bg-gradient-to-br from-blue-100 to-green-100 rounded-full flex items-center justify-center">
+                    <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-blue-500" />
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
-                  <p className="text-gray-600 max-w-md">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">
                     Professional training programs and skill development courses will be available
                     here.
                   </p>
@@ -1253,80 +1271,166 @@ SetCounsellorData(response)
             </TabsContent>
 
             {/* Counselling */}
-        <TabsContent value="profile" className="space-y-6 animate-fade-in">
-  <div className="flex items-center justify-between">
-    <h2 className="text-2xl font-bold text-gray-900">Career Counselling</h2>
-    <Button
-      onClick={() => navigate('/student/counsellor')}
-      className="bg-purple-600 hover:bg-purple-700"
-    >
-      <MessageSquare className="h-4 w-4 mr-2" />
-      Book Session
-    </Button>
-  </div>
-
-  {counsellorData.length > 0 ? (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 justify-items-center">
-      {counsellorData.map(counsellor => (
-        <div 
-          key={counsellor._id} 
-          className="relative group cursor-pointer flex flex-col items-center"
-          onClick={() => navigate('/student/counsellor')}
-        >
-          <div className="w-32 h-32 md:w-40 md:h-40 overflow-hidden rounded-full border-4 border-white shadow-lg group-hover:border-purple-500 transition-all duration-300">
-            <img 
-              src={counsellor.image || `https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`} 
-              alt={counsellor.name}
-              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            />
-          </div>
-          <div className="mt-4 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <p className="text-gray-800 font-medium">{counsellor.name}</p>
-            <p className="text-purple-600 text-sm">{counsellor.specialization}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  ) : (
-    <div className="flex items-center justify-center h-96">
-      <div className="text-center space-y-4">
-        <div className="w-32 h-32 mx-auto bg-gradient-to-br from-green-100 to-purple-100 rounded-full flex items-center justify-center">
-          <MessageSquare className="h-16 w-16 text-green-500" />
-        </div>
-        <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
-        <p className="text-gray-600 max-w-md">
-          One-on-one career counselling sessions with industry experts will be available
-          here.
-        </p>
-        <Badge variant="secondary" className="bg-green-100 text-green-700">
-          In Development
-        </Badge>
-      </div>
-    </div>
-  )}
-</TabsContent>
-
-            {/* Analytics */}
-            <TabsContent value="analytics" className="space-y-6 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">Performance Analytics</h2>
+            <TabsContent value="profile" className="space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
+                    Career Counselling
+                  </h2>
+                  <p className="text-gray-600">
+                    Connect with experienced counsellors to guide your career journey
+                  </p>
+                </div>
                 <Button
-                  onClick={handleViewAnalytics}
-                  variant="outline"
-                  className="hover:scale-105 transition-transform"
+                  onClick={() => navigate('/student/counsellor')}
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 w-full sm:w-auto"
                 >
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Detailed Analytics
+                  <MessageSquare className="h-4 w-4 mr-2" />
+                  Book Session
                 </Button>
               </div>
 
-              <div className="flex items-center justify-center h-96">
-                <div className="text-center space-y-4">
-                  <div className="w-32 h-32 mx-auto bg-gradient-to-br from-orange-100 to-yellow-100 rounded-full flex items-center justify-center">
-                    <BarChart3 className="h-16 w-16 text-orange-500" />
+              {counsellorData.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {counsellorData.map((counsellor, index) => (
+                    <Card
+                      key={counsellor._id}
+                      className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 shadow-md bg-white overflow-hidden"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                      onClick={() => navigate('/student/counsellor')}
+                    >
+                      <CardHeader className="pb-4">
+                        <div className="flex items-center justify-between">
+                          <Badge
+                            variant="secondary"
+                            className="bg-purple-100 text-purple-700 text-xs"
+                          >
+                            {counsellor.specialization}
+                          </Badge>
+                          <div className="flex items-center text-yellow-500">
+                            <Star className="h-4 w-4 fill-current" />
+                            <span className="text-sm ml-1 font-medium">
+                              4.{Math.floor(Math.random() * 5) + 6}
+                            </span>
+                          </div>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="pt-0">
+                        <div className="flex flex-col items-center text-center space-y-4">
+                          {/* Avatar with better styling */}
+                          <div className="relative">
+                            <Avatar className="w-20 h-20 ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300">
+                              <AvatarImage
+                                src={
+                                  counsellor.image ||
+                                  `https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=300&q=80`
+                                }
+                                alt={counsellor.name}
+                                className="object-cover"
+                              />
+                              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-lg font-semibold">
+                                {counsellor.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                            {/* Online status indicator */}
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full border-2 border-white">
+                              Online
+                            </div>
+                          </div>
+
+                          {/* Counsellor Info */}
+                          <div className="space-y-2">
+                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+                              {counsellor.name}
+                            </h3>
+
+                            <div className="flex items-center justify-center text-gray-600 text-sm">
+                              <Award className="h-4 w-4 mr-1 text-purple-500" />
+                              <span>{Math.floor(Math.random() * 10) + 5} years experience</span>
+                            </div>
+
+                            <div className="flex items-center justify-center text-gray-600 text-sm">
+                              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+                              <span>
+                                {counsellor.city || 'Mumbai'}, {counsellor.state || 'Maharashtra'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Action Button */}
+                          <Button
+                            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105"
+                            size="sm"
+                          >
+                            Book Appointment
+                          </Button>
+                        </div>
+                      </CardContent>
+
+                      {/* Hover overlay effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-purple-600/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-lg"></div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-80">
+                  <div className="text-center space-y-4 max-w-md mx-auto px-4">
+                    <div className="relative">
+                      <div className="w-32 h-32 mx-auto bg-gradient-to-br from-purple-100 to-blue-100 rounded-full flex items-center justify-center shadow-lg">
+                        <MessageSquare className="h-16 w-16 text-purple-500" />
+                      </div>
+                      <div className="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs px-2 py-1 rounded-full font-bold">
+                        Soon
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h3 className="text-2xl font-bold text-gray-900">Career Counselling</h3>
+                      <p className="text-gray-600 text-sm leading-relaxed">
+                        One-on-one career counselling sessions with industry experts will be
+                        available here. Get personalized guidance for your career growth and
+                        development.
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                      <Badge
+                        variant="secondary"
+                        className="bg-purple-100 text-purple-700 px-4 py-2"
+                      >
+                        🚀 Coming Soon
+                      </Badge>
+                      <Badge variant="outline" className="border-blue-200 text-blue-700 px-4 py-2">
+                        🎯 Expert Guidance
+                      </Badge>
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-bold text-gray-800">Coming Soon!</h3>
-                  <p className="text-gray-600 max-w-md">
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Analytics */}
+            <TabsContent value="applied-jobs" className="space-y-4 sm:space-y-6 animate-fade-in">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">All Applied Jobs</h2>
+
+                <Button
+                  onClick={() => navigate('/jobseeker/applications')}
+                  variant="outline"
+                  className="hover:scale-105 transition-transform w-full sm:w-auto"
+                >
+                  View all applied Jobs
+                </Button>
+              </div>
+
+              <div className="flex items-center justify-center h-64 sm:h-96">
+                <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto px-4">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto bg-gradient-to-br from-orange-100 to-yellow-100 rounded-full flex items-center justify-center">
+                    <BarChart3 className="h-12 w-12 sm:h-16 sm:w-16 text-orange-500" />
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Coming Soon!</h3>
+                  <p className="text-gray-600 text-sm sm:text-base">
                     Advanced analytics and performance tracking features will be available here.
                   </p>
                   <Badge variant="secondary" className="bg-orange-100 text-orange-700">
@@ -1338,6 +1442,15 @@ SetCounsellorData(response)
           </Tabs>
         </div>
       </ScrollArea>
+
+      {/* Calendar View Modal */}
+      {showCalendarView && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
+            <CalendarView onBack={() => setShowCalendarView(false)} drives={availableDrives} />
+          </div>
+        </div>
+      )}
     </div>
   );
 };

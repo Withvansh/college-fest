@@ -203,7 +203,7 @@ const App = () => {
                   <Route
                     path="/jobseeker/applications"
                     element={
-                      <UnifiedProtectedRoute allowedRoles={['jobseeker']}>
+                      <UnifiedProtectedRoute allowedRoles={['jobseeker','Student']}>
                         <JobSeekerApplications />
                       </UnifiedProtectedRoute>
                     }
