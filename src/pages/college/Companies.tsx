@@ -53,6 +53,7 @@ const Companies = () => {
     message: 'We would like to invite your company to participate in our campus recruitment program.'
   });
   const [remainingCredits, setRemainingCredits] = useState(5);
+  const [selectedCompany, setSelectedCompany] = useState<RecruiterProfile | null>(null);
 
   // Fetch companies data from API
   useEffect(() => {
@@ -127,7 +128,7 @@ const Companies = () => {
         companyName: inviteData.companyName,
         contactEmail: inviteData.contactEmail,
         message: inviteData.message,
-        collegeId:localStorage.getItem("user_id")
+        collegeId: localStorage.getItem("user_id")
       });
 
       setRemainingCredits(response.remainingCredits);
@@ -137,6 +138,7 @@ const Companies = () => {
         contactEmail: '',
         message: 'We would like to invite your company to participate in our campus recruitment program.'
       });
+      setSelectedCompany(null);
       toast.success("Invitation sent successfully!");
     } catch (error) {
       console.error('Error sending invitation:', error);
@@ -179,6 +181,21 @@ const Companies = () => {
     return status ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700';
   };
 
+  const openInviteDialog = (company: RecruiterProfile) => {
+    if (remainingCredits <= 0) {
+      toast.error("No invite credits remaining");
+      return;
+    }
+    
+    setSelectedCompany(company);
+    setInviteData({
+      ...inviteData,
+      companyName: company.company_name,
+      contactEmail: company.email
+    });
+    setIsInviteModalOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
@@ -193,194 +210,73 @@ const Companies = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/college/dashboard" className="flex items-center text-gray-600 hover:text-gray-900">
-                <ArrowLeft className="h-5 w-5 mr-2" />
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link to="/college/dashboard" className="flex items-center text-gray-600 hover:text-gray-900 text-sm sm:text-base">
+                <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5 mr-1 sm:mr-2" />
                 Back to Dashboard
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Company Management</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Company Management</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleExportData}>
-                <Download className="h-4 w-4 mr-2" />
-                Export Data
-              </Button>
-              <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-                <DialogTrigger asChild>
-                  <Button className="bg-orange-600 hover:bg-orange-700">
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Company
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>Add New Company</DialogTitle>
-                  </DialogHeader>
-                  <form onSubmit={handleAddCompany} className="space-y-4">
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="company_name">Company Name</Label>
-                        <Input
-                          id="company_name"
-                          value={formData.company_name}
-                          onChange={(e) => setFormData({...formData, company_name: e.target.value})}
-                          placeholder="e.g., Google Inc."
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="company_website">Website</Label>
-                        <Input
-                          id="company_website"
-                          type="url"
-                          value={formData.company_website}
-                          onChange={(e) => setFormData({...formData, company_website: e.target.value})}
-                          placeholder="https://company.com"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="full_name">Contact Person</Label>
-                        <Input
-                          id="full_name"
-                          value={formData.full_name}
-                          onChange={(e) => setFormData({...formData, full_name: e.target.value})}
-                          placeholder="John Smith"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({...formData, email: e.target.value})}
-                          placeholder="contact@company.com"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone">Phone</Label>
-                        <Input
-                          id="phone"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                          placeholder="+91 9876543210"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="industry">Industry Type</Label>
-                        <Select value={formData.industry} onValueChange={(value) => setFormData({...formData, industry: value})}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Technology">Technology</SelectItem>
-                            <SelectItem value="Finance">Finance</SelectItem>
-                            <SelectItem value="Healthcare">Healthcare</SelectItem>
-                            <SelectItem value="E-commerce">E-commerce</SelectItem>
-                            <SelectItem value="Manufacturing">Manufacturing</SelectItem>
-                            <SelectItem value="Consulting">Consulting</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="hiringRole">Primary Hiring Role</Label>
-                        <Input
-                          id="hiringRole"
-                          value={formData.hiringRole}
-                          onChange={(e) => setFormData({...formData, hiringRole: e.target.value})}
-                          placeholder="Software Engineer"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="packageRange">Expected Package</Label>
-                        <Input
-                          id="packageRange"
-                          value={formData.packageRange}
-                          onChange={(e) => setFormData({...formData, packageRange: e.target.value})}
-                          placeholder="₹12-18 LPA"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <Label htmlFor="bio">Company Description (Optional)</Label>
-                      <Textarea
-                        id="bio"
-                        value={formData.bio}
-                        onChange={(e) => setFormData({...formData, bio: e.target.value})}
-                        placeholder="Brief description about the company..."
-                      />
-                    </div>
-                    <div className="flex gap-2 justify-end">
-                      <Button type="button" variant="outline" onClick={() => setIsAddModalOpen(false)}>
-                        Cancel
-                      </Button>
-                      <Button type="submit" className="bg-orange-600 hover:bg-orange-700">
-                        Add Company
-                      </Button>
-                    </div>
-                  </form>
-                </DialogContent>
-              </Dialog>
-            </div>
+            {/* Export button removed for simplicity */}
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
           {/* Left Panel - Top Recruiters */}
           <div className="w-full lg:w-1/3">
             <Card className="h-full">
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">Top Recruiters</CardTitle>
-                  <Crown className="h-5 w-5 text-yellow-500" />
+                  <CardTitle className="text-base sm:text-lg">Top Recruiters</CardTitle>
+                  <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
                 </div>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="h-[calc(100vh-250px)] overflow-y-auto">
                   {topRecruiters.length > 0 ? (
-                    <div className="space-y-4 p-4">
+                    <div className="space-y-3 sm:space-y-4 p-3 sm:p-4">
                       {topRecruiters.map((company) => (
-                        <div key={company._id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                        <div key={company._id} className="border rounded-lg p-3 sm:p-4 hover:bg-gray-50 transition-colors">
                           <div className="flex items-start justify-between">
-                            <div className="flex items-start space-x-3">
-                              <div className="bg-blue-100 p-2 rounded-full">
-                                <Building2 className="h-5 w-5 text-blue-600" />
+                            <div className="flex items-start space-x-2 sm:space-x-3">
+                              <div className="bg-blue-100 p-1 sm:p-2 rounded-full">
+                                <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                               </div>
                               <div>
-                                <h3 className="font-semibold">{company.company_name}</h3>
-                                <p className="text-sm text-gray-600">{company.industry || 'Not specified'}</p>
+                                <h3 className="font-semibold text-sm sm:text-base">{company.company_name}</h3>
+                                <p className="text-xs sm:text-sm text-gray-600">{company.industry || 'Not specified'}</p>
                                 <div className="flex items-center mt-1">
                                   <Users className="h-3 w-3 mr-1 text-gray-400" />
                                   <span className="text-xs">0 hires</span>
                                 </div>
                               </div>
                             </div>
-                            <Badge className={getStatusColor(company.verify)}>
+                            <Badge className={`text-xs ${getStatusColor(company.verify)}`}>
                               {company.verify ? 'Active' : 'Inactive'}
                             </Badge>
                           </div>
-                          <div className="mt-3 flex items-center justify-between">
-                            <div className="text-sm font-medium">
+                          <div className="mt-2 sm:mt-3 flex items-center justify-between">
+                            <div className="text-xs sm:text-sm font-medium">
                               {company.package_purchased?.join(', ') || 'Not specified'}
                             </div>
-                            <Button size="sm" variant="outline">
-                              <Eye className="h-4 w-4 mr-1" />
-                              View
-                            </Button>
+                            <Link to={`/college/company/${company._id}`}>
+                              <Button size="sm" variant="outline" className="text-xs h-7 sm:h-9 sm:text-sm">
+                                <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                View
+                              </Button>
+                            </Link> 
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="p-6 text-center text-gray-500">
-                      <Building2 className="h-12 w-12 mx-auto text-gray-300 mb-3" />
-                      <p>No top recruiters yet</p>
+                    <div className="p-4 sm:p-6 text-center text-gray-500">
+                      <Building2 className="h-8 w-8 sm:h-12 sm:w-12 mx-auto text-gray-300 mb-2 sm:mb-3" />
+                      <p className="text-sm sm:text-base">No top recruiters yet</p>
                     </div>
                   )}
                 </div>
@@ -392,16 +288,16 @@ const Companies = () => {
           <div className="w-full lg:w-2/3">
             <Card className="h-full">
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Company Invitation & Management</CardTitle>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                  <CardTitle className="text-lg sm:text-xl">Company Invitation & Management</CardTitle>
                   <Dialog open={isInviteModalOpen} onOpenChange={setIsInviteModalOpen}>
                     <DialogTrigger asChild>
-                      <Button className="bg-orange-600 hover:bg-orange-700">
-                        <Send className="h-4 w-4 mr-2" />
+                      <Button className="bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm h-8 sm:h-10">
+                        <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                         Invite Company
                       </Button>
                     </DialogTrigger>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-md mx-4 sm:mx-0">
                       <DialogHeader>
                         <DialogTitle>Invite a Company</DialogTitle>
                       </DialogHeader>
@@ -450,66 +346,66 @@ const Companies = () => {
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold">All Companies</h2>
-                    <div className="relative">
+                <div className="mb-4 sm:mb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
+                    <h2 className="text-lg sm:text-xl font-semibold">All Companies</h2>
+                    <div className="relative w-full sm:w-auto">
                       <Search className="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                       <Input
                         placeholder="Search companies..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 w-64"
+                        className="pl-10 w-full sm:w-64"
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Total Companies</CardTitle>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                  <Card className="text-center">
+                    <CardHeader className="pb-2 py-3 sm:py-4">
+                      <CardTitle className="text-xs sm:text-sm font-medium">Total Companies</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{companies.length}</div>
+                    <CardContent className="py-2 pb-3 sm:py-4">
+                      <div className="text-lg sm:text-2xl font-bold">{companies.length}</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Active</CardTitle>
+                  <Card className="text-center">
+                    <CardHeader className="pb-2 py-3 sm:py-4">
+                      <CardTitle className="text-xs sm:text-sm font-medium">Active</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-green-600">
+                    <CardContent className="py-2 pb-3 sm:py-4">
+                      <div className="text-lg sm:text-2xl font-bold text-green-600">
                         {companies.filter(c => c.verify).length}
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Total Hires</CardTitle>
+                  <Card className="text-center">
+                    <CardHeader className="pb-2 py-3 sm:py-4">
+                      <CardTitle className="text-xs sm:text-sm font-medium">Total Hires</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-blue-600">
+                    <CardContent className="py-2 pb-3 sm:py-4">
+                      <div className="text-lg sm:text-2xl font-bold text-blue-600">
                         0
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Industries</CardTitle>
+                  <Card className="text-center">
+                    <CardHeader className="pb-2 py-3 sm:py-4">
+                      <CardTitle className="text-xs sm:text-sm font-medium">Industries</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-purple-600">
+                    <CardContent className="py-2 pb-3 sm:py-4">
+                      <div className="text-lg sm:text-2xl font-bold text-purple-600">
                         {new Set(companies.map(c => c.industry).filter(Boolean)).size}
                       </div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Invite Credits</CardTitle>
+                  <Card className="text-center">
+                    <CardHeader className="pb-2 py-3 sm:py-4">
+                      <CardTitle className="text-xs sm:text-sm font-medium">Invite Credits</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold text-orange-600">
+                    <CardContent className="py-2 pb-3 sm:py-4">
+                      <div className="text-lg sm:text-2xl font-bold text-orange-600">
                         {remainingCredits}
                       </div>
                     </CardContent>
@@ -517,79 +413,74 @@ const Companies = () => {
                 </div>
 
                 <div className="h-[calc(100vh-450px)] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Company Details</TableHead>
-                        <TableHead>Contact Information</TableHead>
-                        <TableHead>Package</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Actions</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredCompanies.map((company) => (
-                        <TableRow key={company._id}>
-                          <TableCell>
-                            <div className="flex items-center">
-                              <Building2 className="h-5 w-5 mr-3 text-gray-400" />
-                              <div>
-                                <p className="font-medium">{company.company_name}</p>
-                                <Badge variant="secondary" className="mt-1">
-                                  {company.industry || 'Not specified'}
-                                </Badge>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <div className="space-y-1">
-                              <p className="font-medium text-sm">{company.full_name}</p>
-                              <div className="flex items-center text-sm text-gray-600">
-                                <Mail className="h-3 w-3 mr-1" />
-                                {company.email}
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="font-mono">
-                              {company.package_purchased?.join(', ') || 'Not specified'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(company.verify)}>
-                              {company.verify ? 'Active' : 'Inactive'}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Button size="sm" variant="outline">
-                                View
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                onClick={() => {
-                                  if (remainingCredits <= 0) {
-                                    toast.error("No invite credits remaining");
-                                    return;
-                                  }
-                                  setInviteData({
-                                    ...inviteData,
-                                    companyName: company.company_name,
-                                    contactEmail: company.email
-                                  });
-                                  setIsInviteModalOpen(true);
-                                }}
-                              >
-                                <Send className="h-4 w-4 mr-1" />
-                                Send Invite
-                              </Button>
-                            </div>
-                          </TableCell>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="whitespace-nowrap">Company Details</TableHead>
+                          <TableHead className="whitespace-nowrap">Contact Information</TableHead>
+                          <TableHead className="whitespace-nowrap">Package</TableHead>
+                          <TableHead className="whitespace-nowrap">Status</TableHead>
+                          <TableHead className="whitespace-nowrap">Actions</TableHead>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredCompanies.map((company) => (
+                          <TableRow key={company._id}>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 sm:mr-3 text-gray-400" />
+                                <div>
+                                  <p className="font-medium text-sm sm:text-base">{company.company_name}</p>
+                                  <Badge variant="secondary" className="mt-1 text-xs">
+                                    {company.industry || 'Not specified'}
+                                  </Badge>
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <div className="space-y-1">
+                                <p className="font-medium text-xs sm:text-sm">{company.full_name}</p>
+                                <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                                  <Mail className="h-3 w-3 mr-1" />
+                                  {company.email}
+                                </div>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <Badge variant="outline" className="font-mono text-xs">
+                                {company.package_purchased?.join(', ') || 'Not specified'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={`text-xs ${getStatusColor(company.verify)}`}>
+                                {company.verify ? 'Active' : 'Inactive'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-1 sm:space-y-0">
+                                <Link to={`/college/company/${company._id}`}>
+                                  <Button size="sm" variant="outline" className="text-xs h-7 w-full sm:w-auto sm:h-9 sm:text-sm">
+                                    <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                    View
+                                  </Button>
+                                </Link> 
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="text-xs h-7 w-full sm:w-auto sm:h-9 sm:text-sm"
+                                  onClick={() => openInviteDialog(company)}
+                                >
+                                  <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  Invite
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               </CardContent>
             </Card>

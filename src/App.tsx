@@ -118,6 +118,7 @@ import ViewPlacementDriveStudent from './pages/student/ViewDrive';
 import StartupsPage from './pages/StartUp';
 import ViewStudentProfile from './pages/college/StudentProfile';
 import Counsellor from './pages/student/Counsellor';
+import ViewCompany from './pages/college/ViewCompany';
 // import ProfileSetup from '@/pages/ProfileSetup';
 
 const queryClient = new QueryClient({
@@ -452,6 +453,14 @@ const App = () => {
                     element={
                       <UnifiedProtectedRoute allowedRoles={['college']}>
                         <CollegeDashboard />
+                      </UnifiedProtectedRoute>
+                    }
+                  />
+                   <Route
+                    path="/college/company/:id"
+                    element={
+                      <UnifiedProtectedRoute allowedRoles={['college']}>
+                        <ViewCompany />
                       </UnifiedProtectedRoute>
                     }
                   />

@@ -568,19 +568,19 @@ const CollegeDashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button variant="outline" className="h-20 flex flex-col">
                     <FileText className="h-6 w-6 mb-2" />
-                    <span>Placement Report</span>
+                    <span>Placement Report Coming Soon....</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col">
                     <BarChart3 className="h-6 w-6 mb-2" />
-                    <span>Analytics Report</span>
+                    <span>Analytics Report Coming Soon....</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col">
                     <Users className="h-6 w-6 mb-2" />
-                    <span>Student Report</span>
+                    <span>Student Report Coming Soon....</span>
                   </Button>
                   <Button variant="outline" className="h-20 flex flex-col">
                     <Building2 className="h-6 w-6 mb-2" />
-                    <span>Company Report</span>
+                    <span>Company Report Coming Soon....</span>
                   </Button>
                 </div>
               </CardContent>

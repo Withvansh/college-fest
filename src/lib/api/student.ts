@@ -188,7 +188,8 @@ export interface StudentAnalytics {
     });
   }
 async getStudentProfile(studentId: string): Promise<StudentProfile> {
-    return this.get(`${this.baseUrl}/${studentId}/profile`);
+    const data:{data:StudentProfile}= await  this.get(`${this.baseUrl}/${studentId}/profile`);
+    return data.data;
   }
   // Get student analytics
   async getStudentAnalytics(studentId: string): Promise<StudentAnalytics> {
