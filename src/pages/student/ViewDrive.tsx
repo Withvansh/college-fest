@@ -48,6 +48,7 @@ const ViewPlacementDriveStudent = () => {
 
         // Fetch registrations for this drive
         const registrationsData = await placementDriveAPI.getDriveRegistrations(driveId);
+        console.log(registrationsData);
         setRegistrations(registrationsData.registrations);
       } catch (error) {
         console.error('Error fetching drive data:', error);

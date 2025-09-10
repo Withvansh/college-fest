@@ -40,17 +40,23 @@ import {
   FileText,
 } from 'lucide-react';
 import { collegeProfileAPI } from '@/lib/api/collegeProfile';
+import axiosInstance from '@/lib/utils/axios';
 
 interface Student {
-  _id: number;
+  _id?: number;
   full_name: string;
   email: string;
   phone: string;
   enrollment_no: string;
   department: string;
   cgpa: number;
-  placementStatus: string;
-  company: string | null;
+college_id:string;
+password:string;
+verifiedByCollege:boolean;
+verify:boolean;
+placementStatus?:string;
+company?:string;
+role?:string
 }
 
 const Students = () => {
@@ -95,11 +101,14 @@ const Students = () => {
 
     try {
       const newStudent = {
-        _id: students.length + 1,
+       
         ...formData,
         cgpa: parseFloat(formData.cgpa),
-        placementStatus: 'Not Registered',
-        company: null,
+       password:formData.enrollment_no,
+        verifiedByCollege:true,
+       college_id:localStorage.getItem("user_id"),
+       verify:true,
+       role:"Student"
       };
 
       // Call API to add student
@@ -107,7 +116,11 @@ const Students = () => {
 
       // Update local state
       setStudents([...students, newStudent]);
-      setIsAddModalOpen(false);
+      const response = await axiosInstance.post('/user/register/students', newStudent);
+      if(response){
+setIsAddModalOpen(false);
+      }
+      
       setFormData({
         full_name: '',
         email: '',

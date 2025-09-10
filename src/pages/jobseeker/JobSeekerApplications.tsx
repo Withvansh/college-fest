@@ -161,7 +161,7 @@ const JobSeekerApplications = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Link
-                to="/jobseeker/dashboard"
+                to={`/${localStorage.getItem("user_role")}/dashboard`}
                 className="inline-flex items-center text-gray-600 hover:text-gray-900 group"
               >
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />

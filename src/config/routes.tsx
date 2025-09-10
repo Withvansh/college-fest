@@ -33,9 +33,9 @@ const AuthCallback = lazy(() => import('@/pages/auth/AuthCallback'));
 const JobSeekerLogin = lazy(() => import('@/pages/auth/JobSeekerLogin'));
 const RecruiterLogin = lazy(() => import('@/pages/auth/RecruiterLogin'));
 const FreelancerLogin = lazy(() => import('@/pages/auth/FreelancerLogin'));
-const ClientLogin = lazy(() => import('@/pages/auth/ClientLogin'));
-const CollegeLogin = lazy(() => import('@/pages/auth/CollegeLogin'));
-const StudentLogin = lazy(() => import('@/pages/auth/StudentLogin'));
+// const ClientLogin = lazy(() => import('@/pages/auth/ClientLogin'));
+// const CollegeLogin = lazy(() => import('@/pages/auth/CollegeLogin'));
+// const StudentLogin = lazy(() => import('@/pages/auth/StudentLogin'));
 
 // Dashboard pages
 const JobSeekerDashboard = lazy(() => import('@/pages/jobseeker/JobSeekerDashboard'));
@@ -275,18 +275,18 @@ export const routes: RouteObject[] = [
     path: '/auth/freelancer-login',
     element: <FreelancerLogin />,
   },
-  {
-    path: '/auth/client-login',
-    element: <ClientLogin />,
-  },
-  {
-    path: '/auth/college-login',
-    element: <CollegeLogin />,
-  },
-  {
-    path: '/auth/student-login',
-    element: <StudentLogin />,
-  },
+  // {
+  //   path: '/auth/client-login',
+  //   element: <ClientLogin />,
+  // },
+  // {
+  //   path: '/auth/college-login',
+  //   element: <CollegeLogin />,
+  // },
+  // {
+  //   path: '/auth/student-login',
+  //   element: <StudentLogin />,
+  // },
 
   // JobSeeker routes
   {

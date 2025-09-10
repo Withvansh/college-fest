@@ -118,6 +118,7 @@ import ViewPlacementDriveStudent from './pages/student/ViewDrive';
 import StartupsPage from './pages/StartUp';
 import ViewStudentProfile from './pages/college/StudentProfile';
 import Counsellor from './pages/student/Counsellor';
+import ViewCompany from './pages/college/ViewCompany';
 // import ProfileSetup from '@/pages/ProfileSetup';
 import Preloader from './components/Preloader';
 import { useState } from 'react';
@@ -449,80 +450,96 @@ const App = () => {
                       }
                     />
 
-                    {/* Protected College Routes */}
-                    <Route
-                      path="/college/dashboard"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <CollegeDashboard />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/profile"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <CollegeProfile />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/placement-drives"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <PlacementDrives />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/placement-drives/:driveId/view"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <ViewPlacementDrive />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/placement-drives/:driveId/manage"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <ManagePlacementDrive />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/students/:id"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <Students />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/companies"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <Companies />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/student/:id"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <ViewStudentProfile />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
-                    <Route
-                      path="/college/reports"
-                      element={
-                        <UnifiedProtectedRoute allowedRoles={['college']}>
-                          <Reports />
-                        </UnifiedProtectedRoute>
-                      }
-                    />
+{/* Protected College Routes */}
+<Route
+  path="/college/dashboard"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <CollegeDashboard />
+    </UnifiedProtectedRoute>
+  }
+/>
 
+<Route
+  path="/college/company/:id"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <ViewCompany />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/profile"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <CollegeProfile />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/placement-drives"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <PlacementDrives />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/placement-drives/:driveId/view"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <ViewPlacementDrive />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/placement-drives/:driveId/manage"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <ManagePlacementDrive />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/students/:id"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <Students />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/companies"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <Companies />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/student/:id"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <ViewStudentProfile />
+    </UnifiedProtectedRoute>
+  }
+/>
+
+<Route
+  path="/college/reports"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <Reports />
+    </UnifiedProtectedRoute>
+  }
+/>
                     {/* Protected Student Routes */}
                     <Route
                       path="/student/dashboard"

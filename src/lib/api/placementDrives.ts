@@ -119,7 +119,8 @@ class PlacementDriveAPI extends BackendAPI {
 
   // Drive-specific APIs
   async getPlacementDriveById(driveId: string): Promise<PlacementDrive> {
-    return this.get(`${this.baseUrl}/drives/${driveId}`);
+    const data:{data:PlacementDrive}=await this.get(`${this.baseUrl}/drives/${driveId}`);
+    return data.data
   }
   
 
@@ -131,31 +132,41 @@ class PlacementDriveAPI extends BackendAPI {
     return this.delete(`${this.baseUrl}/drives/${driveId}`);
   }
 
-  async getDriveRegistrations(
-    driveId: string,
-    filters?: { 
-      page?: number; 
-      limit?: number; 
-      search?: string 
-    }
-  ): Promise<{
-    registrations: PlacementRegistration[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> {
-    const params = new URLSearchParams();
-    if (filters?.page) params.append('page', filters.page.toString());
-    if (filters?.limit) params.append('limit', filters.limit.toString());
-    if (filters?.search) params.append('search', filters.search);
-
-    const queryString = params.toString();
-    const url = queryString ? 
-      `${this.baseUrl}/drives/${driveId}/registrations?${queryString}` : 
-      `${this.baseUrl}/drives/${driveId}/registrations`;
-
-    return this.get(url);
+async getDriveRegistrations(
+  driveId: string,
+  filters?: { 
+    page?: number; 
+    limit?: number; 
+    search?: string; 
   }
+): Promise<{
+  registrations: PlacementRegistration[];
+  total: number;
+  page: number;
+  totalPages: number;
+}> {
+  const params = new URLSearchParams();
+  if (filters?.page) params.append("page", filters.page.toString());
+  if (filters?.limit) params.append("limit", filters.limit.toString());
+  if (filters?.search) params.append("search", filters.search);
+
+  const queryString = params.toString();
+  const url = queryString
+    ? `${this.baseUrl}/drives/${driveId}/registrations?${queryString}`
+    : `${this.baseUrl}/drives/${driveId}/registrations`;
+
+  const response: {
+    data: {
+      registrations: PlacementRegistration[];
+      total: number;
+      page: number;
+      totalPages: number;
+    };
+  } = await this.get(url);
+
+  return response.data;
+}
+
 
   // Student APIs
   async getAllActivePlacementDrives(
