@@ -27,6 +27,7 @@ import {
   Loader2
 } from "lucide-react";
 import { recruiterProfileAPI, RecruiterProfile } from '@/lib/api/Recuriter';
+import { companyInviteAPI } from '@/lib/api/CompanyInvite';
 
 const Companies = () => {
   const [companies, setCompanies] = useState<RecruiterProfile[]>([]);
@@ -51,6 +52,7 @@ const Companies = () => {
     contactEmail: '',
     message: 'We would like to invite your company to participate in our campus recruitment program.'
   });
+  const [remainingCredits, setRemainingCredits] = useState(5);
 
   // Fetch companies data from API
   useEffect(() => {
@@ -112,17 +114,34 @@ const Companies = () => {
     }
   };
 
-  const handleInviteCompany = (e: React.FormEvent) => {
+  const handleInviteCompany = async (e: React.FormEvent) => {
     e.preventDefault();
-    // In a real app, this would send an email or API request
-    console.log("Inviting company:", inviteData);
-    setIsInviteModalOpen(false);
-    setInviteData({
-      companyName: '',
-      contactEmail: '',
-      message: 'We would like to invite your company to participate in our campus recruitment program.'
-    });
-    toast.success("Invitation sent successfully!");
+    
+    if (remainingCredits <= 0) {
+      toast.error("You don't have enough credits to send invites");
+      return;
+    }
+
+    try {
+      const response = await companyInviteAPI.sendInvite({
+        companyName: inviteData.companyName,
+        contactEmail: inviteData.contactEmail,
+        message: inviteData.message,
+        collegeId:localStorage.getItem("user_id")
+      });
+
+      setRemainingCredits(response.remainingCredits);
+      setIsInviteModalOpen(false);
+      setInviteData({
+        companyName: '',
+        contactEmail: '',
+        message: 'We would like to invite your company to participate in our campus recruitment program.'
+      });
+      toast.success("Invitation sent successfully!");
+    } catch (error) {
+      console.error('Error sending invitation:', error);
+      toast.error(error.response?.data?.message || "Failed to send invitation");
+    }
   };
 
   const handleExportData = () => {
@@ -485,6 +504,16 @@ const Companies = () => {
                       </div>
                     </CardContent>
                   </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-sm font-medium">Invite Credits</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-orange-600">
+                        {remainingCredits}
+                      </div>
+                    </CardContent>
+                  </Card>
                 </div>
 
                 <div className="h-[calc(100vh-450px)] overflow-y-auto">
@@ -536,8 +565,24 @@ const Companies = () => {
                               <Button size="sm" variant="outline">
                                 View
                               </Button>
-                              <Button size="sm" variant="outline">
-                                Edit
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => {
+                                  if (remainingCredits <= 0) {
+                                    toast.error("No invite credits remaining");
+                                    return;
+                                  }
+                                  setInviteData({
+                                    ...inviteData,
+                                    companyName: company.company_name,
+                                    contactEmail: company.email
+                                  });
+                                  setIsInviteModalOpen(true);
+                                }}
+                              >
+                                <Send className="h-4 w-4 mr-1" />
+                                Send Invite
                               </Button>
                             </div>
                           </TableCell>
