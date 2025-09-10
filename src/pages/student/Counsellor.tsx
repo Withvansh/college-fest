@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { counsellorAPI, ICounsellor, AppointmentBookingData } from '@/lib/api/counsellor';
+import { counsellorAPI, ICounsellor } from '@/lib/api/counsellor';
+import { counsellorBookingAPI, BookingCreateData } from '@/lib/api/CounsellorBooking';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -39,13 +40,14 @@ function Counsellor() {
 
   useEffect(() => {
     filterCounsellors();
-  }, [counsellors, specializationFilter, experienceFilter, locationFilter]);
+  }, [specializationFilter, experienceFilter, locationFilter, counsellors]); // Added counsellors as dependency
 
   const fetchCounsellors = async () => {
     try {
       setLoading(true);
       const data = await counsellorAPI.getAllCounsellors();
       setCounsellors(data);
+      setFilteredCounsellors(data); // Initialize filtered counsellors
     } catch (error) {
       console.error('Error fetching counsellors:', error);
       toast.error('Failed to load counsellors');
@@ -55,7 +57,9 @@ function Counsellor() {
   };
 
   const filterCounsellors = () => {
-    let filtered = counsellors;
+    if (!counsellors.length) return;
+    
+    let filtered = [...counsellors]; // Create a new array instead of reference
 
     // Filter by specialization
     if (specializationFilter !== 'all') {
@@ -90,7 +94,11 @@ function Counsellor() {
 
   const handleDateSelect = async (date: Date | null) => {
     if (!date || !selectedCounsellor) return;
-    setSelectedDate(date);
+    
+    // const available = await isDateAvailable(date);
+   
+      setSelectedDate(date);
+    
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -106,13 +114,27 @@ function Counsellor() {
 
     try {
       setLoading(true);
-      const bookingData: AppointmentBookingData = {
+      
+      // First check if the slot is available
+      // const isAvailable = await counsellorBookingAPI.checkAvailability(
+      //   selectedCounsellor._id,
+      //   selectedDate
+      // );
+
+      // if (!isAvailable) {
+      //   toast.error('This time slot is no longer available');
+      //   setLoading(false);
+      //   return;
+      // }
+
+      const bookingData: BookingCreateData = {
         counsellorId: selectedCounsellor._id,
-        date: selectedDate,
-        userDetails
+        bookingDate: selectedDate,
+        studentDetails: userDetails,
+        studentId:localStorage.getItem("user_id")
       };
 
-      await counsellorAPI.bookAppointment(bookingData);
+      await counsellorBookingAPI.createBooking(bookingData);
       
       setBookingSuccess(true);
       toast.success('Appointment booked successfully!');
@@ -138,10 +160,11 @@ function Counsellor() {
     }
   };
 
-  const isDateAvailable = (date: Date) => {
+  const isDateAvailable = async (date: Date) => {
     if (!selectedCounsellor) return false;
-    
-    return selectedCounsellor.availableDates.some(availableDate => {
+
+    // First check if the date is in counsellor's available dates
+    const isInAvailableDates = selectedCounsellor.availableDates.some(availableDate => {
       const available = new Date(availableDate);
       return (
         available.getDate() === date.getDate() &&
@@ -149,6 +172,16 @@ function Counsellor() {
         available.getFullYear() === date.getFullYear()
       );
     });
+
+    if (!isInAvailableDates) return false;
+
+    // Then check if the slot is not already booked
+    try {
+      return await counsellorBookingAPI.checkAvailability(selectedCounsellor._id, date);
+    } catch (error) {
+      console.error('Error checking date availability:', error);
+      return false;
+    }
   };
 
   // Get unique specializations, cities, and experiences for filters
@@ -301,7 +334,14 @@ function Counsellor() {
                   selected={selectedDate || undefined}
                   onSelect={handleDateSelect}
                   disabled={(date) => 
-                    date < new Date() || !isDateAvailable(date)
+                    date < new Date() || !selectedCounsellor?.availableDates.some(availableDate => {
+                      const available = new Date(availableDate);
+                      return (
+                        available.getDate() === date.getDate() &&
+                        available.getMonth() === date.getMonth() &&
+                        available.getFullYear() === date.getFullYear()
+                      );
+                    })
                   }
                   className="rounded-md border"
                 />

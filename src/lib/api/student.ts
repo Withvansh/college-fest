@@ -125,9 +125,13 @@ export interface StudentAnalytics {
   private baseUrl = '/student';
 
   // Get student dashboard data
-  async getStudentDashboard(studentId: string): Promise<StudentDashboardData> {
-    return this.get(`${this.baseUrl}/dashboard/${studentId}`);
-  }
+ async getStudentDashboard(studentId: string): Promise<StudentDashboardData> {
+  const response: { data: StudentDashboardData } = await this.get(
+    `${this.baseUrl}/dashboard/${studentId}`
+  );
+  return response.data;
+}
+
 
   // Get available placement drives
   async getAvailableDrives(
@@ -137,12 +141,12 @@ export interface StudentAnalytics {
       limit?: number;
       search?: string;
     }
-  ): Promise<{
+  ): Promise<{data:{
     drives: PlacementDrive[];
     total: number;
     page: number;
     totalPages: number;
-  }> {
+  }}> {
     const params = new URLSearchParams();
     if (filters?.page) params.append('page', filters.page.toString());
     if (filters?.limit) params.append('limit', filters.limit.toString());
@@ -159,12 +163,12 @@ export interface StudentAnalytics {
       limit?: number;
       status?: string;
     }
-  ): Promise<{
+  ): Promise<{data:{
     applications: StudentApplication[];
     total: number;
     page: number;
     totalPages: number;
-  }> {
+  }}> {
     const params = new URLSearchParams();
     if (filters?.page) params.append('page', filters.page.toString());
     if (filters?.limit) params.append('limit', filters.limit.toString());

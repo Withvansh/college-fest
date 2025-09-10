@@ -41,6 +41,7 @@ import {
   Loader,
   MessageSquare,
   MapPin,
+  BaggageClaimIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/hooks/useAuth';
@@ -170,7 +171,7 @@ const StudentDashboard = () => {
 
       console.log('student dashboard', data);
 
-      setDashboardData(data.data);
+      setDashboardData(data);
 
       // Load available drives
       const drivesData = await studentAPI.getAvailableDrives(user!._id, { limit: 10 });
@@ -1297,7 +1298,7 @@ ${applications
                       key={counsellor._id}
                       className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 shadow-md bg-white overflow-hidden"
                       style={{ animationDelay: `${index * 100}ms` }}
-                      onClick={() => navigate('/student/counsellor')}
+                     
                     >
                       <CardHeader className="pb-4">
                         <div className="flex items-center justify-between">
@@ -1359,12 +1360,12 @@ ${applications
                           </div>
 
                           {/* Action Button */}
-                          <Button
+                          {/* <Button
                             className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white shadow-md hover:shadow-lg transition-all duration-300 group-hover:scale-105"
                             size="sm"
                           >
                             Book Appointment
-                          </Button>
+                          </Button> */}
                         </div>
                       </CardContent>
 
@@ -1415,29 +1416,43 @@ ${applications
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <h2 className="text-xl sm:text-2xl font-bold text-gray-900">All Applied Jobs</h2>
 
-                <Button
+                {/* <Button
                   onClick={() => navigate('/jobseeker/applications')}
                   variant="outline"
                   className="hover:scale-105 transition-transform w-full sm:w-auto"
                 >
                   View all applied Jobs
-                </Button>
+                </Button> */}
               </div>
 
-              <div className="flex items-center justify-center h-64 sm:h-96">
-                <div className="text-center space-y-3 sm:space-y-4 max-w-md mx-auto px-4">
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto bg-gradient-to-br from-orange-100 to-yellow-100 rounded-full flex items-center justify-center">
-                    <BarChart3 className="h-12 w-12 sm:h-16 sm:w-16 text-orange-500" />
-                  </div>
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Coming Soon!</h3>
-                  <p className="text-gray-600 text-sm sm:text-base">
-                    Advanced analytics and performance tracking features will be available here.
-                  </p>
-                  <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-                    In Development
-                  </Badge>
-                </div>
-              </div>
+<div className="flex items-center justify-center h-64 sm:h-80 bg-gradient-to-b from-gray-50 to-white">
+  <div className="flex flex-col sm:flex-row items-center gap-6 max-w-2xl mx-auto px-6 text-center sm:text-left">
+    
+    {/* Icon */}
+    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-md">
+      <BaggageClaimIcon className="h-12 w-12 sm:h-14 sm:w-14 text-blue-600" />
+    </div>
+
+    {/* Text + Button */}
+    <div className="space-y-3">
+      <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+        Applied Jobs
+      </h2>
+      <p className="text-gray-600 text-sm sm:text-base">
+        View all the jobs you’ve applied for and track your progress.
+      </p>
+      <Button
+        onClick={() => navigate('/jobseeker/applications')}
+        className="bg-blue-600 text-white font-medium rounded-xl shadow-md hover:scale-105 hover:shadow-lg transition-transform"
+      >
+        View Applied Jobs
+      </Button>
+    </div>
+  </div>
+</div>
+
+
+
             </TabsContent>
           </Tabs>
         </div>
