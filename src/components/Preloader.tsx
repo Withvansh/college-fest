@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 
+
 interface PreloaderProps {
   onLoadComplete: () => void;
 }
@@ -96,7 +97,7 @@ const Preloader: React.FC<PreloaderProps> = ({ onLoadComplete }) => {
         {/* Logo/Icon placeholder with modern design */}
         <div className="mb-12 flex justify-center">
           <img
-            src="../../public/lovable-uploads/76dddbd0-7747-4d66-87df-6345c5f6b55f.png"
+            src='/lovable-uploads/76dddbd0-7747-4d66-87df-6345c5f6b55f.png'
             alt="logo"
           />
         </div>
