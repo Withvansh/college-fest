@@ -1,1 +1,1 @@
-Minutehire project
+Minutehire
