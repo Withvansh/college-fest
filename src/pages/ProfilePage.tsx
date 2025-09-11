@@ -150,7 +150,7 @@ const ProfilePage = () => {
         return '/freelancer/dashboard';
       case 'client':
         return '/client/dashboard';
-      case 'student':
+      case 'Student':
         return '/student/dashboard';
       case 'college':
         return '/college/dashboard';
@@ -247,7 +247,7 @@ const ProfilePage = () => {
           </>
         );
 
-      case 'student':
+      case 'Student':
         return (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
