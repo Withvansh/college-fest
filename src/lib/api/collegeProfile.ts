@@ -44,11 +44,12 @@ export const collegeProfileAPI = {
       throw error;
     }
   },
-async getStudentsByCollegeId(id:string){
-const response= await axiosInstance.get(`/college/students/${id}`);
-return response.data;
-
-  },
+async getStudentsByCollegeId(id: string, data: any) {
+  const response = await axiosInstance.get(`/college/students/${id}`, {
+    params: data,   
+  });
+  return response.data;
+},
   async updateProfile(updates: CollegeProfileUpdateData): Promise<CollegeProfile> {
     try {
       const response = await axiosInstance.put('/college/profile', updates);

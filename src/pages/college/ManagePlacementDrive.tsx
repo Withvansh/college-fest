@@ -46,6 +46,7 @@ interface FormData {
   requirements: string;
   status: 'Open' | 'Closed' | 'Upcoming' | 'Completed';
   positions_available: number;
+  offCampus:boolean;
 }
 
 const ManagePlacementDrive = () => {
@@ -74,6 +75,7 @@ const ManagePlacementDrive = () => {
     requirements: '',
     status: 'Open',
     positions_available: 1,
+    offCampus: false,
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -90,6 +92,7 @@ const ManagePlacementDrive = () => {
     try {
       setLoading(true);
       const driveData = await placementDriveAPI.getPlacementDriveById(driveId!);
+      console.log(driveData)
       setDrive(driveData);
 
       // Populate form with existing data
@@ -108,6 +111,7 @@ const ManagePlacementDrive = () => {
         requirements: driveData.requirements || '',
         status: driveData.status,
         positions_available: driveData.positions_available,
+        offCampus:driveData.offCampus
       });
     } catch (error) {
       console.error('Error fetching drive details:', error);
@@ -160,7 +164,7 @@ const ManagePlacementDrive = () => {
     return Object.keys(errors).length === 0;
   };
 
-  const handleInputChange = (field: keyof FormData, value: string | number) => {
+  const handleInputChange = (field: keyof FormData, value:any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
@@ -415,6 +419,23 @@ const ManagePlacementDrive = () => {
                         </SelectContent>
                       </Select>
                     </div>
+                    <div>
+  <Label htmlFor="offCampus">Off-Campus Drive</Label>
+  <Select
+    value={formData.offCampus ? "true" : "false"}
+   onValueChange={(value) => handleInputChange("offCampus", value === "true")}
+
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select option" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="true">Yes</SelectItem>
+      <SelectItem value="false">No</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
                     <div>
                       <Label htmlFor="location">Location</Label>
                       <Input

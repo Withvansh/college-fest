@@ -21,6 +21,7 @@ export interface PlacementDrive {
   status: "Open" | "Closed" | "Upcoming" | "Completed";
   is_active: boolean;
   registrations?: number;
+  offCampus:boolean;
   created_at?: string;
   updated_at?: string;
 }
@@ -56,6 +57,7 @@ export interface CreatePlacementDriveRequest {
   salary_package?: string;
   requirements?: string;
   positions_available: number;
+  offCampus:boolean
 }
 
 export interface DashboardStats {
@@ -106,7 +108,13 @@ class PlacementDriveAPI extends BackendAPI {
       `${this.baseUrl}/college/${collegeId}/drives?${queryString}` : 
       `${this.baseUrl}/college/${collegeId}/drives`;
 
-    return this.get(url);
+    const data:{data:{
+    drives: PlacementDrive[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }} =await this.get(url);
+  return data.data
   }
 
   async getCollegeDashboardStats(collegeId: string): Promise<{
@@ -114,7 +122,12 @@ class PlacementDriveAPI extends BackendAPI {
     upcomingDrives: PlacementDrive[];
     topCompanies: Company[];
   }> {
-    return this.get(`${this.baseUrl}/college/${collegeId}/dashboard`);
+    const data:{data:{
+    stats: DashboardStats;
+    upcomingDrives: PlacementDrive[];
+    topCompanies: Company[];
+  }}= await this.get(`${this.baseUrl}/college/${collegeId}/dashboard`);
+  return data.data;
   }
 
   // Drive-specific APIs
