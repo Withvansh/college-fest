@@ -215,7 +215,13 @@ async getStudentProfile(studentId: string): Promise<StudentProfile> {
     if (filters?.limit) params.append('limit', filters.limit.toString());
     if (filters?.type) params.append('type', filters.type);
 
-    return this.get(`${this.baseUrl}/${studentId}/notifications?${params.toString()}`);
+    const data:{data:{
+    notifications: StudentNotification[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }}=await  this.get(`${this.baseUrl}/${studentId}/notifications?${params.toString()}`);
+  return data.data;
   }
 
   // Mark notification as read

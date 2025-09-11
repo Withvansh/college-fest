@@ -174,9 +174,9 @@ const StudentDashboard = () => {
       setDashboardData(data);
 
       // Load available drives
-      const drivesData = await studentAPI.getAvailableDrives(user!._id, { limit: 10 });
-      console.log('available drives', drivesData);
-      setAvailableDrives(drivesData.data.drives);
+      // const drivesData = await studentAPI.getAvailableDrives(user!._id, { limit: 10 });
+      // console.log('available drives', drivesData);
+      setAvailableDrives(data.upcomingDrives);
 
       // Load applications
       const appsData = await studentAPI.getStudentApplications(user!._id, { limit: 10 });
@@ -376,187 +376,192 @@ ${applications
                 </Button>
 
                 {/* Notification Dropdown Panel */}
-                {showNotificationPanel && (
-                  <div
-                    className={`absolute top-12 right-0 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
-                      showAllNotifications ? 'w-80 sm:w-96' : 'w-72 sm:w-80'
-                    }`}
-                  >
-                    <div className="p-3 sm:p-4 border-b flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-                          {showAllNotifications ? 'All Notifications' : 'Notifications'}
-                        </h3>
-                        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
-                          {notifications.length}
-                        </Badge>
-                      </div>
-                      <div className="flex items-center space-x-1 sm:space-x-2">
-                        {notifications.some(notif => !notif.is_read) && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
-                            onClick={() => {
-                              // Mark all notifications as read
-                              const unreadNotifications = notifications.filter(
-                                notif => !notif.is_read
-                              );
-                              unreadNotifications.forEach(notif => {
-                                handleMarkNotificationRead(notif._id);
-                              });
-                            }}
-                          >
-                            ✓ Mark all as read
-                          </Button>
-                        )}
-                        {!showAllNotifications && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
-                            onClick={() => setShowAllNotifications(true)}
-                          >
-                            View all
-                          </Button>
-                        )}
-                        {showAllNotifications && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
-                            onClick={() => setShowAllNotifications(false)}
-                          >
-                            Show less
-                          </Button>
-                        )}
-                      </div>
-                    </div>
+              {showNotificationPanel && (
+  <div
+    className={`absolute top-12 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
+      showAllNotifications ? 'w-80 sm:w-96' : 'w-72 sm:w-80'
+    } ${
+      // Responsive positioning
+      'right-0 sm:right-0 md:right-0 lg:right-0 xl:right-0 ' +
+      'left-1/2 sm:left-auto transform -translate-x-1/2 sm:transform-none ' +
+      'max-w-[95vw] sm:max-w-none mx-2 sm:mx-0'
+    }`}
+  >
+    <div className="p-3 sm:p-4 border-b flex items-center justify-between">
+      <div className="flex items-center space-x-2">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+          {showAllNotifications ? 'All Notifications' : 'Notifications'}
+        </h3>
+        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+          {notifications?.length}
+        </Badge>
+      </div>
+      <div className="flex items-center space-x-1 sm:space-x-2">
+        {notifications.some(notif => !notif.is_read) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
+            onClick={() => {
+              // Mark all notifications as read
+              const unreadNotifications = notifications.filter(
+                notif => !notif.is_read
+              );
+              unreadNotifications.forEach(notif => {
+                handleMarkNotificationRead(notif._id);
+              });
+            }}
+          >
+            ✓ Mark all as read
+          </Button>
+        )}
+        {!showAllNotifications && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
+            onClick={() => setShowAllNotifications(true)}
+          >
+            View all
+          </Button>
+        )}
+        {showAllNotifications && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
+            onClick={() => setShowAllNotifications(false)}
+          >
+            Show less
+          </Button>
+        )}
+      </div>
+    </div>
 
+    <div
+      className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 ${
+        showAllNotifications ? 'max-h-96' : 'max-h-80'
+      }`}
+    >
+      {notifications.length === 0 ? (
+        <div className="text-center py-8">
+          <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+          <p className="text-gray-600">No notifications yet</p>
+          <p className="text-sm text-gray-500">
+            You'll be notified about placement drives and application updates here
+          </p>
+        </div>
+      ) : (
+        <div className="p-2">
+          {/* Group notifications by date */}
+          {notifications
+            .reduce((groups: any[], notification) => {
+              const date = new Date(notification.created_at);
+              const today = new Date();
+              const yesterday = new Date(today);
+              yesterday.setDate(yesterday.getDate() - 1);
+
+              let dateLabel = '';
+              if (date.toDateString() === today.toDateString()) {
+                dateLabel = 'Today';
+              } else if (date.toDateString() === yesterday.toDateString()) {
+                dateLabel = 'Yesterday';
+              } else {
+                dateLabel = date.toLocaleDateString('en-US', {
+                  weekday: 'long',
+                  month: 'short',
+                  day: 'numeric',
+                });
+              }
+
+              let group = groups.find(g => g.date === dateLabel);
+              if (!group) {
+                group = { date: dateLabel, notifications: [] };
+                groups.push(group);
+              }
+              group.notifications.push(notification);
+              return groups;
+            }, [])
+            .map((group, groupIndex) => (
+              <div key={groupIndex} className="mb-4">
+                <div className="text-sm text-gray-500 px-2 py-1 font-medium">
+                  {group.date}
+                </div>
+                <div className="space-y-1">
+                  {group.notifications.map((notification: any, index: number) => (
                     <div
-                      className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 ${
-                        showAllNotifications ? 'max-h-96' : 'max-h-80'
+                      key={notification._id}
+                      className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
+                        !notification.is_read
+                          ? 'hover:bg-blue-50 bg-gradient-to-r from-blue-25 to-transparent border-l-2 border-blue-400'
+                          : 'hover:bg-gray-50'
                       }`}
+                      onClick={() => {
+                        if (!notification.is_read) {
+                          handleMarkNotificationRead(notification._id);
+                        }
+                      }}
                     >
-                      {notifications.length === 0 ? (
-                        <div className="text-center py-8">
-                          <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                          <p className="text-gray-600">No notifications yet</p>
-                          <p className="text-sm text-gray-500">
-                            You'll be notified about placement drives and application updates here
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="p-2">
-                          {/* Group notifications by date */}
-                          {notifications
-                            .reduce((groups: any[], notification) => {
-                              const date = new Date(notification.created_at);
-                              const today = new Date();
-                              const yesterday = new Date(today);
-                              yesterday.setDate(yesterday.getDate() - 1);
-
-                              let dateLabel = '';
-                              if (date.toDateString() === today.toDateString()) {
-                                dateLabel = 'Today';
-                              } else if (date.toDateString() === yesterday.toDateString()) {
-                                dateLabel = 'Yesterday';
-                              } else {
-                                dateLabel = date.toLocaleDateString('en-US', {
-                                  weekday: 'long',
-                                  month: 'short',
-                                  day: 'numeric',
-                                });
-                              }
-
-                              let group = groups.find(g => g.date === dateLabel);
-                              if (!group) {
-                                group = { date: dateLabel, notifications: [] };
-                                groups.push(group);
-                              }
-                              group.notifications.push(notification);
-                              return groups;
-                            }, [])
-                            .map((group, groupIndex) => (
-                              <div key={groupIndex} className="mb-4">
-                                <div className="text-sm text-gray-500 px-2 py-1 font-medium">
-                                  {group.date}
-                                </div>
-                                <div className="space-y-1">
-                                  {group.notifications.map((notification: any, index: number) => (
-                                    <div
-                                      key={notification._id}
-                                      className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
-                                        !notification.is_read
-                                          ? 'hover:bg-blue-50 bg-gradient-to-r from-blue-25 to-transparent border-l-2 border-blue-400'
-                                          : 'hover:bg-gray-50'
-                                      }`}
-                                      onClick={() => {
-                                        if (!notification.is_read) {
-                                          handleMarkNotificationRead(notification._id);
-                                        }
-                                      }}
-                                    >
-                                      <div
-                                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-1 ${
-                                          getNotificationIcon(notification.type).bgColor
-                                        }`}
-                                      >
-                                        {getNotificationIcon(notification.type).icon}
-                                      </div>
-                                      <div className="flex-1 min-w-0">
-                                        <div className="flex items-center justify-between mb-1">
-                                          <span className="inline-flex items-center">
-                                            {!notification.is_read && (
-                                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                                            )}
-                                            <span
-                                              className={`text-sm font-medium ${
-                                                !notification.is_read
-                                                  ? 'text-gray-900'
-                                                  : 'text-gray-700'
-                                              }`}
-                                            >
-                                              {notification.title}
-                                            </span>
-                                          </span>
-                                          <span className="text-xs text-gray-500">
-                                            {getTimeAgo(notification.created_at)}
-                                          </span>
-                                        </div>
-                                        <p
-                                          className={`text-sm ${
-                                            !notification.is_read
-                                              ? 'text-gray-700'
-                                              : 'text-gray-600'
-                                          }`}
-                                        >
-                                          {notification.message}
-                                        </p>
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {!showAllNotifications && (
-                      <div className="border-t p-2 sm:p-3 text-center">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
-                          onClick={() => setShowAllNotifications(true)}
-                        >
-                          View all notifications
-                        </Button>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-1 ${
+                          getNotificationIcon(notification.type).bgColor
+                        }`}
+                      >
+                        {getNotificationIcon(notification.type).icon}
                       </div>
-                    )}
-                  </div>
-                )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="inline-flex items-center">
+                            {!notification.is_read && (
+                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                            )}
+                            <span
+                              className={`text-sm font-medium ${
+                                !notification.is_read
+                                  ? 'text-gray-900'
+                                  : 'text-gray-700'
+                              }`}
+                            >
+                              {notification.title}
+                            </span>
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {getTimeAgo(notification.created_at)}
+                          </span>
+                        </div>
+                        <p
+                          className={`text-sm ${
+                            !notification.is_read
+                              ? 'text-gray-700'
+                              : 'text-gray-600'
+                          }`}
+                        >
+                          {notification.message}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+        </div>
+      )}
+    </div>
+
+    {!showAllNotifications && (
+      <div className="border-t p-2 sm:p-3 text-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
+          onClick={() => setShowAllNotifications(true)}
+        >
+          View all notifications
+        </Button>
+      </div>
+    )}
+  </div>
+)}
               </div>
               <Button
                 variant="outline"
@@ -662,7 +667,7 @@ ${applications
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-3xl font-bold mb-1">{dashboardData.stats.totalDrives}</div>
+                <div className="text-3xl font-bold mb-1">{dashboardData.upcomingDrives.length}</div>
                 <p className="text-blue-100 text-sm">Open for application</p>
               </CardContent>
             </Card>
@@ -997,7 +1002,7 @@ ${applications
                                 {application.placement_drive_id.salary_package || 'Not disclosed'}
                               </p>
                             </div>
-                            <div className="flex justify-start sm:justify-end lg:col-span-1">
+                            {/* <div className="flex justify-start sm:justify-end lg:col-span-1">
                               <Button
                                 variant="outline"
                                 size="sm"
@@ -1005,7 +1010,7 @@ ${applications
                               >
                                 View Details
                               </Button>
-                            </div>
+                            </div> */}
                           </div>
                           {application.resume_url && (
                             <div className="mt-4 p-3 bg-gray-50 rounded-lg">

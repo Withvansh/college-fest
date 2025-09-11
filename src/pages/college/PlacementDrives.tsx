@@ -73,6 +73,7 @@ const PlacementDrives = () => {
     salary_package: '',
     requirements: '',
     positions_available: 1,
+    offCampus:false
   });
 
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
@@ -88,6 +89,7 @@ const PlacementDrives = () => {
     setIsLoading(true);
     try {
       const response = await placementDriveAPI.getPlacementDrives(collegeId);
+      console.log(response)
       setDrives(response.drives || []);
     } catch (error) {
       console.error('Error fetching drives:', error);
@@ -112,6 +114,7 @@ const PlacementDrives = () => {
       salary_package: '',
       requirements: '',
       positions_available: 1,
+      offCampus: false,
     });
     setFormErrors({});
   };
@@ -415,6 +418,25 @@ const PlacementDrives = () => {
                           </SelectContent>
                         </Select>
                       </div>
+<div>
+  <Label htmlFor="offCampus">Off-Campus Drive</Label>
+  <Select
+    value={formData.offCampus ? "true" : "false"}
+    onValueChange={(value) =>
+      setFormData({ ...formData, offCampus: value === "true" })
+    }
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select option" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="true">Yes</SelectItem>
+      <SelectItem value="false">No</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+
                       <div>
                         <Label htmlFor="location">Location</Label>
                         <Input
@@ -439,6 +461,25 @@ const PlacementDrives = () => {
                           <p className="text-red-500 text-sm mt-1">{formErrors.eligibility}</p>
                         )}
                       </div>
+   <div>
+  <Label htmlFor="offCampus">Off-Campus Drive</Label>
+  <Select
+    value={formData.offCampus ? "true" : "false"}
+    onValueChange={(value) =>
+      setFormData({ ...formData, offCampus: value === "true" })
+    }
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select option" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="true">Yes</SelectItem>
+      <SelectItem value="false">No</SelectItem>
+    </SelectContent>
+  </Select>
+</div>
+
+
                       <div>
                         <Label htmlFor="lastDate">Last Date of Registration *</Label>
                         <Input
