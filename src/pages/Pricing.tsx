@@ -380,7 +380,7 @@ const Pricing = () => {
           clientPro: 'Unlimited Projects',
         },
         {
-          name: 'Resume/Portfolio Builder',
+          name: 'Resume Builder',
           free: 'Basic',
           elite: 'AI-enhanced',
           freelancerPro: 'Advanced Portfolio',
@@ -544,18 +544,6 @@ const Pricing = () => {
         <div
           className={`absolute inset-0 bg-gradient-to-br ${plan.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}
         />
-
-        {/* Popular Badge */}
-        {/* {isPopular && (
-          <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 z-20">
-            <Badge
-              className={`bg-gradient-to-r ${plan.gradient} text-white px-4 py-1.5 sm:px-6 sm:py-2 text-xs sm:text-sm font-bold shadow-lg animate-pulse`}
-            >
-              <Star className="w-2 h-2 sm:w-4 sm:h-4 mr-1 fill-current" />
-              Most Popular
-            </Badge>
-          </div>
-        )} */}
 
         <CardHeader className="text-center pb-4 sm:pb-6 relative z-10 px-4 sm:px-6 pt-6 sm:pt-8">
           {/* Icon with gradient background */}
@@ -1017,30 +1005,32 @@ const Pricing = () => {
 
         {/* Comparison Table */}
         <section className="relative z-10 py-20 bg-white">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-16">
-              <div className="inline-flex items-center px-6 py-3 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-200/50 text-blue-700 text-sm font-semibold mb-6">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+            <div className="text-center mb-10 sm:mb-16">
+              <div className="inline-flex items-center px-4 sm:px-6 py-2 sm:py-3 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 border border-blue-200/50 text-blue-700 text-xs sm:text-sm font-semibold mb-4 sm:mb-6">
                 <Shield className="w-5 h-5 mr-2" />
                 Detailed Comparison
               </div>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Compare All Features</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+              <h2 className="text-2xl sm:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
+                Compare All Features
+              </h2>
+              <p className="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
                 See exactly what's included in each plan to make the best choice for your needs
               </p>
             </div>
 
-            <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-              <Tabs defaultValue="individuals" className="w-full">
-                <TabsList className="grid w-full h-auto max-w-md mx-auto grid-cols-2 m-6 bg-white shadow-lg border border-gray-200 p-2 rounded-2xl">
+            <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl border border-gray-100 overflow-x-auto">
+              <Tabs defaultValue="individuals" className="w-full min-w-[340px]">
+                <TabsList className="grid w-full h-auto max-w-xs sm:max-w-md mx-auto grid-cols-2 m-4 sm:m-6 bg-white shadow-lg border border-gray-200 p-1 sm:p-2 rounded-xl sm:rounded-2xl">
                   <TabsTrigger
                     value="individuals"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-300 text-sm"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2 px-2 sm:py-2.5 sm:px-3 rounded-lg sm:rounded-xl transition-all duration-300 text-xs sm:text-sm"
                   >
                     Individual Plans
                   </TabsTrigger>
                   <TabsTrigger
                     value="organizations"
-                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2.5 px-3 rounded-xl transition-all duration-300 text-sm"
+                    className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-purple-600 data-[state=active]:text-white font-semibold py-2 px-2 sm:py-2.5 sm:px-3 rounded-lg sm:rounded-xl transition-all duration-300 text-xs sm:text-sm"
                   >
                     Organization Plans
                   </TabsTrigger>
@@ -1052,12 +1042,14 @@ const Pricing = () => {
                     .map((category, categoryIndex) => (
                       <div key={categoryIndex}>
                         {/* Category Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-6 py-4">
-                          <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-3 sm:px-6 py-3 sm:py-4">
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                            {category.category}
+                          </h3>
                         </div>
 
                         {/* Header Row */}
-                        <div className="grid grid-cols-5 gap-4 px-6 py-4 bg-gray-50/50 text-sm font-semibold text-gray-700 border-b border-gray-100">
+                        <div className="grid grid-cols-5 gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-4 bg-gray-50/50 text-xs sm:text-sm font-semibold text-gray-700 border-b border-gray-100">
                           <div className="col-span-1">Feature</div>
                           <div className="text-center">Free</div>
                           <div className="text-center">Elite (₹699)</div>
@@ -1071,8 +1063,8 @@ const Pricing = () => {
                             key={featureIndex}
                             className="border-b border-gray-50 last:border-b-0"
                           >
-                            <div className="grid grid-cols-5 gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors duration-200">
-                              <div className="col-span-1 font-medium text-gray-900">
+                            <div className="grid grid-cols-5 gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-4 hover:bg-blue-50/30 transition-colors duration-200">
+                              <div className="col-span-1 font-medium text-gray-900 text-xs sm:text-sm">
                                 {feature.name}
                               </div>
 
@@ -1087,13 +1079,13 @@ const Pricing = () => {
                                   className="text-center flex items-center justify-center"
                                 >
                                   {value === '✅' ? (
-                                    <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
-                                      <Check className="h-4 w-4 text-green-600" />
+                                    <div className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100">
+                                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                                     </div>
                                   ) : value === '—' ? (
-                                    <X className="h-4 w-4 text-gray-400" />
+                                    <X className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                                   ) : (
-                                    <span className="text-sm font-medium text-gray-700">
+                                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                                       {value}
                                     </span>
                                   )}
@@ -1112,12 +1104,14 @@ const Pricing = () => {
                     .map((category, categoryIndex) => (
                       <div key={categoryIndex}>
                         {/* Category Header */}
-                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-6 py-4">
-                          <h3 className="text-lg font-bold text-gray-900">{category.category}</h3>
+                        <div className="bg-gradient-to-r from-gray-50 to-blue-50/50 px-3 sm:px-6 py-3 sm:py-4">
+                          <h3 className="text-base sm:text-lg font-bold text-gray-900">
+                            {category.category}
+                          </h3>
                         </div>
 
                         {/* Header Row */}
-                        <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-50/50 text-sm font-semibold text-gray-700 border-b border-gray-100">
+                        <div className="grid grid-cols-6 gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-4 bg-gray-50/50 text-xs sm:text-sm font-semibold text-gray-700 border-b border-gray-100">
                           <div className="col-span-1">Feature</div>
                           <div className="text-center">HR Free</div>
                           <div className="text-center">HRMS (₹599)</div>
@@ -1132,8 +1126,8 @@ const Pricing = () => {
                             key={featureIndex}
                             className="border-b border-gray-50 last:border-b-0"
                           >
-                            <div className="grid grid-cols-6 gap-4 px-6 py-4 hover:bg-blue-50/30 transition-colors duration-200">
-                              <div className="col-span-1 font-medium text-gray-900">
+                            <div className="grid grid-cols-6 gap-2 sm:gap-4 px-3 sm:px-6 py-2 sm:py-4 hover:bg-blue-50/30 transition-colors duration-200">
+                              <div className="col-span-1 font-medium text-gray-900 text-xs sm:text-sm">
                                 {feature.name}
                               </div>
 
@@ -1149,13 +1143,13 @@ const Pricing = () => {
                                   className="text-center flex items-center justify-center"
                                 >
                                   {value === '✅' || value?.includes('✅') ? (
-                                    <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-green-100">
-                                      <Check className="h-4 w-4 text-green-600" />
+                                    <div className="inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-green-100">
+                                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-600" />
                                     </div>
                                   ) : value === '—' ? (
-                                    <X className="h-4 w-4 text-gray-400" />
+                                    <X className="h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                                   ) : (
-                                    <span className="text-sm font-medium text-gray-700">
+                                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                                       {value}
                                     </span>
                                   )}
@@ -1170,10 +1164,10 @@ const Pricing = () => {
               </Tabs>
             </div>
 
-            <div className="text-center mt-12">
+            <div className="text-center mt-8 sm:mt-12">
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg font-bold rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300"
               >
                 <Rocket className="w-5 h-5 mr-2" />
                 Start Your Free Trial
@@ -1318,10 +1312,9 @@ const Pricing = () => {
           planName={selectedPlan?.name || ''}
           planPrice={selectedPlan?.price || ''}
         />
-
-        <Footer />
-        <FloatingActionButtons />
       </div>
+      <Footer />
+      <FloatingActionButtons />
     </>
   );
 };

@@ -24,7 +24,7 @@ const Blog = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const publishedPosts = await blogApi.getPublishedPosts(currentPage, 12);
+      const publishedPosts = await blogApi.getPublishedPosts(currentPage, 20);
       setPosts(publishedPosts);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
@@ -51,7 +51,7 @@ const Blog = () => {
 
     try {
       setLoading(true);
-      const searchResults = await blogApi.getPublishedPosts(1, 50);
+      const searchResults = await blogApi.getPublishedPosts(1, 20);
       const filteredPosts = searchResults.filter(
         post =>
           post.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -79,7 +79,7 @@ const Blog = () => {
 
     try {
       setLoading(true);
-      const allPosts = await blogApi.getPublishedPosts(1, 100);
+      const allPosts = await blogApi.getPublishedPosts(1, 20);
       const filteredPosts = allPosts.filter(post => post.tags?.includes(tag));
       setPosts(filteredPosts);
     } catch (error) {

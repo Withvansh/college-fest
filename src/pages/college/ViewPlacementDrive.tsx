@@ -207,9 +207,7 @@ const ViewPlacementDrive = () => {
                       {drive.salary_package && (
                         <div className="flex items-center">
                           <span className="font-medium w-24">Package:</span>
-                          <Badge variant="outline" className="font-mono">
-                            {drive.salary_package}
-                          </Badge>
+                          {drive.salary_package}LPA
                         </div>
                       )}
                       <div className="flex items-center">
