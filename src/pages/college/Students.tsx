@@ -103,6 +103,10 @@ const Students = () => {
     year: '1',
   });
 
+  // Track if any upload is queued/processing in persistent store
+  const [hasPendingUpload, setHasPendingUpload] = useState<boolean>(false);
+  const [pendingJobInfo, setPendingJobInfo] = useState<{ jobId?: string; status?: string } | null>(null);
+
   // Pagination state
   const [pagination, setPagination] = useState<PaginationInfo>({
     total: 0,
@@ -120,6 +124,41 @@ const Students = () => {
   useEffect(() => {
     fetchStudentData();
   }, [pagination.page, pagination.limit, sortField, sortOrder, departmentFilter, searchTerm]);
+
+  // Poll persistent uploads API for this college
+  useEffect(() => {
+    const collegeId = localStorage.getItem('user_id');
+    if (!collegeId) return;
+
+    let interval: number | undefined;
+    const poll = async () => {
+      try {
+        const url = `${import.meta.env.VITE_API_URL_EXCEL}/uploads/college/${collegeId}?limit=5`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Failed to fetch uploads');
+        const uploads = await res.json();
+        const active = (uploads || []).find((u: any) => u.status === 'queued' || u.status === 'processing');
+        setHasPendingUpload(!!active);
+        setPendingJobInfo(active ? { jobId: active.jobId, status: active.status } : null);
+
+        // If still pending, keep polling; otherwise clear
+        if (!active && interval) {
+          window.clearInterval(interval);
+        }
+      } catch (e) {
+        // don't spam toasts here; keep UI resilient
+        console.error('Upload polling error', e);
+      }
+    };
+
+    // Start immediately and then every 2s
+    poll();
+    interval = window.setInterval(poll, 2000) as unknown as number;
+
+    return () => {
+      if (interval) window.clearInterval(interval);
+    };
+  }, []);
 
   const fetchStudentData = async () => {
     try {
@@ -278,6 +317,11 @@ const Students = () => {
       return;
     }
 
+    if (hasPendingUpload) {
+      toast.error('An upload is already in progress. Please wait until it completes.');
+      return;
+    }
+
     setUploading(true);
 
     try {
@@ -299,6 +343,10 @@ const Students = () => {
       const result = await response.json();
       toast.success('File uploaded successfully. Processing students...');
       
+      // Mark as pending immediately and rely on polling to reflect state
+      setHasPendingUpload(true);
+      setPendingJobInfo({ jobId: result.jobId, status: 'queued' });
+
       // Start checking status
       checkCollegeStatus();
 
@@ -374,12 +422,12 @@ const Students = () => {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => document.getElementById('bulk-import-input')?.click()}
-                  disabled={uploading || uploadStatus?.status === 'processing'}
+                  onClick={() => !hasPendingUpload && document.getElementById('bulk-import-input')?.click()}
+                  disabled={uploading || uploadStatus?.status === 'processing' || hasPendingUpload}
                   className="text-xs sm:text-sm"
                 >
                   <Upload className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                  Bulk Import
+                  {hasPendingUpload ? 'Upload in progress' : 'Bulk Import'}
                 </Button>
                 <Input
                   id="bulk-import-input"
@@ -387,15 +435,15 @@ const Students = () => {
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer hidden"
                   onChange={handleBulkImport}
                   accept=".xlsx,.xls"
-                  disabled={uploading || uploadStatus?.status === 'processing'}
+                  disabled={uploading || uploadStatus?.status === 'processing' || hasPendingUpload}
                 />
-                {uploadStatus?.status === 'processing' && (
+                {(uploadStatus?.status === 'processing' || hasPendingUpload) && (
                   <div className="absolute top-full left-0 right-0 mt-2 bg-orange-50 border border-orange-200 rounded-md p-2 shadow-sm">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-orange-700">Processing students...</span>
+                      <span className="text-xs text-orange-700">{pendingJobInfo?.status === 'queued' ? 'Queued...' : 'Processing students...'}</span>
                       <div className="animate-spin rounded-full h-3 w-3 border-b border-orange-600" />
                     </div>
-                    {uploadStatus.totalStudents && uploadStatus.processedStudents && (
+                    {uploadStatus?.totalStudents && uploadStatus?.processedStudents && (
                       <div className="w-full bg-orange-200 rounded-full h-1.5">
                         <div
                           className="bg-orange-600 h-1.5 rounded-full transition-all duration-500"
@@ -787,7 +835,7 @@ const Students = () => {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-gray-500">
-                        No students found.{' '}
+                        No students found.{" "}
                         {searchTerm || departmentFilter !== 'all'
                           ? 'Try adjusting your filters.'
                           : 'Add students to get started.'}
