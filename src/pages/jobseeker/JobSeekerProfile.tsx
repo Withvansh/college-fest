@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import ProfilePictureUpload from '@/components/profile/ProfilePictureUpload';
 
 interface UserProfile {
   id: string;
@@ -349,6 +350,10 @@ const JobSeekerProfile = () => {
     );
   };
 
+  const handleAvatarUpdate = (newAvatarUrl: string | null) => {
+    setProfile(prev => (prev ? { ...prev, avatarUrl: newAvatarUrl || '' } : null));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -410,8 +415,14 @@ const JobSeekerProfile = () => {
           <div className="lg:col-span-1">
             <Card>
               <CardContent className="p-6 text-center">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <User className="h-12 w-12 text-white" />
+                <div className="mb-4 flex justify-center">
+                  <ProfilePictureUpload
+                    userId={profile.id}
+                    currentAvatarUrl={profile.avatarUrl}
+                    onAvatarUpdate={handleAvatarUpdate}
+                    size="large"
+                    isEditing={isEditing}
+                  />
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
                 <p className="text-gray-600 mb-4">{profile.email}</p>

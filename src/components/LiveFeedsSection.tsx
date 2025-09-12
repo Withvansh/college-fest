@@ -130,13 +130,13 @@ const LiveFeedsSection = () => {
     if (!isAuthenticated || !user?._id) return;
 
     try {
-      console.log('Fetching applied jobs for user:', user._id); // Debug log
+      
       const response = await applicationsApi.getApplications(user._id);
-      console.log('Applications response:', response); // Debug log
+    
 
       // Use the same structure as JobSeekerApplications
       const userApplications = (response as any)?.data || response;
-      console.log('User applications:', userApplications); // Debug log
+     
 
       if (Array.isArray(userApplications)) {
         const appliedJobIds = new Set(
@@ -144,13 +144,12 @@ const LiveFeedsSection = () => {
             .map((app: any) => {
               // Get job ID from the populated job_id field
               const jobId = app.job_id?._id || app.job_id;
-              console.log('Job ID from application:', jobId); // Debug log
+              
               return jobId;
             })
             .filter(Boolean)
         );
 
-        console.log('Applied job IDs:', Array.from(appliedJobIds)); // Debug log
         setAppliedJobs(appliedJobIds);
       } else {
         console.log('No applications found or invalid format');

@@ -157,7 +157,6 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newSkill, setNewSkill] = useState('');
-  const [placementDrives, setPlacementDrives] = useState<PlacementDrive[]>([]);
 
   const loadProfile = useCallback(async () => {
     if (!user?._id) return;
