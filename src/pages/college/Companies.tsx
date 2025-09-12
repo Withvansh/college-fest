@@ -24,7 +24,8 @@ import {
   Crown,
   Send,
   Eye,
-  Loader2
+  Loader2,
+  View
 } from "lucide-react";
 import { recruiterProfileAPI, RecruiterProfile } from '@/lib/api/Recuriter';
 import { companyInviteAPI } from '@/lib/api/CompanyInvite';
@@ -403,6 +404,11 @@ const Companies = () => {
                 </div>
               </CardHeader>
               <CardContent>
+                <Link to={"/college/company/invites"}> <Button className="bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm h-8 sm:h-10">
+                        <View className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      Manage invite
+                      </Button></Link>
+               
                 <div className="mb-4 sm:mb-6">
                   <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 mb-3 sm:mb-4">
                     <h2 className="text-lg sm:text-xl font-semibold">All Companies</h2>

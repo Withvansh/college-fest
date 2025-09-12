@@ -124,6 +124,7 @@ import Preloader from './components/Preloader';
 import { useState } from 'react';
 import ManageDrives from './pages/recruiter/ManageDrives';
 import ViewDriveRequest from './pages/recruiter/ViewDriveRequest';
+import ManageCollegeInvite from './pages/college/ManageCollegeInvite';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -501,6 +502,14 @@ const App = () => {
   element={
     <UnifiedProtectedRoute allowedRoles={['college']}>
       <PlacementDrives />
+    </UnifiedProtectedRoute>
+  }
+/>
+<Route
+  path="/college/company/invites"
+  element={
+    <UnifiedProtectedRoute allowedRoles={['college']}>
+      <ManageCollegeInvite />
     </UnifiedProtectedRoute>
   }
 />

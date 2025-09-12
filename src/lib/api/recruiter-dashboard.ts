@@ -32,7 +32,7 @@ export interface Job {
   _id: string;
   title: string;
   description: string;
-  requirements: string; // Backend uses string, not array
+  requirements: string; 
   company_name: string;
   location: string;
   job_type: 'full_time' | 'part_time' | 'contract' | 'internship' | 'freelance';

@@ -90,7 +90,7 @@ export const companyInviteAPI = {
     collegeId: string
   ): Promise<CompanyInviteResponse> => {
     const response = await axios.get(
-      `/company-invite/credits?collegeId=${collegeId}`
+      `/company-invite/credits?college_id=${collegeId}`
     );
     return response.data;
   },
