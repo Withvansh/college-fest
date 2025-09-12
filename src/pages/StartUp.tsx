@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Plus,
   IndianRupeeIcon,
+  BadgeCheck,
 } from 'lucide-react';
 import {
   Select,
@@ -45,6 +46,7 @@ type Startup = {
   funding_stage: string;
   logo_url?: string;
   created_at: string;
+  hiring: string;
 };
 
 type PaginationInfo = {
@@ -258,10 +260,26 @@ const StartupsPage = () => {
           {startups.map(startup => (
             <Card
               key={startup._id}
-              className="cursor-pointer hover:shadow-xl transition-all duration-300 border-0 bg-gradient-to-br from-white to-blue-50 overflow-hidden group"
+              className={`cursor-pointer hover:shadow-xl transition-all duration-300 border-0 overflow-hidden group ${
+                startup.hiring
+                  ? 'bg-gradient-to-br from-green-50 to-emerald-100 border-l-4 border-l-green-500 shadow-md'
+                  : 'bg-gradient-to-br from-white to-blue-50'
+              }`}
               onClick={() => setSelectedStartup(startup)}
             >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-indigo-600"></div>
+              <div className={`absolute top-0 left-0 w-full h-1 ${
+                startup.hiring 
+                  ? 'bg-gradient-to-r from-green-500 to-emerald-600' 
+                  : 'bg-gradient-to-r from-blue-500 to-indigo-600'
+              }`}></div>
+              
+              {startup.hiring  && (
+                <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-semibold px-2 py-1 rounded-full flex items-center gap-1 z-10">
+                  <BadgeCheck className="h-3 w-3" />
+                  Hiring
+                </div>
+              )}
+              
               <CardHeader className="pb-3">
                 <div className="flex items-start gap-4">
                   {startup.logo_url ? (
@@ -271,16 +289,34 @@ const StartupsPage = () => {
                       className="h-12 w-12 rounded-lg object-cover border border-gray-200"
                     />
                   ) : (
-                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                      <Building2 className="h-6 w-6 text-blue-600" />
+                    <div className={`h-12 w-12 rounded-lg flex items-center justify-center ${
+                      startup.hiring 
+                        ? 'bg-gradient-to-br from-green-100 to-emerald-200'
+                        : 'bg-gradient-to-br from-blue-100 to-indigo-100'
+                    }`}>
+                      <Building2 className={`h-6 w-6 ${
+                        startup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                   )}
+               
                   <div className="flex-1">
-                    <CardTitle className="text-xl group-hover:text-blue-600 transition-colors">
+                    <CardTitle className={`text-xl group-hover:${
+                      startup.hiring  ? 'text-green-700' : 'text-blue-600'
+                    } transition-colors`}>
                       {startup.startup_name}
                     </CardTitle>
-                    <p className="text-sm text-blue-600 font-medium mt-1">{startup.industry}</p>
+                    <p className={`text-sm font-medium mt-1 ${
+                      startup.hiring  ? 'text-green-600' : 'text-blue-600'
+                    }`}>
+                      {startup.industry}
+                    </p>
                   </div>
+                     { startup?.hiring  && (
+                      <span className="ml-3 bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded-full inline-flex items-center">
+                        <BadgeCheck className="h-4 w-4 mr-1" />
+                        Hiring
+                      </span>)}
                 </div>
               </CardHeader>
               <CardContent className="pt-0">
@@ -364,15 +400,31 @@ const StartupsPage = () => {
                     className="h-16 w-16 rounded-xl object-cover border border-gray-200"
                   />
                 ) : (
-                  <div className="h-16 w-16 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center">
-                    <Building2 className="h-8 w-8 text-blue-600" />
+                  <div className={`h-16 w-16 rounded-xl flex items-center justify-center ${
+                    selectedStartup?.hiring 
+                      ? 'bg-gradient-to-br from-green-100 to-emerald-200'
+                      : 'bg-gradient-to-br from-blue-100 to-indigo-100'
+                  }`}>
+                    <Building2 className={`h-8 w-8 ${
+                      selectedStartup?.hiring ? 'text-green-600' : 'text-blue-600'
+                    }`} />
                   </div>
                 )}
                 <div>
                   <DialogTitle className="text-2xl font-bold text-gray-900">
                     {selectedStartup?.startup_name}
+                    {selectedStartup?.hiring  && (
+                      <span className="ml-3 bg-green-100 text-green-800 text-sm font-medium px-2.5 py-0.5 rounded-full inline-flex items-center">
+                        <BadgeCheck className="h-4 w-4 mr-1" />
+                        Hiring
+                      </span>
+                    )}
                   </DialogTitle>
-                  <p className="text-blue-600 font-medium mt-1">{selectedStartup?.industry}</p>
+                  <p className={`font-medium mt-1 ${
+                    selectedStartup?.hiring  ? 'text-green-600' : 'text-blue-600'
+                  }`}>
+                    {selectedStartup?.industry}
+                  </p>
                 </div>
               </div>
             </DialogHeader>
@@ -385,8 +437,12 @@ const StartupsPage = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <User className="h-5 w-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${
+                      selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <User className={`h-5 w-5 ${
+                        selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Founder</p>
@@ -395,8 +451,12 @@ const StartupsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <MapPin className="h-5 w-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${
+                      selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <MapPin className={`h-5 w-5 ${
+                        selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Location</p>
@@ -405,8 +465,12 @@ const StartupsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Users className="h-5 w-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${
+                      selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <Users className={`h-5 w-5 ${
+                        selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Team Size</p>
@@ -417,8 +481,12 @@ const StartupsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <IndianRupeeIcon className="h-5 w-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${
+                      selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <IndianRupeeIcon className={`h-5 w-5 ${
+                        selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Funding Stage</p>
@@ -427,8 +495,12 @@ const StartupsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <Calendar className="h-5 w-5 text-blue-600" />
+                    <div className={`p-2 rounded-lg ${
+                      selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                    }`}>
+                      <Calendar className={`h-5 w-5 ${
+                        selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <p className="text-sm font-medium text-gray-500">Founded</p>
@@ -438,8 +510,12 @@ const StartupsPage = () => {
 
                   {selectedStartup.website && (
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <Globe className="h-5 w-5 text-blue-600" />
+                      <div className={`p-2 rounded-lg ${
+                        selectedStartup.hiring  ? 'bg-green-100' : 'bg-blue-100'
+                      }`}>
+                        <Globe className={`h-5 w-5 ${
+                          selectedStartup.hiring  ? 'text-green-600' : 'text-blue-600'
+                        }`} />
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-500">Website</p>
@@ -459,7 +535,11 @@ const StartupsPage = () => {
                 <div className="pt-4 flex justify-end">
                   <Button
                     onClick={() => setSelectedStartup(null)}
-                    className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                    className={`bg-gradient-to-r text-white hover:from-blue-700 hover:to-indigo-700 ${
+                      selectedStartup.hiring 
+                        ? 'from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700'
+                        : 'from-blue-600 to-indigo-600'
+                    }`}
                   >
                     Close
                   </Button>

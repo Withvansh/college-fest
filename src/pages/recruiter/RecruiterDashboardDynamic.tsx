@@ -280,8 +280,8 @@ const RecruiterDashboardDynamic = () => {
           applications: Array.isArray(userDashboard.totalApplications)
             ? userDashboard.totalApplications.length
             : userDashboard.totalApplications || totalApplicationsCount || 0,
-          testsCreated: 5, // Mock data
-          interviewsScheduled: 12, // Mock data
+          testsCreated: 0, // Mock data
+          interviewsScheduled: 0, // Mock data
         },
         mockData: {
           recentJobs: [],
@@ -717,6 +717,19 @@ const RecruiterDashboardDynamic = () => {
                 </Card>
               </Link>
 
+              <Link to="/recruiter/college/drives" className="block">
+                <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-sm">
+                      <Building2 className="mr-2 h-4 w-4 text-purple-600" />
+                      College drives
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 text-xs">Manage college drives for recruitment.</p>
+                  </CardContent>
+                </Card>
+              </Link>
               <Link to="/recruiter/hrms" className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">

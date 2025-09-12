@@ -50,6 +50,7 @@ export interface StartupProfile {
   employees_count?: number;
   logo_url?: string;
   publicProfile?: boolean;
+  hiring: boolean;
 }
 
 const StartupProfile = () => {
@@ -83,6 +84,7 @@ const StartupProfile = () => {
         employees_count: data.employees_count || 0,
         logo_url: data.logo_url || '',
         publicProfile: data.publicProfile ?? true,
+        hiring: data.hiring ?? false,
       });
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -116,6 +118,7 @@ const StartupProfile = () => {
         employees_count: profile.employees_count,
         logo_url: profile.logo_url,
         publicProfile: profile.publicProfile,
+        hiring: profile.hiring, // Added hiring to the payload
       };
 
       // Clean the payload by removing any keys with 'undefined' values
@@ -562,6 +565,26 @@ const StartupProfile = () => {
                     checked={profile.publicProfile}
                     onCheckedChange={checked =>
                       setProfile(prev => (prev ? { ...prev, publicProfile: checked } : null))
+                    }
+                    disabled={!isEditing}
+                  />
+                </div>
+                
+                {/* Hiring Status Toggle */}
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div>
+                    <h4 className="font-medium">Hiring Status</h4>
+                    <p className="text-sm text-gray-600">
+                      {profile.hiring 
+                        ? 'Your profile shows that you are currently hiring' 
+                        : 'Your profile shows that you are not currently hiring'
+                      }
+                    </p>
+                  </div>
+                  <Switch
+                    checked={profile.hiring}
+                    onCheckedChange={checked =>
+                      setProfile(prev => (prev ? { ...prev, hiring: checked } : null))
                     }
                     disabled={!isEditing}
                   />

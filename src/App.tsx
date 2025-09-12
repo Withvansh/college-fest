@@ -122,6 +122,8 @@ import ViewCompany from './pages/college/ViewCompany';
 // import ProfileSetup from '@/pages/ProfileSetup';
 import Preloader from './components/Preloader';
 import { useState } from 'react';
+import ManageDrives from './pages/recruiter/ManageDrives';
+import ViewDriveRequest from './pages/recruiter/ViewDriveRequest';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -300,6 +302,22 @@ const App = () => {
                       element={
                         <UnifiedProtectedRoute allowedRoles={['recruiter']}>
                           <CreateTest />
+                        </UnifiedProtectedRoute>
+                      }
+                    />
+                     <Route
+                      path="/recruiter/college/drives"
+                      element={
+                        <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                          <ManageDrives/>
+                        </UnifiedProtectedRoute>
+                      }
+                    />
+                     <Route
+                      path="/recruiter/drive-details/:id"
+                      element={
+                        <UnifiedProtectedRoute allowedRoles={['recruiter']}>
+                          <ViewDriveRequest/>
                         </UnifiedProtectedRoute>
                       }
                     />

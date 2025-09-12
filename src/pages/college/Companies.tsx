@@ -50,28 +50,50 @@ const Companies = () => {
   const [inviteData, setInviteData] = useState({
     companyName: '',
     contactEmail: '',
+    recruiterId: '', // Added required field
+    jobRole: '',     // Added required field
+    driveDate: '', 
+    college_id:'',  // Added required field
     message: 'We would like to invite your company to participate in our campus recruitment program.'
   });
-  const [remainingCredits, setRemainingCredits] = useState(5);
+  
+  // Initialize remainingCredits from localStorage or default to 5
+  const [remainingCredits, setRemainingCredits] = useState(() => {
+    const savedCredits = localStorage.getItem('inviteCredits');
+    return savedCredits ? parseInt(savedCredits, 10) : 5;
+  });
+  
   const [selectedCompany, setSelectedCompany] = useState<RecruiterProfile | null>(null);
 
-  // Fetch companies data from API
+  // Fetch companies data from API and credits
   useEffect(() => {
-    const fetchCompanies = async () => {
+    const fetchData = async () => {
       try {
         setIsLoading(true);
         // Get all recruiter profiles
         const recruiters = await recruiterProfileAPI.getRandomRecruiters();
         setCompanies(recruiters);
+        
+        // Fetch remaining credits if not in localStorage
+        if (!localStorage.getItem('inviteCredits')) {
+          const collegeId = localStorage.getItem("user_id");
+          if (collegeId) {
+            const creditsResponse = await companyInviteAPI.getRemainingCredits(collegeId);
+            if (creditsResponse.remainingCredits !== undefined) {
+              setRemainingCredits(creditsResponse.remainingCredits);
+              localStorage.setItem('inviteCredits', creditsResponse.remainingCredits.toString());
+            }
+          }
+        }
       } catch (error) {
-        console.error('Error fetching companies:', error);
-        toast.error("Failed to load companies data");
+        console.error('Error fetching data:', error);
+        toast.error("Failed to load data");
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchCompanies();
+    fetchData();
   }, []);
 
   const handleAddCompany = async (e: React.FormEvent) => {
@@ -124,23 +146,37 @@ const Companies = () => {
     }
 
     try {
-      const response = await companyInviteAPI.sendInvite({
+      const college_id = localStorage.getItem("user_id") as string;
+      
+      const response = await companyInviteAPI.sendInviteAndCreateDrive({
         companyName: inviteData.companyName,
         contactEmail: inviteData.contactEmail,
         message: inviteData.message,
-        collegeId: localStorage.getItem("user_id")
+        college_id: college_id,
+        recruiter_id: inviteData.recruiterId,
+        job_role: inviteData.jobRole,
+        drive_date: inviteData.driveDate
       });
 
-      setRemainingCredits(response.remainingCredits);
+      // Update credits in state and localStorage
+      if (response.remainingCredits !== undefined) {
+        setRemainingCredits(response.remainingCredits);
+        localStorage.setItem('inviteCredits', response.remainingCredits.toString());
+      }
+      
       setIsInviteModalOpen(false);
       setInviteData({
         companyName: '',
         contactEmail: '',
+        recruiterId: '',
+        jobRole: '',
+        driveDate: '',
+        college_id:'',
         message: 'We would like to invite your company to participate in our campus recruitment program.'
       });
       setSelectedCompany(null);
       toast.success("Invitation sent successfully!");
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending invitation:', error);
       toast.error(error.response?.data?.message || "Failed to send invitation");
     }
@@ -191,7 +227,8 @@ const Companies = () => {
     setInviteData({
       ...inviteData,
       companyName: company.company_name,
-      contactEmail: company.email
+      contactEmail: company.email,
+      recruiterId: company._id || '', // Use company ID as recruiter ID
     });
     setIsInviteModalOpen(true);
   };
@@ -320,6 +357,26 @@ const Companies = () => {
                             value={inviteData.contactEmail}
                             onChange={(e) => setInviteData({...inviteData, contactEmail: e.target.value})}
                             placeholder="contact@company.com"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="jobRole">Job Role</Label>
+                          <Input
+                            id="jobRole"
+                            value={inviteData.jobRole}
+                            onChange={(e) => setInviteData({...inviteData, jobRole: e.target.value})}
+                            placeholder="e.g., Software Engineer"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="driveDate">Drive Date</Label>
+                          <Input
+                            id="driveDate"
+                            type="date"
+                            value={inviteData.driveDate}
+                            onChange={(e) => setInviteData({...inviteData, driveDate: e.target.value})}
                             required
                           />
                         </div>
@@ -470,6 +527,7 @@ const Companies = () => {
                                   variant="outline"
                                   className="text-xs h-7 w-full sm:w-auto sm:h-9 sm:text-sm"
                                   onClick={() => openInviteDialog(company)}
+                                  disabled={remainingCredits <= 0}
                                 >
                                   <Send className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                                   Invite
