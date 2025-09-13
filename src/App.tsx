@@ -689,7 +689,7 @@ const App = () => {
           <SpeedInsights />
         </TooltipProvider>
       </QueryClientProvider>
-      {isLoading && <Preloader onLoadComplete={() => setIsLoading(false)} />}
+      {/* {isLoading && <Preloader onLoadComplete={() => setIsLoading(false)} />} */}
     </div>
   );
 };

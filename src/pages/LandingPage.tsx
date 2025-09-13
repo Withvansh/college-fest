@@ -186,7 +186,7 @@ const LandingPage = () => {
       {/* Hero Section - Enhanced */}
       <div className="relative overflow-hidden w-full min-h-screen flex items-center bg-white">
         {/* Noise Texture (Darker Dots) Background */}
-        <div
+        {/* <div
           className="absolute inset-0 z-0"
           style={{
             background: '#ffffff',
@@ -194,7 +194,7 @@ const LandingPage = () => {
               'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.35) 1px, transparent 0)',
             backgroundSize: '15px 15px',
           }}
-        />
+        /> */}
         {/* Enhanced Animated Background Shapes - Responsive */}
         <div className="absolute top-5 sm:top-10 left-5 sm:left-10 w-48 h-48 sm:w-80 sm:h-80 lg:w-[32rem] lg:h-[32rem] bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse"></div>
         <div className="absolute top-16 sm:top-32 right-5 sm:right-10 w-44 h-44 sm:w-72 sm:h-72 lg:w-[28rem] lg:h-[28rem] bg-gradient-to-r from-purple-400/40 to-pink-400/40 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse delay-1000"></div>
