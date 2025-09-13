@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { Menu, X, User, LogOut, ShoppingBag, Bell, Search } from "lucide-react";
-import { Button } from "./ui/button";
-import { useAuth } from "@/hooks/useAuth";
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { Menu, X, User, LogOut, ShoppingBag, Bell, Search } from 'lucide-react';
+import { Button } from './ui/button';
+import { useAuth } from '@/hooks/useAuth';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+} from './ui/dropdown-menu';
 
 const navLinks = [
-  { name: "Home", href: "/" },
-  { name: "Jobs", href: "/jobs" },
-  { name: "Hire", href: "/hire" },
-  { name: "Products", href: "/products" },
-  { name: "StartUp", href: "/startup-job" },
-  { name: "Services", href: "/services" },
-  { name: "About", href: "/about" },
-  { name: "Plans", href: "/pricing" },
+  { name: 'Home', href: '/' },
+  { name: 'Jobs', href: '/jobs' },
+  { name: 'Hire', href: '/hire' },
+  { name: 'Products', href: '/products' },
+  { name: 'StartUp', href: '/startup-job' },
+  { name: 'Services', href: '/services' },
+  { name: 'About', href: '/about' },
+  { name: 'Plans', href: '/pricing' },
 ];
 
 const GuestButtons = () => (
@@ -46,7 +46,7 @@ const GuestButtons = () => (
 
 const NavbarLinks = ({ onClick }: { onClick?: () => void }) => (
   <>
-    {navLinks.map((link) => (
+    {navLinks.map(link => (
       <NavLink
         key={link.name}
         to={link.href}
@@ -54,19 +54,15 @@ const NavbarLinks = ({ onClick }: { onClick?: () => void }) => (
         className={({ isActive }) =>
           `relative text-sm font-medium transition-all duration-300 flex items-center px-4 py-2 rounded-lg group ${
             isActive
-              ? "text-blue-600 bg-blue-50/80"
-              : "text-gray-600 hover:text-blue-600 hover:bg-gray-50/80"
+              ? 'text-blue-600 bg-blue-50/80'
+              : 'text-gray-600 hover:text-blue-600 hover:bg-gray-50/80'
           }`
         }
       >
-        {link.name === "Templates Store" && (
-          <ShoppingBag className="h-4 w-4 mr-2" />
-        )}
+        {link.name === 'Templates Store' && <ShoppingBag className="h-4 w-4 mr-2" />}
         {link.name}
         {/* Active indicator */}
-        <span
-          className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full"
-        />
+        <span className="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-blue-600 transition-all duration-300 group-hover:w-full" />
       </NavLink>
     ))}
   </>
@@ -79,21 +75,21 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   // role from user or localStorage
-  const role = user?.role || localStorage.getItem("user_role");
+  const role = user?.role || localStorage.getItem('user_role');
 
   // Scroll shadow effect
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/");
+      navigate('/');
     } catch (error) {
-      console.error("Logout error:", error);
+      console.error('Logout error:', error);
     }
   };
 
@@ -101,8 +97,8 @@ const Navbar = () => {
     <nav
       className={`sticky top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50"
-          : "bg-white/90 backdrop-blur-md shadow-md"
+          ? 'bg-white/95 backdrop-blur-lg shadow-lg border-b border-gray-200/50'
+          : 'bg-white/90 backdrop-blur-md shadow-md'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -149,9 +145,27 @@ const Navbar = () => {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-300 shadow-lg hover:shadow-xl"
+                      className="h-10 w-10 rounded-full p-0 overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-300"
                     >
-                      <User className="h-4 w-4" />
+                      {user.avatar ? (
+                        <img
+                          src={user.avatar}
+                          alt={user.full_name || user.email || 'User'}
+                          className="h-full w-full object-cover"
+                          onError={e => {
+                            // Fallback to user icon if image fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              parent.innerHTML =
+                                '<svg class="h-4 w-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                            }
+                          }}
+                        />
+                      ) : (
+                        <User className="h-4 w-4 text-gray-600" />
+                      )}
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -220,11 +234,33 @@ const Navbar = () => {
             {user ? (
               <div className="border-t border-gray-200 pt-4">
                 <div className="flex items-center space-x-3 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                  <div className="h-12 w-12 rounded-full overflow-hidden border-2 border-gray-200 flex-shrink-0">
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.full_name || user.email || 'User'}
+                        className="h-full w-full object-cover"
+                        onError={e => {
+                          // Fallback to user icon if image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            parent.innerHTML =
+                              '<svg class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>';
+                          }
+                        }}
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
+                        <User className="h-6 w-6 text-white" />
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{user.email}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-sm font-medium text-gray-900 truncate">
+                      {user.full_name || user.email}
+                    </div>
                     <div className="text-xs text-gray-500 capitalize">{role}</div>
                   </div>
                 </div>
