@@ -1,14 +1,16 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useRoleToggle } from '@/contexts/RoleToggleContext';
+import { useRoleToggle, ActiveRole } from '@/contexts/RoleToggleContext';
 import { toast } from 'sonner';
 import axios from '@/lib/utils/axios';
+import ManageStartupsModal from '@/components/ManageStartupsModal';
 import {
   User,
   Building2,
@@ -89,10 +91,21 @@ interface Notification {
   read: boolean;
 }
 
-const StartupDashboard = () => {
+const UnifiedDashboard = () => {
   const { user } = useAuth();
-  const { activeRole, switchToRole, getCurrentRoleDisplay, getRoleColor, isRoleSwitching } =
-    useRoleToggle();
+  const {
+    activeRole,
+    switchToRole,
+    getCurrentRoleDisplay,
+    getRoleColor,
+    isRoleSwitching,
+  }: {
+    activeRole: ActiveRole;
+    switchToRole: (role: ActiveRole) => Promise<void>;
+    getCurrentRoleDisplay: () => string;
+    getRoleColor: () => string;
+    isRoleSwitching: boolean;
+  } = useRoleToggle();
   const navigate = useNavigate();
 
   // State management
@@ -103,57 +116,80 @@ const StartupDashboard = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [isManageStartupsOpen, setIsManageStartupsOpen] = useState(false);
 
-  useEffect(() => {
-    const loadDashboardData = async () => {
-      if (!user?._id) return;
+  const loadStartupData = useCallback(async () => {
+    if (!user?._id) return;
 
-      try {
-        setLoading(true);
+    try {
+      setLoading(true);
 
-        // Load startup data
-        const startupRes = await axios.get(`/dashboard/${user._id}`);
-        setStartupData(startupRes.data.startup);
+      // Load startup data
+      const startupRes = await axios.get(`/dashboard/${user._id}`);
+      setStartupData(startupRes.data.startup);
 
-        // Load dashboard stats
-        const dashboardRes = await axios.get(`/startup/dashboard/${user._id}`);
-        const dashboardData = dashboardRes.data;
+      // Load dashboard stats
+      const dashboardRes = await axios.get(`/dashboard/${user._id}`);
+      const dashboardData = dashboardRes.data;
 
-        setStats({
-          total_jobs: dashboardData.total_jobs || 0,
-          active_jobs: dashboardData.active_jobs || 0,
-          total_applications: dashboardData.total_applications || 0,
-          pending_applications: dashboardData.pending_applications || 0,
-          hired_candidates: dashboardData.hired_candidates || 0,
-          interviews_scheduled: dashboardData.interviews_scheduled || 0,
-        });
+      setStats({
+        total_jobs: dashboardData.total_jobs || 0,
+        active_jobs: dashboardData.active_jobs || 0,
+        total_applications: dashboardData.total_applications || 0,
+        pending_applications: dashboardData.pending_applications || 0,
+        hired_candidates: dashboardData.hired_candidates || 0,
+        interviews_scheduled: dashboardData.interviews_scheduled || 0,
+      });
 
-        // Load job openings
-        const jobsRes = await axios.get(`/startup/${user._id}/jobs`);
-        setJobOpenings(jobsRes.data.jobs || []);
+      // Load job openings
+      const jobsRes = await axios.get(`/startup/${user._id}/jobs`);
+      setJobOpenings(jobsRes.data.jobs || []);
 
-        // Load notifications
-        const notificationsRes = await axios.get(`/startup/${user._id}/notifications`);
-        setNotifications(notificationsRes.data.notifications || []);
-      } catch (error) {
-        console.error('Error loading dashboard data:', error);
-        toast.error('Failed to load dashboard data');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user?._id) {
-      loadDashboardData();
+      // Load notifications
+      const notificationsRes = await axios.get(`/startup/${user._id}/notifications`);
+      setNotifications(notificationsRes.data.notifications || []);
+    } catch (error) {
+      console.error('Error loading startup data:', error);
+      toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
     }
   }, [user?._id]);
 
-  if (loading) {
+  useEffect(() => {
+    if (user?._id && activeRole === 'startup') {
+      loadStartupData();
+    }
+  }, [user, activeRole, loadStartupData]);
+
+  // Handle role switching navigation
+  useEffect(() => {
+    if (activeRole === 'recruiter' && !isRoleSwitching) {
+      // Navigate to recruiter dashboard
+      navigate('/recruiter/dashboard');
+    }
+  }, [activeRole, isRoleSwitching, navigate]);
+
+  if (loading && activeRole === 'startup') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your startup dashboard...</p>
+          <p className="text-gray-600">
+            Loading your {getCurrentRoleDisplay().toLowerCase()} dashboard...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeRole === 'recruiter') {
+    // This will be handled by navigation, but show loading state
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Switching to recruiter dashboard...</p>
         </div>
       </div>
     );
@@ -214,6 +250,10 @@ const StartupDashboard = () => {
                 </Button>
               </div>
 
+              <Button variant="outline" size="sm" onClick={() => setIsManageStartupsOpen(true)}>
+                <Building2 className="h-4 w-4 mr-2" />
+                Manage Startups
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link to="/startup/profile">
                   <User className="h-4 w-4 mr-2" />
@@ -248,6 +288,7 @@ const StartupDashboard = () => {
               <h1 className="text-3xl font-bold text-gray-900">
                 Welcome back, {startupData?.startup_name || 'Startup'}! 👋
               </h1>
+
               <p className="text-gray-600 text-lg">
                 {startupData?.founder_name && `Founded by ${startupData.founder_name} • `}
                 {startupData?.industry && `${startupData.industry} • `}
@@ -352,20 +393,17 @@ const StartupDashboard = () => {
                         >
                           <div className="flex-1">
                             <h4 className="font-medium text-gray-900">{job.title}</h4>
-                            <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
-                              <span className="flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {job.location}
-                              </span>
-                              <span className="flex items-center">
-                                <Users className="h-3 w-3 mr-1" />
-                                {job.applications_count} applications
-                              </span>
-                            </div>
+                            <p className="text-sm text-gray-600">{job.location}</p>
+                            <p className="text-xs text-gray-500">{job.type}</p>
                           </div>
-                          <Badge variant={job.status === 'active' ? 'default' : 'secondary'}>
-                            {job.status}
-                          </Badge>
+                          <div className="text-right">
+                            <Badge variant={job.status === 'active' ? 'default' : 'secondary'}>
+                              {job.status}
+                            </Badge>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {job.applications_count} applicants
+                            </p>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -515,29 +553,21 @@ const StartupDashboard = () => {
                       {notifications.map(notification => (
                         <div
                           key={notification._id}
-                          className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
+                          className={`p-3 rounded-lg border ${
+                            notification.type === 'success'
+                              ? 'bg-green-50 border-green-200'
+                              : notification.type === 'warning'
+                                ? 'bg-yellow-50 border-yellow-200'
+                                : notification.type === 'error'
+                                  ? 'bg-red-50 border-red-200'
+                                  : 'bg-blue-50 border-blue-200'
+                          }`}
                         >
-                          <div className="flex-shrink-0">
-                            {notification.type === 'success' && (
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                            )}
-                            {notification.type === 'warning' && (
-                              <AlertCircle className="h-5 w-5 text-yellow-500" />
-                            )}
-                            {notification.type === 'error' && (
-                              <AlertCircle className="h-5 w-5 text-red-500" />
-                            )}
-                            {notification.type === 'info' && (
-                              <AlertCircle className="h-5 w-5 text-blue-500" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                            <p className="text-sm text-gray-600">{notification.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {new Date(notification.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
+                          <h4 className="font-medium text-gray-900">{notification.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
+                          <p className="text-xs text-gray-500 mt-2">
+                            {new Date(notification.created_at).toLocaleDateString()}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -556,8 +586,19 @@ const StartupDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Manage Startups Modal */}
+      <ManageStartupsModal
+        isOpen={isManageStartupsOpen}
+        onClose={() => setIsManageStartupsOpen(false)}
+        onStartupSelect={startup => {
+          console.log('Selected startup:', startup);
+          toast.success(`Switched to ${startup.startup_name}`);
+          // Here you could update the current startup context
+        }}
+      />
     </div>
   );
 };
 
-export default StartupDashboard;
+export default UnifiedDashboard;

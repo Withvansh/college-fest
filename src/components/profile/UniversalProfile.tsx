@@ -482,9 +482,11 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     </Button>
 
                     {/* Form fields for one experience entry */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
-                        <Label htmlFor={`company_name-${index}`}>Company Name</Label>
+                        <Label htmlFor={`company_name-${index}`} className="text-sm sm:text-base">
+                          Company Name
+                        </Label>
                         <Input
                           id={`company_name-${index}`}
                           name="company_name"
@@ -500,10 +502,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                               prev ? { ...prev, experience: updatedExperience } : null
                             );
                           }}
+                          className="h-9 sm:h-10 text-sm sm:text-base"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`position-${index}`}>Position</Label>
+                        <Label htmlFor={`position-${index}`} className="text-sm sm:text-base">
+                          Position
+                        </Label>
                         <Input
                           id={`position-${index}`}
                           name="position"
@@ -519,10 +524,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                               prev ? { ...prev, experience: updatedExperience } : null
                             );
                           }}
+                          className="h-9 sm:h-10 text-sm sm:text-base"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`start_date-${index}`}>Start Date</Label>
+                        <Label htmlFor={`start_date-${index}`} className="text-sm sm:text-base">
+                          Start Date
+                        </Label>
                         <Input
                           id={`start_date-${index}`}
                           name="start_date"
@@ -543,10 +551,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                               prev ? { ...prev, experience: updatedExperience } : null
                             );
                           }}
+                          className="h-9 sm:h-10 text-sm sm:text-base"
                         />
                       </div>
                       <div>
-                        <Label htmlFor={`end_date-${index}`}>End Date</Label>
+                        <Label htmlFor={`end_date-${index}`} className="text-sm sm:text-base">
+                          End Date
+                        </Label>
                         <Input
                           id={`end_date-${index}`}
                           name="end_date"
@@ -565,10 +576,11 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                               prev ? { ...prev, experience: updatedExperience } : null
                             );
                           }}
+                          className="h-9 sm:h-10 text-sm sm:text-base"
                         />
                       </div>
-                      <div className="md:col-span-2">
-                        <Label htmlFor={`skills_learned-${index}`}>
+                      <div className="sm:col-span-2">
+                        <Label htmlFor={`skills_learned-${index}`} className="text-sm sm:text-base">
                           Skills Learned (comma-separated)
                         </Label>
                         <Input
@@ -587,6 +599,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                               prev ? { ...prev, experience: updatedExperience } : null
                             );
                           }}
+                          className="h-9 sm:h-10 text-sm sm:text-base"
                         />
                       </div>
                     </div>
@@ -597,7 +610,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               {/* Button to add a new blank experience entry */}
               <Button
                 variant="outline"
-                className="mt-4"
+                className="mt-4 w-full sm:w-auto h-9 sm:h-10 text-sm sm:text-base"
                 onClick={() => {
                   const newExperience = {
                     company_name: '',
@@ -612,19 +625,24 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   );
                 }}
               >
-                + Add Experience
+                <Plus className="h-4 w-4 mr-2" />
+                Add Experience
               </Button>
             </div>
 
             {/* Resume URL field remains the same */}
             <div>
-              <Label htmlFor="resume_url">Resume URL</Label>
+              <Label htmlFor="resume_url" className="text-sm sm:text-base">
+                Resume URL
+              </Label>
               <Input
                 id="resume_url"
                 value={profile?.resume_url || ''}
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, resume_url: e.target.value } : null))
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="https://example.com/resume.pdf"
               />
             </div>
           </>
@@ -634,7 +652,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="hourly_rate">Hourly Rate (₹)</Label>
+              <Label htmlFor="hourly_rate" className="text-sm sm:text-base">
+                Hourly Rate (₹)
+              </Label>
               <Input
                 id="hourly_rate"
                 type="number"
@@ -644,16 +664,22 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     prev ? { ...prev, hourly_rate: parseInt(e.target.value) || 0 } : null
                   )
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="500"
               />
             </div>
             <div>
-              <Label htmlFor="portfolio_url">Portfolio URL</Label>
+              <Label htmlFor="portfolio_url" className="text-sm sm:text-base">
+                Portfolio URL
+              </Label>
               <Input
                 id="portfolio_url"
                 value={profile?.portfolio_url || ''}
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, portfolio_url: e.target.value } : null))
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="https://portfolio.com"
               />
             </div>
           </>
@@ -663,23 +689,31 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="company_name">Company Name</Label>
+              <Label htmlFor="company_name" className="text-sm sm:text-base">
+                Company Name
+              </Label>
               <Input
                 id="company_name"
                 value={profile?.company_name || ''}
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, company_name: e.target.value } : null))
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="Google Inc."
               />
             </div>
             <div>
-              <Label htmlFor="company_website">Company website</Label>
+              <Label htmlFor="company_website" className="text-sm sm:text-base">
+                Company website
+              </Label>
               <Input
                 id="company_website"
                 value={profile?.company_website || ''}
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, company_website: e.target.value } : null))
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="https://company.com"
               />
             </div>
           </>
@@ -689,7 +723,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         return (
           <>
             <div>
-              <Label htmlFor="client_company_name">Company Name</Label>
+              <Label htmlFor="client_company_name" className="text-sm sm:text-base">
+                Company Name
+              </Label>
               <Input
                 id="client_company_name"
                 value={profile?.client_company_name || ''}
@@ -698,16 +734,22 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     prev ? { ...prev, client_company_name: e.target.value } : null
                   )
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="ABC Corp"
               />
             </div>
             <div>
-              <Label htmlFor="industry">Industry</Label>
+              <Label htmlFor="industry" className="text-sm sm:text-base">
+                Industry
+              </Label>
               <Input
                 id="industry"
                 value={profile?.industry || ''}
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, industry: e.target.value } : null))
                 }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="Technology, Finance, etc."
               />
             </div>
           </>
@@ -716,101 +758,130 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'college':
         return (
           <>
-            <div>
-              <Label htmlFor="college_name">College Name</Label>
-              <Input
-                id="college_name"
-                value={profile?.college_name || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, college_name: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="institute_code">Institute Code</Label>
-              <Input
-                id="institute_code"
-                value={profile?.institute_code || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, institute_code: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="university_affiliation">University Affiliation</Label>
-              <Input
-                id="university_affiliation"
-                value={profile?.university_affiliation || ''}
-                onChange={e =>
-                  setProfile(prev =>
-                    prev ? { ...prev, university_affiliation: e.target.value } : null
-                  )
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="accreditation">Accreditation</Label>
-              <Input
-                id="accreditation"
-                value={profile?.accreditation || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, accreditation: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="state">State</Label>
-              <Input
-                id="state"
-                value={profile?.state || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, state: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="course_branch">Course Branch</Label>
-              <Input
-                id="course_branch"
-                value={profile?.course_branch || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, course_branch: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="tpo_name">TPO Name</Label>
-              <Input
-                id="tpo_name"
-                value={profile?.tpo_name || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, tpo_name: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="tpo_email">TPO Email</Label>
-              <Input
-                id="tpo_email"
-                type="email"
-                value={profile?.tpo_email || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, tpo_email: e.target.value } : null))
-                }
-              />
-            </div>
-            <div>
-              <Label htmlFor="total_students">Total Students</Label>
-              <Input
-                id="total_students"
-                type="number"
-                value={profile?.total_students || 0}
-                onChange={e =>
-                  setProfile(prev =>
-                    prev ? { ...prev, total_students: parseInt(e.target.value) || 0 } : null
-                  )
-                }
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="college_name" className="text-sm sm:text-base">
+                  College Name
+                </Label>
+                <Input
+                  id="college_name"
+                  value={profile?.college_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, college_name: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="institute_code" className="text-sm sm:text-base">
+                  Institute Code
+                </Label>
+                <Input
+                  id="institute_code"
+                  value={profile?.institute_code || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, institute_code: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <Label htmlFor="university_affiliation" className="text-sm sm:text-base">
+                  University Affiliation
+                </Label>
+                <Input
+                  id="university_affiliation"
+                  value={profile?.university_affiliation || ''}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, university_affiliation: e.target.value } : null
+                    )
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="accreditation" className="text-sm sm:text-base">
+                  Accreditation
+                </Label>
+                <Input
+                  id="accreditation"
+                  value={profile?.accreditation || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, accreditation: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="state" className="text-sm sm:text-base">
+                  State
+                </Label>
+                <Input
+                  id="state"
+                  value={profile?.state || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, state: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="course_branch" className="text-sm sm:text-base">
+                  Course Branch
+                </Label>
+                <Input
+                  id="course_branch"
+                  value={profile?.course_branch || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, course_branch: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="tpo_name" className="text-sm sm:text-base">
+                  TPO Name
+                </Label>
+                <Input
+                  id="tpo_name"
+                  value={profile?.tpo_name || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, tpo_name: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="tpo_email" className="text-sm sm:text-base">
+                  TPO Email
+                </Label>
+                <Input
+                  id="tpo_email"
+                  type="email"
+                  value={profile?.tpo_email || ''}
+                  onChange={e =>
+                    setProfile(prev => (prev ? { ...prev, tpo_email: e.target.value } : null))
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
+              <div>
+                <Label htmlFor="total_students" className="text-sm sm:text-base">
+                  Total Students
+                </Label>
+                <Input
+                  id="total_students"
+                  type="number"
+                  value={profile?.total_students || 0}
+                  onChange={e =>
+                    setProfile(prev =>
+                      prev ? { ...prev, total_students: parseInt(e.target.value) || 0 } : null
+                    )
+                  }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
+                />
+              </div>
             </div>
           </>
         );
@@ -842,31 +913,37 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="enrollment_no">Enrollment Number</Label>
+                <Label htmlFor="enrollment_no" className="text-sm sm:text-base">
+                  Enrollment Number
+                </Label>
                 <Input
                   id="enrollment_no"
                   value={profile?.enrollment_no || ''}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, enrollment_no: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
 
               {/* College Name - Restricted editing for verified students */}
               <div>
-                <Label htmlFor="college_name">
+                <Label
+                  htmlFor="college_name"
+                  className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm sm:text-base"
+                >
                   College Name
                   {profile?.verifiedByCollege && (
-                    <span className="text-xs text-gray-500 ml-2">(Locked - College Verified)</span>
+                    <span className="text-xs text-gray-500">(Locked - College Verified)</span>
                   )}
                 </Label>
                 <Input
                   id="college_name"
                   value={profile?.college_name || ''}
                   disabled={profile?.verifiedByCollege}
-                  className={profile?.verifiedByCollege ? 'bg-gray-100 cursor-not-allowed' : ''}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${profile?.verifiedByCollege ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, college_name: e.target.value } : null))
                   }
@@ -879,17 +956,22 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               </div>
 
               <div>
-                <Label htmlFor="course">Course</Label>
+                <Label htmlFor="course" className="text-sm sm:text-base">
+                  Course
+                </Label>
                 <Input
                   id="course"
                   value={profile?.course || ''}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, course: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="year">Year</Label>
+                <Label htmlFor="year" className="text-sm sm:text-base">
+                  Year
+                </Label>
                 <Input
                   id="year"
                   type="number"
@@ -901,20 +983,26 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       prev ? { ...prev, year: parseInt(e.target.value) || 0 } : null
                     )
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="department">Department</Label>
+                <Label htmlFor="department" className="text-sm sm:text-base">
+                  Department
+                </Label>
                 <Input
                   id="department"
                   value={profile?.department || ''}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, department: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="cgpa">CGPA (0-10)</Label>
+                <Label htmlFor="cgpa" className="text-sm sm:text-base">
+                  CGPA (0-10)
+                </Label>
                 <Input
                   id="cgpa"
                   type="number"
@@ -927,6 +1015,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       prev ? { ...prev, cgpa: parseFloat(e.target.value) || 0 } : null
                     )
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
 
@@ -1115,7 +1204,9 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               </div>
             </div>
             <div className="mt-4">
-              <Label htmlFor="address">Address</Label>
+              <Label htmlFor="address" className="text-sm sm:text-base">
+                Address
+              </Label>
               <Textarea
                 id="address"
                 value={profile?.address || ''}
@@ -1123,6 +1214,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   setProfile(prev => (prev ? { ...prev, address: e.target.value } : null))
                 }
                 rows={3}
+                className="text-sm sm:text-base resize-none"
+                placeholder="Enter your complete address"
               />
             </div>
           </>
@@ -1131,29 +1224,37 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       case 'startup':
         return (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="startup_name">Startup Name</Label>
+                <Label htmlFor="startup_name" className="text-sm sm:text-base">
+                  Startup Name
+                </Label>
                 <Input
                   id="startup_name"
                   value={profile?.startup_name || ''}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, startup_name: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="founder_name">Founder Name</Label>
+                <Label htmlFor="founder_name" className="text-sm sm:text-base">
+                  Founder Name
+                </Label>
                 <Input
                   id="founder_name"
                   value={profile?.founder_name || ''}
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, founder_name: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="industry">Industry</Label>
+                <Label htmlFor="industry" className="text-sm sm:text-base">
+                  Industry
+                </Label>
                 <Input
                   id="industry"
                   value={profile?.industry || ''}
@@ -1161,10 +1262,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, industry: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="website">Website</Label>
+                <Label htmlFor="website" className="text-sm sm:text-base">
+                  Website
+                </Label>
                 <Input
                   id="website"
                   type="url"
@@ -1172,10 +1276,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, website: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="funding_stage">Funding Stage</Label>
+                <Label htmlFor="funding_stage" className="text-sm sm:text-base">
+                  Funding Stage
+                </Label>
                 <Input
                   id="funding_stage"
                   value={profile?.funding_stage || ''}
@@ -1183,10 +1290,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, funding_stage: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
               <div>
-                <Label htmlFor="employees_count">Number of Employees</Label>
+                <Label htmlFor="employees_count" className="text-sm sm:text-base">
+                  Number of Employees
+                </Label>
                 <Input
                   id="employees_count"
                   type="number"
@@ -1197,10 +1307,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       prev ? { ...prev, employees_count: parseInt(e.target.value) || 0 } : null
                     )
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
-              <div>
-                <Label htmlFor="logo_url">Logo URL</Label>
+              <div className="sm:col-span-2">
+                <Label htmlFor="logo_url" className="text-sm sm:text-base">
+                  Logo URL
+                </Label>
                 <Input
                   id="logo_url"
                   type="url"
@@ -1209,11 +1322,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   onChange={e =>
                     setProfile(prev => (prev ? { ...prev, logo_url: e.target.value } : null))
                   }
+                  className="h-9 sm:h-10 text-sm sm:text-base"
                 />
               </div>
             </div>
             <div className="mt-4">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-sm sm:text-base">
+                Description
+              </Label>
               <Textarea
                 id="description"
                 value={profile?.description || ''}
@@ -1221,7 +1337,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 onChange={e =>
                   setProfile(prev => (prev ? { ...prev, description: e.target.value } : null))
                 }
-                rows={4}
+                rows={3}
+                className="text-sm sm:text-base resize-none"
               />
             </div>
           </>
@@ -1577,40 +1694,53 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
               <Link
                 to={getDashboardPath()}
-                className="inline-flex items-center text-gray-600 hover:text-gray-900 group"
+                className="inline-flex items-center text-gray-600 hover:text-gray-900 group text-sm sm:text-base"
               >
                 <ArrowLeft className="mr-2 h-4 w-4 group-hover:-translate-x-1 transition-transform" />
-                Back to Dashboard
+                <span className="hidden sm:inline">Back to Dashboard</span>
+                <span className="sm:hidden">Back</span>
               </Link>
-              <div className="h-6 w-px bg-gray-300" />
+              <div className="hidden sm:block h-6 w-px bg-gray-300" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{getRoleDisplayName()} Profile</h1>
-                <p className="text-gray-600">Manage your professional information</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  {getRoleDisplayName()} Profile
+                </h1>
+                <p className="text-gray-600 text-sm sm:text-base">
+                  Manage your professional information
+                </p>
               </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Button variant="outline" size="sm">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+              <Button variant="outline" size="sm" className="w-full sm:w-auto">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
               </Button>
               {isEditing ? (
-                <div className="flex space-x-2">
-                  <Button variant="outline" onClick={() => setIsEditing(false)}>
+                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(false)}
+                    className="w-full sm:w-auto"
+                  >
                     <X className="h-4 w-4 mr-2" />
                     Cancel
                   </Button>
-                  <Button onClick={handleSaveProfile} disabled={saving}>
+                  <Button
+                    onClick={handleSaveProfile}
+                    disabled={saving}
+                    className="w-full sm:w-auto"
+                  >
                     <Save className="h-4 w-4 mr-2" />
                     {saving ? 'Saving...' : 'Save Changes'}
                   </Button>
                 </div>
               ) : (
-                <Button onClick={() => setIsEditing(true)}>
+                <Button onClick={() => setIsEditing(true)} className="w-full sm:w-auto">
                   <Edit className="h-4 w-4 mr-2" />
                   Edit Profile
                 </Button>
@@ -1620,12 +1750,12 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           {/* Profile Overview */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2 lg:order-1">
             <Card>
-              <CardContent className="p-6 text-center">
+              <CardContent className="p-4 sm:p-6 text-center">
                 <div className="mb-4 flex justify-center">
                   <ProfilePictureUpload
                     userId={profile.id}
@@ -1635,8 +1765,10 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     isEditing={isEditing}
                   />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900 mb-1">{profile.name}</h2>
-                <p className="text-gray-600 mb-2">{profile.email}</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-1">
+                  {profile.name}
+                </h2>
+                <p className="text-gray-600 mb-2 text-sm sm:text-base">{profile.email}</p>
                 <Badge variant="secondary" className="mb-4">
                   {getRoleDisplayName()}
                 </Badge>
@@ -1644,14 +1776,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 <div className="space-y-2 text-sm text-left">
                   {profile.phone && (
                     <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{profile.phone}</span>
+                      <Phone className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
+                      <span className="break-all">{profile.phone}</span>
                     </div>
                   )}
                   {profile.location && (
                     <div className="flex items-center">
-                      <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{profile.location}</span>
+                      <MapPin className="h-4 w-4 mr-2 text-gray-500 flex-shrink-0" />
+                      <span className="break-words">{profile.location}</span>
                     </div>
                   )}
                   {renderRoleSpecificDisplay()}
@@ -1681,16 +1813,18 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
           </div>
 
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 order-1 lg:order-2 space-y-4 sm:space-y-6">
             {/* Basic Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Basic Information</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Basic Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className="text-sm sm:text-base">
+                      Full Name
+                    </Label>
                     <Input
                       id="name"
                       value={profile.name}
@@ -1698,10 +1832,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                         setProfile(prev => (prev ? { ...prev, name: e.target.value } : null))
                       }
                       disabled={!isEditing}
+                      className="h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="email" className="flex items-center gap-2">
+                    <Label
+                      htmlFor="email"
+                      className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 text-sm sm:text-base"
+                    >
                       Email
                       <div className="flex items-center gap-1">
                         <CheckCircle className="h-3 w-3 text-green-600" />
@@ -1718,13 +1856,15 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       type="email"
                       value={profile.email}
                       disabled={true} // Always disabled since email is verified
-                      className="bg-gray-50 cursor-not-allowed"
+                      className="bg-gray-50 cursor-not-allowed h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="phone">Phone</Label>
+                    <Label htmlFor="phone" className="text-sm sm:text-base">
+                      Phone
+                    </Label>
                     <Input
                       id="phone"
                       value={profile.phone}
@@ -1732,10 +1872,13 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                         setProfile(prev => (prev ? { ...prev, phone: e.target.value } : null))
                       }
                       disabled={!isEditing}
+                      className="h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="location">Location</Label>
+                    <Label htmlFor="location" className="text-sm sm:text-base">
+                      Location
+                    </Label>
                     <Input
                       id="location"
                       value={profile.location}
@@ -1743,11 +1886,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                         setProfile(prev => (prev ? { ...prev, location: e.target.value } : null))
                       }
                       disabled={!isEditing}
+                      className="h-9 sm:h-10 text-sm sm:text-base"
                     />
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor="bio">Bio</Label>
+                  <Label htmlFor="bio" className="text-sm sm:text-base">
+                    Bio
+                  </Label>
                   <Textarea
                     id="bio"
                     value={profile.bio}
@@ -1755,7 +1901,8 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       setProfile(prev => (prev ? { ...prev, bio: e.target.value } : null))
                     }
                     disabled={!isEditing}
-                    rows={4}
+                    rows={3}
+                    className="text-sm sm:text-base resize-none"
                   />
                 </div>
                 {renderRoleSpecificFields()}
@@ -1766,12 +1913,12 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
             {(userRole === 'jobseeker' || userRole === 'freelancer' || userRole === 'student') && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Skills</CardTitle>
+                  <CardTitle className="text-lg sm:text-xl">Skills</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {profile.skills.map(skill => (
-                      <Badge key={skill} variant="secondary" className="relative group">
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {profile.skills?.map(skill => (
+                      <Badge key={skill} variant="secondary" className="relative group text-sm">
                         {skill}
                         {isEditing && (
                           <button
@@ -1786,15 +1933,21 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   </div>
 
                   {isEditing && (
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <Input
                         placeholder="Add a skill"
                         value={newSkill}
                         onChange={e => setNewSkill(e.target.value)}
                         onKeyPress={e => e.key === 'Enter' && handleAddSkill()}
+                        className="flex-1 h-9 sm:h-10 text-sm sm:text-base"
                       />
-                      <Button onClick={handleAddSkill} size="sm">
-                        <Plus className="h-4 w-4" />
+                      <Button
+                        onClick={handleAddSkill}
+                        size="sm"
+                        className="w-full sm:w-auto h-9 sm:h-10"
+                      >
+                        <Plus className="h-4 w-4 mr-1 sm:mr-2" />
+                        <span className="hidden sm:inline">Add</span>
                       </Button>
                     </div>
                   )}

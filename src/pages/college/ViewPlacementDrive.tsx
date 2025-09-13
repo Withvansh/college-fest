@@ -120,8 +120,14 @@ const ViewPlacementDrive = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Loading drive details...</h1>
+        <div className="text-center px-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 mb-2">
+            Loading drive details...
+          </h1>
+          <p className="text-sm sm:text-base text-gray-600">
+            Please wait while we fetch the information
+          </p>
         </div>
       </div>
     );
@@ -130,10 +136,13 @@ const ViewPlacementDrive = () => {
   if (!drive) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Drive Not Found</h1>
+        <div className="text-center px-4">
+          <h1 className="text-lg sm:text-2xl font-bold text-gray-900 mb-4">Drive Not Found</h1>
+          <p className="text-sm sm:text-base text-gray-600 mb-6">
+            The placement drive you're looking for doesn't exist or has been removed.
+          </p>
           <Link to="/college/placement-drives">
-            <Button>
+            <Button className="w-full sm:w-auto">
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to All Drives
             </Button>
@@ -147,95 +156,114 @@ const ViewPlacementDrive = () => {
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+        <div className="container mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center space-x-4">
               <Link
                 to="/college/placement-drives"
                 className="flex items-center text-gray-600 hover:text-gray-900"
               >
                 <ArrowLeft className="h-5 w-5 mr-2" />
-                Back to All Drives
+                <span className="hidden sm:inline">Back to All Drives</span>
+                <span className="sm:hidden">Back</span>
               </Link>
-              <h1 className="text-2xl font-bold text-gray-900">Drive Details</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Drive Details</h1>
             </div>
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" onClick={handleExportRegistrations}>
-                <Download className="h-4 w-4 mr-2" />
-                Export Registrations
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+              <Button
+                variant="outline"
+                onClick={handleExportRegistrations}
+                className="w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
+              >
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Export Registrations</span>
+                <span className="sm:hidden">Export</span>
               </Button>
               <Button
-                className="bg-orange-600 hover:bg-orange-700"
+                className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
                 onClick={() => navigate(`/college/placement-drives/${drive.id}/manage`)}
               >
-                <Edit className="h-4 w-4 mr-2" />
-                Manage Drive
+                <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Manage Drive</span>
+                <span className="sm:hidden">Manage</span>
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Drive Information */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-6 sm:mb-8">
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-2xl">{drive.title}</CardTitle>
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="text-xl sm:text-2xl">{drive.title}</CardTitle>
                     <div className="flex items-center mt-2">
-                      <Building2 className="h-5 w-5 mr-2 text-gray-500" />
-                      <span className="text-lg font-medium">{drive.company}</span>
+                      <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-gray-500 flex-shrink-0" />
+                      <span className="text-base sm:text-lg font-medium truncate">
+                        {drive.company}
+                      </span>
                     </div>
                   </div>
-                  <Badge className={getStatusColor(drive.status)}>
+                  <Badge
+                    className={`${getStatusColor(drive.status)} text-xs sm:text-sm px-2 sm:px-3 py-1 flex-shrink-0`}
+                  >
                     {drive.status === 'Open' ? 'Registration Open' : drive.status}
                   </Badge>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid md:grid-cols-2 gap-6">
+              <CardContent className="space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Basic Information</h3>
-                    <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
+                      Basic Information
+                    </h3>
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center">
-                        <span className="font-medium w-24">Role:</span>
-                        <span>{drive.role}</span>
+                        <span className="font-medium w-20 sm:w-24 text-sm sm:text-base">Role:</span>
+                        <span className="text-sm sm:text-base truncate ml-2">{drive.role}</span>
                       </div>
                       {drive.salary_package && (
                         <div className="flex items-center">
-                          <span className="font-medium w-24">Package:</span>
-                          {drive.salary_package}LPA
+                          <span className="font-medium w-20 sm:w-24 text-sm sm:text-base">
+                            Package:
+                          </span>
+                          <span className="text-sm sm:text-base ml-2">
+                            {drive.salary_package} LPA
+                          </span>
                         </div>
                       )}
                       <div className="flex items-center">
-                        <span className="font-medium w-24">Mode:</span>
-                        <span>{drive.mode}</span>
+                        <span className="font-medium w-20 sm:w-24 text-sm sm:text-base">Mode:</span>
+                        <span className="text-sm sm:text-base ml-2">{drive.mode}</span>
                       </div>
                       {drive.location && (
                         <div className="flex items-center">
-                          <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-                          <span>{drive.location}</span>
+                          <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+                          <span className="text-sm sm:text-base truncate">{drive.location}</span>
                         </div>
                       )}
                     </div>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Schedule</h3>
-                    <div className="space-y-3">
+                    <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
+                      Schedule
+                    </h3>
+                    <div className="space-y-2 sm:space-y-3">
                       <div className="flex items-center">
-                        <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{formatDate(drive.drive_date)}</span>
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">{formatDate(drive.drive_date)}</span>
                       </div>
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                        <span>{formatTime(drive.drive_time)}</span>
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">{formatTime(drive.drive_time)}</span>
                       </div>
                       <div className="flex items-center">
-                        <span className="font-medium">Last Date:</span>
-                        <span className="ml-2 text-red-600">
+                        <span className="font-medium text-sm sm:text-base">Last Date:</span>
+                        <span className="ml-2 text-red-600 text-sm sm:text-base">
                           {formatDate(drive.registration_deadline)}
                         </span>
                       </div>
@@ -244,24 +272,30 @@ const ViewPlacementDrive = () => {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-3">Eligibility Criteria</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
+                    Eligibility Criteria
+                  </h3>
                   <div className="flex items-center">
-                    <GraduationCap className="h-4 w-4 mr-2 text-gray-500" />
-                    <span>{drive.eligibility_criteria}</span>
+                    <GraduationCap className="h-3 w-3 sm:h-4 sm:w-4 mr-2 text-gray-500 flex-shrink-0" />
+                    <span className="text-sm sm:text-base">{drive.eligibility_criteria}</span>
                   </div>
                 </div>
 
                 {drive.requirements && (
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Technical Requirements</h3>
-                    <p className="text-gray-700">{drive.requirements}</p>
+                    <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
+                      Technical Requirements
+                    </h3>
+                    <p className="text-gray-700 text-sm sm:text-base">{drive.requirements}</p>
                   </div>
                 )}
 
                 {drive.description && (
                   <div>
-                    <h3 className="font-semibold text-gray-900 mb-3">Description</h3>
-                    <p className="text-gray-700">{drive.description}</p>
+                    <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-sm sm:text-base">
+                      Description
+                    </h3>
+                    <p className="text-gray-700 text-sm sm:text-base">{drive.description}</p>
                   </div>
                 )}
               </CardContent>
@@ -271,26 +305,28 @@ const ViewPlacementDrive = () => {
           <div>
             <Card>
               <CardHeader>
-                <CardTitle>Registration Statistics</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Registration Statistics</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-center">
-                    <div className="text-3xl font-bold text-blue-600">{drive.registrations}</div>
-                    <div className="text-sm text-gray-600">Total Registrations</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-600">
+                      {drive.registrations}
+                    </div>
+                    <div className="text-xs sm:text-sm text-gray-600">Total Registrations</div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span>CSE Students:</span>
-                      <span className="font-medium">124</span>
+                      <span className="text-sm sm:text-base">CSE Students:</span>
+                      <span className="font-medium text-sm sm:text-base">124</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>IT Students:</span>
-                      <span className="font-medium">32</span>
+                      <span className="text-sm sm:text-base">IT Students:</span>
+                      <span className="font-medium text-sm sm:text-base">32</span>
                     </div>
                     <div className="flex justify-between">
-                      <span>Average CGPA:</span>
-                      <span className="font-medium">8.2</span>
+                      <span className="text-sm sm:text-base">Average CGPA:</span>
+                      <span className="font-medium text-sm sm:text-base">8.2</span>
                     </div>
                   </div>
                 </div>
@@ -302,56 +338,125 @@ const ViewPlacementDrive = () => {
         {/* Registered Students */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Registered Students ({registrations.length})</CardTitle>
-              <Button variant="outline" onClick={handleExportRegistrations}>
-                <Download className="h-4 w-4 mr-2" />
-                Export List
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <CardTitle className="text-lg sm:text-xl">
+                Registered Students ({registrations.length})
+              </CardTitle>
+              <Button
+                variant="outline"
+                onClick={handleExportRegistrations}
+                className="w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
+              >
+                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Export List</span>
+                <span className="sm:hidden">Export</span>
               </Button>
             </div>
           </CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Student Details</TableHead>
-                  <TableHead>Branch & CGPA</TableHead>
-                  <TableHead>Contact</TableHead>
-                  <TableHead>Registration Date</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {registrations.map(registration => (
-                  <TableRow key={registration._id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{registration.student_name}</p>
-                        <p className="text-sm text-gray-600">{registration.roll_number}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{registration.branch}</p>
-                        <p className="text-sm text-gray-600">CGPA: {registration.cgpa}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <div className="flex items-center text-sm">
-                          <Mail className="h-3 w-3 mr-1" />
-                          {registration.email}
-                        </div>
-                        <div className="flex items-center text-sm">
-                          <Phone className="h-3 w-3 mr-1" />
-                          {registration.phone}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatDate(registration.registration_date)}</TableCell>
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Student Details</TableHead>
+                    <TableHead>Branch & CGPA</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Registration Date</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {registrations.map(registration => (
+                    <TableRow key={registration._id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{registration.student_name}</p>
+                          <p className="text-sm text-gray-600">{registration.roll_number}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{registration.branch}</p>
+                          <p className="text-sm text-gray-600">CGPA: {registration.cgpa}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="space-y-1">
+                          <div className="flex items-center text-sm">
+                            <Mail className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span className="truncate">{registration.email}</span>
+                          </div>
+                          <div className="flex items-center text-sm">
+                            <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                            <span>{registration.phone}</span>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatDate(registration.registration_date)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              {registrations.length === 0 ? (
+                <div className="text-center py-8">
+                  <Users className="h-12 w-12 mx-auto mb-4 opacity-50 text-gray-400" />
+                  <p className="text-gray-500">No registrations yet</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {registrations.map(registration => (
+                    <div key={registration._id} className="p-4 space-y-3">
+                      {/* Header */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">
+                            {registration.student_name}
+                          </h3>
+                          <p className="text-sm text-gray-600 truncate">
+                            {registration.roll_number}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-500 flex-shrink-0">
+                          {formatDate(registration.registration_date)}
+                        </span>
+                      </div>
+
+                      {/* Details Grid */}
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                            Branch
+                          </div>
+                          <div className="font-medium truncate">{registration.branch}</div>
+                        </div>
+                        <div>
+                          <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                            CGPA
+                          </div>
+                          <div className="font-medium">{registration.cgpa}</div>
+                        </div>
+                      </div>
+
+                      {/* Contact Info */}
+                      <div className="space-y-2">
+                        <div className="flex items-center text-sm">
+                          <Mail className="h-3 w-3 mr-2 text-gray-500 flex-shrink-0" />
+                          <span className="truncate">{registration.email}</span>
+                        </div>
+                        <div className="flex items-center text-sm">
+                          <Phone className="h-3 w-3 mr-2 text-gray-500 flex-shrink-0" />
+                          <span>{registration.phone}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </CardContent>
         </Card>
       </div>

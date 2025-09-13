@@ -178,25 +178,32 @@ const CollegeDashboard = () => {
 
       <div className="container mx-auto px-4 sm:px-6 py-6 md:py-8">
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-4 sm:mb-6 md:mb-8">
           <Card
-            className="relative cursor-pointer bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl overflow-hidden group border-0"
+            className="relative cursor-pointer bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 rounded-xl sm:rounded-2xl overflow-hidden group border-0"
             onClick={() => navigate(`/college/students/${collegeId}`)}
           >
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400/10 to-indigo-400/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgdmlld0JveD0iMCAwIDYwIDYwIj48ZyBmaWxsPSJub25lIiBzdHJva2U9IiNmZmYiIHN0cm9rZS13aWR0aD0iMS41IiBzdHJva2Utb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNIDAgMCBMIDYwIDYwIE0gNjAgMCBMIDAgNjAiLz48L2c+PC9zdmc+')] opacity-10"></div>
             <div className="absolute top-0 -inset-full h-full w-1/2 z-5 block transform -skew-x-12 bg-gradient-to-r from-transparent to-white opacity-40 group-hover:animate-shine transition-all duration-1000"></div>
 
-            <CardHeader className="relative z-10 pb-2 flex flex-row items-center justify-between space-y-0">
-              <div className="flex flex-col space-y-1">
-                <CardTitle className="text-base md:text-lg font-bold tracking-wide">
+            <CardHeader className="relative z-10 pb-2 px-3 sm:px-4 pt-3 sm:pt-4 flex flex-row items-center justify-between space-y-0">
+              <div className="flex flex-col space-y-1 flex-1 min-w-0">
+                <CardTitle className="text-sm sm:text-base md:text-lg font-bold tracking-wide leading-tight">
                   Student Management
                 </CardTitle>
-                <p className="text-xs md:text-sm opacity-90 hidden sm:block">
+                <p className="text-xs sm:text-sm opacity-90 hidden sm:block leading-tight">
                   View and manage all student records
                 </p>
               </div>
+              <Users className="h-5 w-5 sm:h-6 sm:w-6 opacity-90 flex-shrink-0 ml-2" />
             </CardHeader>
+            <CardContent className="relative z-10 px-3 sm:px-4 pb-3 sm:pb-4">
+              <div className="text-lg sm:text-xl md:text-2xl font-bold">
+                {dashboardData?.stats?.totalDrives || 0}
+              </div>
+              <p className="text-xs sm:text-sm opacity-90 mt-1">Total Students</p>
+            </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
@@ -244,14 +251,44 @@ const CollegeDashboard = () => {
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4 md:space-y-6">
-          <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-3 md:grid-cols-5 bg-white/80 backdrop-blur-md min-w-max">
-              <TabsTrigger value="drives" className="text-xs md:text-sm px-2 md:px-4">Drives</TabsTrigger>
-              <TabsTrigger value="students" className="text-xs md:text-sm px-2 md:px-4">Students</TabsTrigger>
-              <TabsTrigger value="companies" className="text-xs md:text-sm px-2 md:px-4">Companies</TabsTrigger>
-              <TabsTrigger value="analytics" className="text-xs md:text-sm px-2 md:px-4">Analytics</TabsTrigger>
-              <TabsTrigger value="reports" className="text-xs md:text-sm px-2 md:px-4">Reports</TabsTrigger>
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-3 sm:space-y-4 md:space-y-6">
+          <div className="overflow-x-auto pb-1">
+            <TabsList className="grid w-full grid-cols-5 bg-white/80 backdrop-blur-md min-w-max rounded-lg p-1 h-auto">
+              <TabsTrigger
+                value="drives"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
+              >
+                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Drives</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="students"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
+              >
+                <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Students</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="companies"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
+              >
+                <Building2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Companies</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="analytics"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
+              >
+                <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger
+                value="reports"
+                className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
+              >
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                <span className="hidden xs:inline">Reports</span>
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -271,69 +308,74 @@ const CollegeDashboard = () => {
               <CardContent className="space-y-4">
                 {dashboardData?.upcomingDrives && dashboardData.upcomingDrives.length > 0 ? (
                   dashboardData.upcomingDrives.map(drive => (
-                    <div key={drive._id || drive.id} className="border rounded-lg p-3 md:p-4 bg-white/50">
-                      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex flex-col sm:flex-row sm:items-center mb-2 gap-2">
-                            <div className="flex items-center">
-                              <Building2 className="h-4 w-4 md:h-5 md:w-5 mr-2 text-gray-600" />
-                              <h3 className="text-base md:text-lg font-semibold">{drive.company}</h3>
-                            </div>
-                            <Badge
-                              className={`ml-0 sm:ml-3 w-max ${placementDriveAPI.getStatusColor(drive.status)}`}
-                            >
-                              {drive.status === 'Open' ? 'Registration Open' : drive.status}
-                            </Badge>
+                    <div key={drive._id || drive.id} className="border rounded-lg p-3 sm:p-4 bg-white/50 hover:bg-white/70 transition-colors">
+                      <div className="flex flex-col gap-3">
+                        {/* Header with Company and Status */}
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                          <div className="flex items-center flex-1 min-w-0">
+                            <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-gray-600 flex-shrink-0" />
+                            <h3 className="text-sm sm:text-base md:text-lg font-semibold truncate">{drive.company}</h3>
                           </div>
-                          <p className="text-gray-600 mb-2 text-sm md:text-base">{drive.role}</p>
+                          <Badge
+                            className={`w-max text-xs ${placementDriveAPI.getStatusColor(drive.status)}`}
+                          >
+                            {drive.status === 'Open' ? 'Registration Open' : drive.status}
+                          </Badge>
+                        </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-sm">
-                            <div>
-                              <span className="font-medium text-xs md:text-sm">Date</span>
-                              <div className="flex items-center mt-1">
-                                <Calendar className="h-3 w-3 md:h-4 md:w-4 mr-1 text-gray-500" />
-                                <span className="text-xs md:text-sm">{placementDriveAPI.formatDate(drive.drive_date)}</span>
-                              </div>
-                            </div>
+                        {/* Role */}
+                        <p className="text-gray-600 text-sm sm:text-base font-medium">{drive.role}</p>
 
-                            <div>
-                              <span className="font-medium text-xs md:text-sm">Eligibility</span>
-                              <p className="text-gray-600 mt-1 text-xs md:text-sm">{drive.eligibility_criteria}</p>
+                        {/* Details Grid - Responsive */}
+                        <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                          <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-xs sm:text-sm text-gray-700 block">Date</span>
+                            <div className="flex items-center mt-1">
+                              <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-gray-500 flex-shrink-0" />
+                              <span className="text-xs sm:text-sm truncate">{placementDriveAPI.formatDate(drive.drive_date)}</span>
                             </div>
+                          </div>
 
-                            <div>
-                              <span className="font-medium text-xs md:text-sm">Registrations</span>
-                              <p className="text-orange-600 font-semibold mt-1 text-xs md:text-sm">
-                                {drive.registrations || 0} students
-                              </p>
-                            </div>
+                          <div className="bg-gray-50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-xs sm:text-sm text-gray-700 block">Eligibility</span>
+                            <p className="text-gray-600 mt-1 text-xs sm:text-sm line-clamp-2">{drive.eligibility_criteria}</p>
+                          </div>
 
-                            <div>
-                              <span className="font-medium text-xs md:text-sm">Package</span>
-                              <p className="text-green-600 font-semibold mt-1 text-xs md:text-sm">
-                                {drive.salary_package || 'Not specified'}
-                              </p>
-                            </div>
+                          <div className="bg-orange-50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-xs sm:text-sm text-orange-700 block">Registrations</span>
+                            <p className="text-orange-600 font-semibold mt-1 text-xs sm:text-sm">
+                              {drive.registrations || 0} students
+                            </p>
+                          </div>
+
+                          <div className="bg-green-50 rounded-lg p-2 sm:p-3">
+                            <span className="font-medium text-xs sm:text-sm text-green-700 block">Package</span>
+                            <p className="text-green-600 font-semibold mt-1 text-xs sm:text-sm truncate">
+                              {drive.salary_package || 'Not specified'}
+                            </p>
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row md:flex-col lg:flex-row gap-2 md:gap-2 self-start">
+                        {/* Action Buttons - Mobile Optimized */}
+                        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-gray-100">
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleViewDetails(drive._id || drive.id || '')}
-                            className="text-xs md:text-sm"
+                            className="flex-1 h-9 sm:h-10 text-xs sm:text-sm"
                           >
-                            <Eye className="h-3 w-3 md:h-4 md:w-4 mr-1" />
-                            Details
+                            <Eye className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="hidden xs:inline">View Details</span>
+                            <span className="xs:hidden">Details</span>
                           </Button>
                           <Button
                             size="sm"
-                            className="bg-orange-600 hover:bg-orange-700 text-xs md:text-sm"
+                            className="flex-1 h-9 sm:h-10 bg-orange-600 hover:bg-orange-700 text-xs sm:text-sm"
                             onClick={() => handleManage(drive._id || drive.id || '')}
                           >
-                            <Edit className="h-3 w-3 md:h-4 md:w-4 mr-1" />
-                            Manage
+                            <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                            <span className="hidden xs:inline">Manage Drive</span>
+                            <span className="xs:hidden">Manage</span>
                           </Button>
                         </div>
                       </div>
@@ -385,7 +427,7 @@ const CollegeDashboard = () => {
                 <CardHeader>
                   <CardTitle className="text-base md:text-lg">Recent Placements</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2 md:space-y-3">
+                <CardContent className="space-y-2 sm:space-y-3">
                   {[
                     { name: 'Rajesh Kumar', company: 'Google', package: '₹32 LPA', branch: 'CSE' },
                     {
@@ -399,15 +441,15 @@ const CollegeDashboard = () => {
                   ].map((placement, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between p-2 md:p-3 bg-white/50 rounded-lg"
+                      className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-white to-gray-50 rounded-lg border border-gray-100 hover:shadow-sm transition-all duration-200"
                     >
-                      <div>
-                        <p className="font-medium text-xs md:text-sm">{placement.name}</p>
-                        <p className="text-xs text-gray-600">{placement.branch}</p>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">{placement.name}</p>
+                        <p className="text-xs sm:text-sm text-gray-600 truncate">{placement.branch}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-medium text-xs md:text-sm">{placement.company}</p>
-                        <p className="text-xs text-green-600">{placement.package}</p>
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">{placement.company}</p>
+                        <p className="text-xs sm:text-sm text-green-600 font-medium">{placement.package}</p>
                       </div>
                     </div>
                   ))}
@@ -431,30 +473,30 @@ const CollegeDashboard = () => {
                 </Button>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {dashboardData?.topCompanies && dashboardData.topCompanies.length > 0 ? (
                     dashboardData.topCompanies.map((company, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between p-3 md:p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-shadow"
+                        className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-orange-50 to-white rounded-lg border border-orange-100 hover:shadow-md transition-all duration-200 hover:border-orange-200"
                       >
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 md:w-12 md:h-12 bg-orange-100 rounded-full flex items-center justify-center mr-2 md:mr-4">
-                            <Building2 className="h-4 w-4 md:h-6 md:w-6 text-orange-600" />
+                        <div className="flex items-center flex-1 min-w-0">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center mr-3 sm:mr-4 flex-shrink-0">
+                            <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-orange-600" />
                           </div>
-                          <div>
-                            <p className="font-medium text-gray-900 text-xs md:text-sm">{company.name}</p>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-gray-900 text-sm sm:text-base truncate">{company.name}</p>
                             <div className="flex items-center mt-1">
-                              <Users className="h-3 w-3 md:h-4 md:w-4 text-gray-500 mr-1" />
-                              <p className="text-xs text-gray-600">{company.hires} hires</p>
+                              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 mr-1 flex-shrink-0" />
+                              <p className="text-xs sm:text-sm text-gray-600 truncate">{company.hires} hires</p>
                             </div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-medium text-green-600 text-xs md:text-sm">{company.package}</p>
+                        <div className="text-right flex-shrink-0 ml-2">
+                          <p className="font-bold text-green-600 text-sm sm:text-base">{company.package}</p>
                           {company.totalDrives && (
                             <div className="flex items-center justify-end mt-1">
-                              <Briefcase className="h-3 w-3 md:h-4 md:w-4 text-gray-500 mr-1" />
+                              <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 mr-1 flex-shrink-0" />
                               <p className="text-xs text-gray-600">{company.totalDrives} drives</p>
                             </div>
                           )}
@@ -462,12 +504,12 @@ const CollegeDashboard = () => {
                       </div>
                     ))
                   ) : (
-                    <div className="col-span-2 text-center py-6 md:py-8 px-4 bg-gray-50 rounded-lg">
-                      <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3 md:mb-4">
-                        <Building2 className="h-6 w-6 md:h-8 md:w-8 text-gray-400" />
+                    <div className="col-span-1 sm:col-span-2 text-center py-8 sm:py-12 px-4 bg-gray-50 rounded-lg">
+                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                        <Building2 className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                       </div>
-                      <h3 className="text-base md:text-lg font-medium text-gray-600 mb-2">No Company Data Available</h3>
-                      <p className="text-gray-500 max-w-md mx-auto text-sm md:text-base">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-600 mb-2">No Company Data Available</h3>
+                      <p className="text-gray-500 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
                         Company statistics will appear here once placement drives are organized and companies start recruiting.
                       </p>
                     </div>
@@ -478,50 +520,50 @@ const CollegeDashboard = () => {
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="space-y-4 md:space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-base md:text-lg">
-                    <BarChart3 className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+          <TabsContent value="analytics" className="space-y-3 sm:space-y-4 md:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 hover:shadow-lg transition-all duration-200">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="flex items-center text-sm sm:text-base md:text-lg">
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-blue-600" />
                     Total Drives
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl md:text-3xl font-bold text-blue-600">
+                <CardContent className="pt-0">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-600 mb-1">
                     {dashboardData?.stats?.totalDrives || 0}
                   </div>
-                  <p className="text-xs md:text-sm text-gray-600 mt-2">Placement drives created</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Placement drives created</p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-base md:text-lg">
-                    <Trophy className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 hover:shadow-lg transition-all duration-200">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="flex items-center text-sm sm:text-base md:text-lg">
+                    <Trophy className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-green-600" />
                     Total Placements
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl md:text-3xl font-bold text-green-600">
+                <CardContent className="pt-0">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-1">
                     {dashboardData?.stats?.totalPlacements || 0}
                   </div>
-                  <p className="text-xs md:text-sm text-gray-600 mt-2">Students placed successfully</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Students placed successfully</p>
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="flex items-center text-base md:text-lg">
-                    <Star className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+              <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200 hover:shadow-lg transition-all duration-200 sm:col-span-2 lg:col-span-1">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="flex items-center text-sm sm:text-base md:text-lg">
+                    <Star className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-600" />
                     Average Package
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl md:text-3xl font-bold text-purple-600">
+                <CardContent className="pt-0">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-600 mb-1">
                     ₹{dashboardData?.stats?.averagePackage || 0}L
                   </div>
-                  <p className="text-xs md:text-sm text-gray-600 mt-2">Average salary package</p>
+                  <p className="text-xs sm:text-sm text-gray-600">Average salary package</p>
                 </CardContent>
               </Card>
             </div>
@@ -536,23 +578,43 @@ const CollegeDashboard = () => {
                   Generate Reports
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3 md:space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  <Button variant="outline" className="h-16 md:h-20 flex flex-col p-2">
-                    <FileText className="h-4 w-4 md:h-6 md:w-6 mb-1 md:mb-2" />
-                    <span className="text-xs md:text-sm">Placement Report Coming Soon....</span>
+              <CardContent className="space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                  <Button
+                    variant="outline"
+                    className="h-16 sm:h-18 md:h-20 flex flex-col items-center justify-center p-2 sm:p-3 hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    disabled
+                  >
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mb-1 sm:mb-2 text-blue-500" />
+                    <span className="text-xs sm:text-sm text-center leading-tight">Placement Report</span>
+                    <span className="text-xs text-gray-500 mt-0.5">Coming Soon</span>
                   </Button>
-                  <Button variant="outline" className="h-16 md:h-20 flex flex-col p-2">
-                    <BarChart3 className="h-4 w-4 md:h-6 md:w-6 mb-1 md:mb-2" />
-                    <span className="text-xs md:text-sm">Analytics Report Coming Soon....</span>
+                  <Button
+                    variant="outline"
+                    className="h-16 sm:h-18 md:h-20 flex flex-col items-center justify-center p-2 sm:p-3 hover:bg-green-50 hover:border-green-200 transition-colors"
+                    disabled
+                  >
+                    <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mb-1 sm:mb-2 text-green-500" />
+                    <span className="text-xs sm:text-sm text-center leading-tight">Analytics Report</span>
+                    <span className="text-xs text-gray-500 mt-0.5">Coming Soon</span>
                   </Button>
-                  <Button variant="outline" className="h-16 md:h-20 flex flex-col p-2">
-                    <Users className="h-4 w-4 md:h-6 md:w-6 mb-1 md:mb-2" />
-                    <span className="text-xs md:text-sm">Student Report Coming Soon....</span>
+                  <Button
+                    variant="outline"
+                    className="h-16 sm:h-18 md:h-20 flex flex-col items-center justify-center p-2 sm:p-3 hover:bg-purple-50 hover:border-purple-200 transition-colors"
+                    disabled
+                  >
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mb-1 sm:mb-2 text-purple-500" />
+                    <span className="text-xs sm:text-sm text-center leading-tight">Student Report</span>
+                    <span className="text-xs text-gray-500 mt-0.5">Coming Soon</span>
                   </Button>
-                  <Button variant="outline" className="h-16 md:h-20 flex flex-col p-2">
-                    <Building2 className="h-4 w-4 md:h-6 md:w-6 mb-1 md:mb-2" />
-                    <span className="text-xs md:text-sm">Company Report Coming Soon....</span>
+                  <Button
+                    variant="outline"
+                    className="h-16 sm:h-18 md:h-20 flex flex-col items-center justify-center p-2 sm:p-3 hover:bg-orange-50 hover:border-orange-200 transition-colors"
+                    disabled
+                  >
+                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 mb-1 sm:mb-2 text-orange-500" />
+                    <span className="text-xs sm:text-sm text-center leading-tight">Company Report</span>
+                    <span className="text-xs text-gray-500 mt-0.5">Coming Soon</span>
                   </Button>
                 </div>
               </CardContent>
