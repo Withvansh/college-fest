@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { 
   ArrowLeft,
@@ -21,7 +28,8 @@ import {
   User,
   BookOpen,
   GraduationCap,
-  Globe
+  Globe,
+  Eye
 } from "lucide-react";
 import { companyInviteAPI } from '@/lib/api/CompanyInvite';
 
@@ -48,11 +56,33 @@ interface Recruiter {
   location: string;
 }
 
+interface Student {
+  _id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  course: string;
+  year: number;
+  department: string;
+  enrollment_no: string;
+  college_name: string;
+  skills: string[];
+  cgpa: number;
+  tenth_percentage: number;
+  twelfth_percentage: number;
+  graduation_percentage: number;
+  github_url: string;
+  linkedin_url: string;
+  portfolio_url: string;
+  resume_url: string;
+  verifiedByCollege: boolean;
+}
+
 interface DriveRequest {
   _id: string;
   college_id: College;
   recruiter_id: Recruiter;
-  students: any[];
+  students: Student[];
   message: string;
   status: 'pending' | 'accepted' | 'rejected' | 'completed' | 'scheduled';
   createdAt: string;
@@ -64,6 +94,8 @@ function ViewDriveRequest() {
   const [driveRequest, setDriveRequest] = useState<DriveRequest | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchDriveRequest = async () => {
@@ -108,6 +140,11 @@ function ViewDriveRequest() {
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const handleViewStudent = (student: Student) => {
+    setSelectedStudent(student);
+    setIsStudentModalOpen(true);
   };
 
   const getStatusBadge = (status: string) => {
@@ -323,17 +360,30 @@ function ViewDriveRequest() {
                         <TableHead>Course</TableHead>
                         <TableHead>Year</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Actions</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {driveRequest.students.map((student, index) => (
                         <TableRow key={index}>
-                          <TableCell className="font-medium">{student.name || `Student ${index + 1}`}</TableCell>
+                          <TableCell className="font-medium">{student.full_name || `Student ${index + 1}`}</TableCell>
                           <TableCell>{student.email || 'N/A'}</TableCell>
                           <TableCell>{student.course || 'N/A'}</TableCell>
                           <TableCell>{student.year || 'N/A'}</TableCell>
                           <TableCell>
-                            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Applied</Badge>
+                            <Badge className={student.verifiedByCollege ? "bg-green-100 text-green-800 hover:bg-green-100" : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"}>
+                              {student.verifiedByCollege ? "Verified" : "Pending"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              onClick={() => handleViewStudent(student)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -444,6 +494,152 @@ function ViewDriveRequest() {
           </div>
         </div>
       </div>
+
+      {/* Student Details Modal */}
+      <Dialog open={isStudentModalOpen} onOpenChange={setIsStudentModalOpen}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Student Details</DialogTitle>
+            <DialogDescription>
+              Complete information about {selectedStudent?.full_name}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedStudent && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Full Name:</span>
+                      <span className="font-medium">{selectedStudent.full_name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Email:</span>
+                      <span className="font-medium">{selectedStudent.email}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Phone:</span>
+                      <span className="font-medium">{selectedStudent.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Enrollment No:</span>
+                      <span className="font-medium">{selectedStudent.enrollment_no || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Academic Information</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">College:</span>
+                      <span className="font-medium">{selectedStudent.college_name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Course:</span>
+                      <span className="font-medium">{selectedStudent.course}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Department:</span>
+                      <span className="font-medium">{selectedStudent.department}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Year:</span>
+                      <span className="font-medium">{selectedStudent.year}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">CGPA:</span>
+                      <span className="font-medium">{selectedStudent.cgpa || 'N/A'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Academic Performance</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">10th Percentage:</span>
+                      <span className="font-medium">{selectedStudent.tenth_percentage || 'N/A'}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">12th Percentage:</span>
+                      <span className="font-medium">{selectedStudent.twelfth_percentage || 'N/A'}%</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-gray-500">Graduation Percentage:</span>
+                      <span className="font-medium">{selectedStudent.graduation_percentage || 'N/A'}%</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Skills</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedStudent.skills && selectedStudent.skills.length > 0 ? (
+                      selectedStudent.skills.map((skill, index) => (
+                        <Badge key={index} variant="secondary" className="bg-blue-100 text-blue-800">
+                          {skill}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm text-gray-500">No skills listed</span>
+                    )}
+                  </div>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Online Presence</h3>
+                  <div className="space-y-2">
+                    {selectedStudent.github_url && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">GitHub:</span>
+                        <a href={selectedStudent.github_url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                          View Profile
+                        </a>
+                      </div>
+                    )}
+                    {selectedStudent.linkedin_url && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">LinkedIn:</span>
+                        <a href={selectedStudent.linkedin_url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                          View Profile
+                        </a>
+                      </div>
+                    )}
+                    {selectedStudent.portfolio_url && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Portfolio:</span>
+                        <a href={selectedStudent.portfolio_url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                          Visit Website
+                        </a>
+                      </div>
+                    )}
+                    {selectedStudent.resume_url && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Resume:</span>
+                        <a href={selectedStudent.resume_url} target="_blank" rel="noopener noreferrer" className="font-medium text-blue-600 hover:underline">
+                          Download Resume
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center pt-4 border-t">
+                  <span className="text-sm text-gray-500">College Verification:</span>
+                  <Badge className={selectedStudent.verifiedByCollege ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}>
+                    {selectedStudent.verifiedByCollege ? "Verified" : "Pending Verification"}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
