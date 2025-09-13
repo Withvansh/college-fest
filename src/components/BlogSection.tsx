@@ -17,7 +17,7 @@ const BlogSection = () => {
   const fetchPosts = async () => {
     try {
       setLoading(true);
-      const publishedPosts = await blogApi.getPublishedPosts(1, 20);
+      const publishedPosts = await blogApi.getPublishedPosts(1, 3);
       setPosts(publishedPosts);
     } catch (error) {
       console.error('Error fetching blog posts:', error);
