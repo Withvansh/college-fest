@@ -50,6 +50,10 @@ const RecruiterProfile = lazy(() => import('@/pages/recruiter/RecruiterProfile')
 const PostJob = lazy(() => import('@/pages/recruiter/PostJob'));
 const CreateTest = lazy(() => import('@/pages/recruiter/CreateTest'));
 
+const StartupDashboard = lazy(() => import('@/pages/startup/StartupDashboard'));
+const UnifiedDashboard = lazy(() => import('@/pages/startup/UnifiedDashboard'));
+const StartupProfile = lazy(() => import('@/pages/startup/StartupProfile'));
+
 const FreelancerDashboard = lazy(() => import('@/pages/freelancer/FreelancerDashboard'));
 const FreelancerProfile = lazy(() => import('@/pages/freelancer/FreelancerProfile'));
 const FreelancerPortfolio = lazy(() => import('@/pages/freelancer/FreelancerPortfolio'));

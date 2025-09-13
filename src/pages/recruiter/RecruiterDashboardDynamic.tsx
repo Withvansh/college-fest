@@ -6,6 +6,7 @@ import { Link } from 'react-router-dom';
 import { Building2, Users, FileText, TestTube, BarChart3, Calendar, Plus } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { recruiterDashboardsApi } from '@/lib/api/recruiter-dashboard';
+import ManageStartupsModal from '@/components/ManageStartupsModal';
 
 interface JobPost {
   _id: string;
@@ -76,6 +77,7 @@ const RecruiterDashboardDynamic = () => {
   const [dashboard, setDashboard] = useState<RecruiterDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isManageStartupsOpen, setIsManageStartupsOpen] = useState(false);
 
   const loadDashboard = useCallback(async () => {
     if (!user || !dashboardId) {
@@ -441,6 +443,15 @@ const RecruiterDashboardDynamic = () => {
               <span className="text-sm md:text-base text-gray-600">
                 Welcome back, {user.full_name}
               </span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs md:text-sm"
+                onClick={() => setIsManageStartupsOpen(true)}
+              >
+                <Building2 className="h-3 w-3 md:h-4 md:w-4 mr-1 md:mr-2" />
+                Manage Startups
+              </Button>
               <Button variant="outline" size="sm" className="text-xs md:text-sm" asChild>
                 <Link to="/recruiter/profile">Profile</Link>
               </Button>
@@ -759,6 +770,16 @@ const RecruiterDashboardDynamic = () => {
           </Link>
         </div>
       </div>
+
+      {/* Manage Startups Modal */}
+      <ManageStartupsModal
+        isOpen={isManageStartupsOpen}
+        onClose={() => setIsManageStartupsOpen(false)}
+        onStartupSelect={startup => {
+          console.log('Selected startup:', startup);
+          toast.success(`Switched to ${startup.startup_name}`);
+        }}
+      />
     </div>
   );
 };
