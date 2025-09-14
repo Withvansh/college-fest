@@ -13,6 +13,24 @@ import {
 } from '@/components/ui/table';
 import { toast } from 'sonner';
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import {
   ArrowLeft,
   Building2,
   Calendar,
@@ -35,6 +53,18 @@ const ViewPlacementDrive = () => {
   const [drive, setDrive] = useState<PlacementDrive | null>(null);
   const [registrations, setRegistrations] = useState<PlacementRegistration[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedStudent, setSelectedStudent] = useState<PlacementRegistration | null>(null);
+  const [isPlacementDialogOpen, setIsPlacementDialogOpen] = useState(false);
+  const [statistics, setStatistics] = useState({
+    total: 0,
+    selected: 0,
+    rejected: 0,
+    waitlisted: 0,
+    registered: 0,
+    cseStudents: 0,
+    itStudents: 0,
+    averageCGPA: 0
+  });
 
   useEffect(() => {
     const fetchDriveData = async () => {
@@ -49,6 +79,9 @@ const ViewPlacementDrive = () => {
         // Fetch registrations for this drive
         const registrationsData = await placementDriveAPI.getDriveRegistrations(driveId);
         setRegistrations(registrationsData.registrations);
+        
+        // Calculate statistics
+        calculateStatistics(registrationsData.registrations);
       } catch (error) {
         console.error('Error fetching drive data:', error);
         toast.error('Failed to load drive details');
@@ -59,6 +92,63 @@ const ViewPlacementDrive = () => {
 
     fetchDriveData();
   }, [driveId]);
+
+  const calculateStatistics = (registrations: PlacementRegistration[]) => {
+    let selected = 0;
+    let rejected = 0;
+    let waitlisted = 0;
+    let registered = 0;
+    let cseStudents = 0;
+    let itStudents = 0;
+    let totalCGPA = 0;
+    let validCGPAcount = 0;
+
+    registrations.forEach(reg => {
+      // Count by status
+      switch (reg.status) {
+        case 'Selected':
+          selected++;
+          break;
+        case 'Rejected':
+          rejected++;
+          break;
+        case 'Waitlisted':
+          waitlisted++;
+          break;
+        case 'Registered':
+        default:
+          registered++;
+          break;
+      }
+
+      // Count by branch
+      if (reg.branch) {
+        const branchLower = reg.branch.toLowerCase();
+        if (branchLower.includes('cse') || branchLower.includes('computer')) {
+          cseStudents++;
+        } else if (branchLower.includes('it') || branchLower.includes('information')) {
+          itStudents++;
+        }
+      }
+
+      // Calculate average CGPA
+      if (reg.cgpa && !isNaN(reg.cgpa)) {
+        totalCGPA += reg.cgpa;
+        validCGPAcount++;
+      }
+    });
+
+    setStatistics({
+      total: registrations.length,
+      selected,
+      rejected,
+      waitlisted,
+      registered,
+      cseStudents,
+      itStudents,
+      averageCGPA: validCGPAcount > 0 ? parseFloat((totalCGPA / validCGPAcount).toFixed(2)) : 0
+    });
+  };
 
   const formatTime = (time: string) => {
     if (!time) return '';
@@ -91,16 +181,86 @@ const ViewPlacementDrive = () => {
     }
   };
 
-  const handleExportRegistrations = () => {
+  const getStudentStatusColor = (status: string) => {
+    switch (status) {
+      case 'Selected':
+        return 'bg-green-100 text-green-700';
+      case 'Rejected':
+        return 'bg-red-100 text-red-700';
+      case 'Waitlisted':
+        return 'bg-yellow-100 text-yellow-700';
+      case 'Registered':
+      default:
+        return 'bg-blue-100 text-blue-700';
+    }
+  };
+
+  const handlePlacementUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!selectedStudent) return;
+
+    const formData = new FormData(e.currentTarget);
+    const placementData = {
+      package: formData.get('package') as string,
+      startDate: formData.get('startDate') as string,
+      placedDate: formData.get('placedDate') as string,
+      status: formData.get('status') as string
+    };
+
+    try {
+      await placementDriveAPI.updatePlacementStatus(driveId!, selectedStudent._id!, placementData);
+      
+      // Update the local state
+      setRegistrations((prevRegistrations:any) =>
+        prevRegistrations.map((reg:any) =>
+          reg._id === selectedStudent._id
+            ? {
+                ...reg,
+                placed: {
+                  package: placementData.package,
+                  startDate: new Date(placementData.startDate),
+                  placedDate: new Date(placementData.placedDate),
+                },
+                status: placementData.status
+              }
+            : reg
+        )
+      );
+
+      // Recalculate statistics
+      calculateStatistics(registrations.map((reg:any) => 
+        reg._id === selectedStudent._id 
+          ? {...reg, status: placementData.status} 
+          : reg
+      ));
+
+      setIsPlacementDialogOpen(false);
+      toast.success('Placement status updated successfully');
+    } catch (error) {
+      console.error('Error updating placement status:', error);
+      toast.error('Failed to update placement status');
+    }
+  };
+
+  const handleExportRegistrations = (status?: string) => {
+    let filteredRegistrations = registrations;
+    let fileName = `${drive?.title.replace(/\s+/g, '_')}_registrations`;
+    
+    if (status) {
+      filteredRegistrations = registrations.filter(reg => reg.status === status);
+      fileName = `${drive?.title.replace(/\s+/g, '_')}_${status.toLowerCase()}_registrations`;
+    }
+
     const csvContent = [
-      ['Name', 'Roll Number', 'Branch', 'CGPA', 'Email', 'Phone', 'Registration Date'],
-      ...registrations.map(registration => [
+      ['Name', 'Roll Number', 'Branch', 'CGPA', 'Email', 'Phone', 'Status', 'Registration Date'],
+      ...filteredRegistrations.map(registration => [
         registration.student_name || 'N/A',
         registration.roll_number || 'N/A',
         registration.branch || 'N/A',
         registration.cgpa || 'N/A',
         registration.email || 'N/A',
         registration.phone || 'N/A',
+        registration.status || 'N/A',
         new Date(registration.registration_date).toLocaleDateString(),
       ]),
     ]
@@ -111,10 +271,15 @@ const ViewPlacementDrive = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${drive?.title.replace(/\s+/g, '_')}_registrations.csv`;
+    a.download = `${fileName}.csv`;
     a.click();
 
-    toast.success('Registration list exported successfully!');
+    toast.success(`Registration list${status ? ` (${status})` : ''} exported successfully!`);
+  };
+
+  const handleEditStudent = (student: PlacementRegistration) => {
+    setSelectedStudent(student);
+    setIsPlacementDialogOpen(true);
   };
 
   if (isLoading) {
@@ -172,12 +337,12 @@ const ViewPlacementDrive = () => {
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
               <Button
                 variant="outline"
-                onClick={handleExportRegistrations}
+                onClick={() => handleExportRegistrations()}
                 className="w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
               >
                 <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Export Registrations</span>
-                <span className="sm:hidden">Export</span>
+                <span className="hidden sm:inline">Export All</span>
+                <span className="sm:hidden">Export All</span>
               </Button>
               <Button
                 className="bg-orange-600 hover:bg-orange-700 w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
@@ -311,22 +476,40 @@ const ViewPlacementDrive = () => {
                 <div className="space-y-4">
                   <div className="text-center">
                     <div className="text-2xl sm:text-3xl font-bold text-blue-600">
-                      {drive.registrations}
+                      {statistics.total}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-600">Total Registrations</div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-green-50 p-2 rounded text-center">
+                      <div className="text-lg font-semibold text-green-700">{statistics.selected}</div>
+                      <div className="text-xs text-green-600">Selected</div>
+                    </div>
+                    <div className="bg-red-50 p-2 rounded text-center">
+                      <div className="text-lg font-semibold text-red-700">{statistics.rejected}</div>
+                      <div className="text-xs text-red-600">Rejected</div>
+                    </div>
+                    <div className="bg-yellow-50 p-2 rounded text-center">
+                      <div className="text-lg font-semibold text-yellow-700">{statistics.waitlisted}</div>
+                      <div className="text-xs text-yellow-600">Waitlisted</div>
+                    </div>
+                    <div className="bg-blue-50 p-2 rounded text-center">
+                      <div className="text-lg font-semibold text-blue-700">{statistics.registered}</div>
+                      <div className="text-xs text-blue-600">Registered</div>
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span className="text-sm sm:text-base">CSE Students:</span>
-                      <span className="font-medium text-sm sm:text-base">124</span>
+                      <span className="font-medium text-sm sm:text-base">{statistics.cseStudents}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm sm:text-base">IT Students:</span>
-                      <span className="font-medium text-sm sm:text-base">32</span>
+                      <span className="font-medium text-sm sm:text-base">{statistics.itStudents}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-sm sm:text-base">Average CGPA:</span>
-                      <span className="font-medium text-sm sm:text-base">8.2</span>
+                      <span className="font-medium text-sm sm:text-base">{statistics.averageCGPA}</span>
                     </div>
                   </div>
                 </div>
@@ -342,15 +525,44 @@ const ViewPlacementDrive = () => {
               <CardTitle className="text-lg sm:text-xl">
                 Registered Students ({registrations.length})
               </CardTitle>
-              <Button
-                variant="outline"
-                onClick={handleExportRegistrations}
-                className="w-full sm:w-auto h-8 sm:h-10 text-xs sm:text-sm"
-              >
-                <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Export List</span>
-                <span className="sm:hidden">Export</span>
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportRegistrations()}
+                  className="h-8 text-xs"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Export All
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportRegistrations('Selected')}
+                  className="h-8 text-xs bg-green-50 text-green-700 hover:bg-green-100"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Selected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportRegistrations('Rejected')}
+                  className="h-8 text-xs bg-red-50 text-red-700 hover:bg-red-100"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Rejected
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleExportRegistrations('Waitlisted')}
+                  className="h-8 text-xs bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Waitlisted
+                </Button>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -362,7 +574,9 @@ const ViewPlacementDrive = () => {
                     <TableHead>Student Details</TableHead>
                     <TableHead>Branch & CGPA</TableHead>
                     <TableHead>Contact</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Registration Date</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -392,7 +606,22 @@ const ViewPlacementDrive = () => {
                           </div>
                         </div>
                       </TableCell>
+                      <TableCell>
+                        <Badge className={getStudentStatusColor(registration.status || 'Registered')}>
+                          {registration.status || 'Registered'}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{formatDate(registration.registration_date)}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditStudent(registration)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -439,6 +668,14 @@ const ViewPlacementDrive = () => {
                           </div>
                           <div className="font-medium">{registration.cgpa}</div>
                         </div>
+                        <div>
+                          <div className="text-gray-500 text-xs uppercase tracking-wide mb-1">
+                            Status
+                          </div>
+                          <Badge className={getStudentStatusColor(registration.status || 'Registered')}>
+                            {registration.status || 'Registered'}
+                          </Badge>
+                        </div>
                       </div>
 
                       {/* Contact Info */}
@@ -452,6 +689,19 @@ const ViewPlacementDrive = () => {
                           <span>{registration.phone}</span>
                         </div>
                       </div>
+
+                      {/* Edit Button */}
+                      <div className="pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                          onClick={() => handleEditStudent(registration)}
+                        >
+                          <Edit className="h-4 w-4 mr-1" />
+                          Edit Placement Details
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -460,6 +710,77 @@ const ViewPlacementDrive = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Placement Dialog */}
+      <Dialog open={isPlacementDialogOpen} onOpenChange={setIsPlacementDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Update Placement Status</DialogTitle>
+            <DialogDescription>
+              Enter placement details for {selectedStudent?.student_name}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handlePlacementUpdate}>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="status" className="text-right">
+                  Status
+                </Label>
+                <Select name="status" defaultValue={selectedStudent?.status || 'Registered'}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Registered">Registered</SelectItem>
+                    <SelectItem value="Selected">Selected</SelectItem>
+                    <SelectItem value="Rejected">Rejected</SelectItem>
+                    <SelectItem value="Waitlisted">Waitlisted</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="package" className="text-right">
+                  Package
+                </Label>
+                <Input
+                  id="package"
+                  name="package"
+                  placeholder="e.g. 8.5 LPA"
+                  className="col-span-3"
+                  defaultValue={selectedStudent?.placed?.package || ''}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="startDate" className="text-right">
+                  Start Date
+                </Label>
+                <Input
+                  id="startDate"
+                  name="startDate"
+                  type="date"
+                  className="col-span-3"
+                  defaultValue={selectedStudent?.placed?.startDate ? new Date(selectedStudent.placed.startDate).toISOString().split('T')[0] : ''}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="placedDate" className="text-right">
+                  Placed Date
+                </Label>
+                <Input
+                  id="placedDate"
+                  name="placedDate"
+                  type="date"
+                  className="col-span-3"
+                  defaultValue={selectedStudent?.placed?.placedDate ? new Date(selectedStudent.placed.placedDate).toISOString().split('T')[0] : ''}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Save changes</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

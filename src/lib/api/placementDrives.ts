@@ -39,6 +39,11 @@ export interface PlacementRegistration {
   phone: string;
   resume_url?: string;
   status: "Registered" | "Selected" | "Rejected" | "Waitlisted";
+  placed?: {
+    package?: string;
+    startDate?: Date;
+    placedDate?: Date;
+  };
 }
 
 export interface CreatePlacementDriveRequest {
@@ -244,6 +249,20 @@ async getDriveRegistrations(
     } catch (error) {
       throw new Error(`Failed to export registrations: ${(error as Error).message}`);
     }
+  }
+
+  // Update placement status
+  async updatePlacementStatus(
+    driveId: string,
+    registrationId: string,
+    placementData: {
+      package: string;
+      startDate: string;
+      placedDate: string;
+      status:string;
+    }
+  ): Promise<PlacementRegistration> {
+    return this.put(`${this.baseUrl}/drives/${driveId}/registrations/${registrationId}/placement/${placementData.status}`, placementData);
   }
 
   // Format helper methods
