@@ -80,6 +80,7 @@ interface PaginationInfo {
 const Students = () => {
   const { id } = useParams<{ id: string }>();
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -125,7 +126,12 @@ const Students = () => {
   // Fetch students data on component mount and when pagination changes
   useEffect(() => {
     fetchStudentData();
-  }, [pagination.page, pagination.limit, sortField, sortOrder, departmentFilter, searchTerm]);
+  }, [pagination.page, pagination.limit, sortField, sortOrder, departmentFilter]);
+
+  // Apply client-side filtering when search term changes
+  useEffect(() => {
+    applyClientSideFilters(students);
+  }, [students, searchTerm]);
 
   // Poll persistent uploads API for this college
   useEffect(() => {
@@ -179,10 +185,14 @@ const Students = () => {
         sort: sortField,
         order: sortOrder,
         ...(departmentFilter !== 'all' && { department: departmentFilter }),
-        ...(searchTerm && { search: searchTerm }),
       });
 
-      setStudents(response.data.students || response.data);
+      const studentData = response.data.students || response.data;
+      setStudents(studentData);
+
+      // Apply client-side filtering
+      applyClientSideFilters(studentData);
+
       console.log(response);
       // Update pagination info if available from API
       if (response.total !== undefined) {
@@ -259,7 +269,7 @@ const Students = () => {
         'Placement Status',
         'Company',
       ],
-      ...students.map(student => [
+      ...filteredStudents.map(student => [
         student.full_name,
         student.email,
         student.enrollment_no,
@@ -383,9 +393,8 @@ const Students = () => {
   };
 
   const handleSearch = () => {
-    // Reset to first page when searching
-    setPagination(prev => ({ ...prev, page: 1 }));
-    fetchStudentData();
+    // Client-side search - no need to reset page or fetch data
+    // Filtering is handled automatically by the useEffect
   };
 
   const handleSortChange = (field: string) => {
@@ -413,6 +422,25 @@ const Students = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setDepartmentFilter('all');
+  };
+
+  const applyClientSideFilters = (studentList: Student[]) => {
+    let filtered = [...studentList];
+
+    // Apply search filter (client-side)
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase().trim();
+      filtered = filtered.filter(
+        student =>
+          student.full_name?.toLowerCase().includes(searchLower) ||
+          student.email?.toLowerCase().includes(searchLower) ||
+          student.enrollment_no?.toLowerCase().includes(searchLower) ||
+          student.department?.toLowerCase().includes(searchLower) ||
+          student.course?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    setFilteredStudents(filtered);
   };
 
   return (
@@ -755,6 +783,7 @@ const Students = () => {
                       </SelectItem>
                       <SelectItem value="Mechanical">Mechanical</SelectItem>
                       <SelectItem value="Civil">Civil</SelectItem>
+                      <SelectItem value="Chemical">Chemical</SelectItem>
                       <SelectItem value="IT">Information Technology</SelectItem>
                       <SelectItem value="Electrical">Electrical</SelectItem>
                       <SelectItem value="Mathematics">Mathematics</SelectItem>
@@ -787,7 +816,7 @@ const Students = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">
-                {students.filter(s => s.placementStatus === 'Placed').length}
+                {filteredStudents.filter(s => s.placementStatus === 'Placed').length}
               </div>
             </CardContent>
           </Card>
@@ -799,7 +828,7 @@ const Students = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">
-                {students.filter(s => s.placementStatus === 'Registered').length}
+                {filteredStudents.filter(s => s.placementStatus === 'Registered').length}
               </div>
             </CardContent>
           </Card>
@@ -812,8 +841,9 @@ const Students = () => {
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-600">
                 {
-                  students.filter(s => s.placementStatus === 'Not Registered' || !s.placementStatus)
-                    .length
+                  filteredStudents.filter(
+                    s => s.placementStatus === 'Not Registered' || !s.placementStatus
+                  ).length
                 }
               </div>
             </CardContent>
@@ -862,8 +892,8 @@ const Students = () => {
                         <p className="mt-2">Loading students...</p>
                       </TableCell>
                     </TableRow>
-                  ) : students.length > 0 ? (
-                    students.map(student => (
+                  ) : filteredStudents.length > 0 ? (
+                    filteredStudents.map(student => (
                       <TableRow key={student._id} className="hover:bg-gray-50/70">
                         <TableCell>
                           <div className="flex items-center min-w-[180px]">
@@ -961,8 +991,8 @@ const Students = () => {
               </div>
               <p className="mt-2 text-center">Loading students...</p>
             </Card>
-          ) : students.length > 0 ? (
-            students.map(student => (
+          ) : filteredStudents.length > 0 ? (
+            filteredStudents.map(student => (
               <Card key={student._id} className="bg-white/80 backdrop-blur-sm p-4 space-y-4">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3 min-w-0 flex-1">
