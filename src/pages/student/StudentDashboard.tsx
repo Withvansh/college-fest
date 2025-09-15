@@ -339,27 +339,29 @@ ${applications
       {/* Enhanced Header */}
       <div className="bg-white/90 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50 shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 py-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0 gap-3 sm:gap-4">
             <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
               <Link
                 to="/"
-                className="flex items-center space-x-2 sm:space-x-3 hover:opacity-80 transition-opacity"
+                className="flex items-center space-x-2 hover:opacity-80 transition-opacity flex-shrink-0"
               >
                 <img
                   src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
                   alt="MinuteHire Logo"
-                  className="h-6 w-6 sm:h-8 sm:w-auto"
+                  className="h-6 w-6 sm:h-8 sm:w-8"
                 />
-                <span className="text-base sm:text-lg font-bold text-gray-800">MinuteHire</span>
+                <span className="text-sm sm:text-lg font-bold text-gray-800 hidden xs:inline">
+                  MinuteHire
+                </span>
               </Link>
               <Badge
                 variant="secondary"
-                className="bg-purple-100 text-purple-700 animate-pulse text-xs sm:text-sm"
+                className="bg-purple-100 text-purple-700 animate-pulse text-xs self-start"
               >
                 Student Dashboard
               </Badge>
             </div>
-            <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-end">
+            <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -367,201 +369,196 @@ ${applications
                   className="relative hover:bg-purple-50 notification-button"
                   onClick={() => setShowNotificationPanel(!showNotificationPanel)}
                 >
-                  <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+                  <Bell className="h-4 w-4" />
                   {dashboardData.stats?.unreadNotifications > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center animate-pulse">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
                       {dashboardData.stats.unreadNotifications}
                     </span>
                   )}
                 </Button>
 
                 {/* Notification Dropdown Panel */}
-              {showNotificationPanel && (
-  <div
-    className={`absolute top-12 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
-      showAllNotifications ? 'w-80 sm:w-96' : 'w-72 sm:w-80'
-    } ${
-      // Responsive positioning
-      'right-0 sm:right-0 md:right-0 lg:right-0 xl:right-0 ' +
-      'left-1/2 sm:left-auto transform -translate-x-1/2 sm:transform-none ' +
-      'max-w-[95vw] sm:max-w-none mx-2 sm:mx-0'
-    }`}
-  >
-    <div className="p-3 sm:p-4 border-b flex items-center justify-between">
-      <div className="flex items-center space-x-2">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
-          {showAllNotifications ? 'All Notifications' : 'Notifications'}
-        </h3>
-        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
-          {notifications?.length}
-        </Badge>
-      </div>
-      <div className="flex items-center space-x-1 sm:space-x-2">
-        {notifications.some(notif => !notif.is_read) && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
-            onClick={() => {
-              // Mark all notifications as read
-              const unreadNotifications = notifications.filter(
-                notif => !notif.is_read
-              );
-              unreadNotifications.forEach(notif => {
-                handleMarkNotificationRead(notif._id);
-              });
-            }}
-          >
-            ✓ Mark all as read
-          </Button>
-        )}
-        {!showAllNotifications && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
-            onClick={() => setShowAllNotifications(true)}
-          >
-            View all
-          </Button>
-        )}
-        {showAllNotifications && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
-            onClick={() => setShowAllNotifications(false)}
-          >
-            Show less
-          </Button>
-        )}
-      </div>
-    </div>
-
-    <div
-      className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 ${
-        showAllNotifications ? 'max-h-96' : 'max-h-80'
-      }`}
-    >
-      {notifications.length === 0 ? (
-        <div className="text-center py-8">
-          <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-600">No notifications yet</p>
-          <p className="text-sm text-gray-500">
-            You'll be notified about placement drives and application updates here
-          </p>
-        </div>
-      ) : (
-        <div className="p-2">
-          {/* Group notifications by date */}
-          {notifications
-            .reduce((groups: any[], notification) => {
-              const date = new Date(notification.created_at);
-              const today = new Date();
-              const yesterday = new Date(today);
-              yesterday.setDate(yesterday.getDate() - 1);
-
-              let dateLabel = '';
-              if (date.toDateString() === today.toDateString()) {
-                dateLabel = 'Today';
-              } else if (date.toDateString() === yesterday.toDateString()) {
-                dateLabel = 'Yesterday';
-              } else {
-                dateLabel = date.toLocaleDateString('en-US', {
-                  weekday: 'long',
-                  month: 'short',
-                  day: 'numeric',
-                });
-              }
-
-              let group = groups.find(g => g.date === dateLabel);
-              if (!group) {
-                group = { date: dateLabel, notifications: [] };
-                groups.push(group);
-              }
-              group.notifications.push(notification);
-              return groups;
-            }, [])
-            .map((group, groupIndex) => (
-              <div key={groupIndex} className="mb-4">
-                <div className="text-sm text-gray-500 px-2 py-1 font-medium">
-                  {group.date}
-                </div>
-                <div className="space-y-1">
-                  {group.notifications.map((notification: any, index: number) => (
-                    <div
-                      key={notification._id}
-                      className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
-                        !notification.is_read
-                          ? 'hover:bg-blue-50 bg-gradient-to-r from-blue-25 to-transparent border-l-2 border-blue-400'
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => {
-                        if (!notification.is_read) {
-                          handleMarkNotificationRead(notification._id);
-                        }
-                      }}
-                    >
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-1 ${
-                          getNotificationIcon(notification.type).bgColor
-                        }`}
-                      >
-                        {getNotificationIcon(notification.type).icon}
+                {showNotificationPanel && (
+                  <div
+                    className={`absolute top-12 right-0 bg-white rounded-lg shadow-xl border z-50 notification-panel transition-all duration-300 ${
+                      showAllNotifications ? 'w-80 sm:w-96' : 'w-72 sm:w-80'
+                    } max-w-[95vw] sm:max-w-none`}
+                  >
+                    <div className="p-3 sm:p-4 border-b flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">
+                          {showAllNotifications ? 'All Notifications' : 'Notifications'}
+                        </h3>
+                        <Badge variant="secondary" className="bg-gray-100 text-gray-600 text-xs">
+                          {notifications?.length}
+                        </Badge>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="inline-flex items-center">
-                            {!notification.is_read && (
-                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                            )}
-                            <span
-                              className={`text-sm font-medium ${
-                                !notification.is_read
-                                  ? 'text-gray-900'
-                                  : 'text-gray-700'
-                              }`}
-                            >
-                              {notification.title}
-                            </span>
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {getTimeAgo(notification.created_at)}
-                          </span>
-                        </div>
-                        <p
-                          className={`text-sm ${
-                            !notification.is_read
-                              ? 'text-gray-700'
-                              : 'text-gray-600'
-                          }`}
-                        >
-                          {notification.message}
-                        </p>
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        {notifications.some(notif => !notif.is_read) && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700 hover:bg-green-50 text-xs sm:text-sm"
+                            onClick={() => {
+                              // Mark all notifications as read
+                              const unreadNotifications = notifications.filter(
+                                notif => !notif.is_read
+                              );
+                              unreadNotifications.forEach(notif => {
+                                handleMarkNotificationRead(notif._id);
+                              });
+                            }}
+                          >
+                            ✓ Mark all as read
+                          </Button>
+                        )}
+                        {!showAllNotifications && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 text-xs sm:text-sm"
+                            onClick={() => setShowAllNotifications(true)}
+                          >
+                            View all
+                          </Button>
+                        )}
+                        {showAllNotifications && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-gray-600 hover:text-gray-700 hover:bg-gray-50 text-xs sm:text-sm"
+                            onClick={() => setShowAllNotifications(false)}
+                          >
+                            Show less
+                          </Button>
+                        )}
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-        </div>
-      )}
-    </div>
 
-    {!showAllNotifications && (
-      <div className="border-t p-2 sm:p-3 text-center">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
-          onClick={() => setShowAllNotifications(true)}
-        >
-          View all notifications
-        </Button>
-      </div>
-    )}
-  </div>
-)}
+                    <div
+                      className={`overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 hover:scrollbar-thumb-gray-400 ${
+                        showAllNotifications ? 'max-h-96' : 'max-h-80'
+                      }`}
+                    >
+                      {notifications.length === 0 ? (
+                        <div className="text-center py-8">
+                          <Bell className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <p className="text-gray-600">No notifications yet</p>
+                          <p className="text-sm text-gray-500">
+                            You'll be notified about placement drives and application updates here
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="p-2">
+                          {/* Group notifications by date */}
+                          {notifications
+                            .reduce((groups: any[], notification) => {
+                              const date = new Date(notification.created_at);
+                              const today = new Date();
+                              const yesterday = new Date(today);
+                              yesterday.setDate(yesterday.getDate() - 1);
+
+                              let dateLabel = '';
+                              if (date.toDateString() === today.toDateString()) {
+                                dateLabel = 'Today';
+                              } else if (date.toDateString() === yesterday.toDateString()) {
+                                dateLabel = 'Yesterday';
+                              } else {
+                                dateLabel = date.toLocaleDateString('en-US', {
+                                  weekday: 'long',
+                                  month: 'short',
+                                  day: 'numeric',
+                                });
+                              }
+
+                              let group = groups.find(g => g.date === dateLabel);
+                              if (!group) {
+                                group = { date: dateLabel, notifications: [] };
+                                groups.push(group);
+                              }
+                              group.notifications.push(notification);
+                              return groups;
+                            }, [])
+                            .map((group, groupIndex) => (
+                              <div key={groupIndex} className="mb-4">
+                                <div className="text-sm text-gray-500 px-2 py-1 font-medium">
+                                  {group.date}
+                                </div>
+                                <div className="space-y-1">
+                                  {group.notifications.map((notification: any, index: number) => (
+                                    <div
+                                      key={notification._id}
+                                      className={`flex items-start p-2 rounded-lg cursor-pointer transition-colors ${
+                                        !notification.is_read
+                                          ? 'hover:bg-blue-50 bg-gradient-to-r from-blue-25 to-transparent border-l-2 border-blue-400'
+                                          : 'hover:bg-gray-50'
+                                      }`}
+                                      onClick={() => {
+                                        if (!notification.is_read) {
+                                          handleMarkNotificationRead(notification._id);
+                                        }
+                                      }}
+                                    >
+                                      <div
+                                        className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 mt-1 ${
+                                          getNotificationIcon(notification.type).bgColor
+                                        }`}
+                                      >
+                                        {getNotificationIcon(notification.type).icon}
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center justify-between mb-1">
+                                          <span className="inline-flex items-center">
+                                            {!notification.is_read && (
+                                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
+                                            )}
+                                            <span
+                                              className={`text-sm font-medium ${
+                                                !notification.is_read
+                                                  ? 'text-gray-900'
+                                                  : 'text-gray-700'
+                                              }`}
+                                            >
+                                              {notification.title}
+                                            </span>
+                                          </span>
+                                          <span className="text-xs text-gray-500">
+                                            {getTimeAgo(notification.created_at)}
+                                          </span>
+                                        </div>
+                                        <p
+                                          className={`text-sm ${
+                                            !notification.is_read
+                                              ? 'text-gray-700'
+                                              : 'text-gray-600'
+                                          }`}
+                                        >
+                                          {notification.message}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {!showAllNotifications && (
+                      <div className="border-t p-2 sm:p-3 text-center">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-blue-600 hover:text-blue-700 text-xs sm:text-sm"
+                          onClick={() => setShowAllNotifications(true)}
+                        >
+                          View all notifications
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
               <Button
                 variant="outline"
@@ -586,7 +583,7 @@ ${applications
       </div>
 
       <ScrollArea className="h-[calc(100vh-80px)]">
-        <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+        <div className="container mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 space-y-4 sm:space-y-6 lg:space-y-8">
           {/* Welcome Section with Animation */}
           <div className="mb-6 sm:mb-8 animate-fade-in">
             <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -635,154 +632,168 @@ ${applications
           </div>
 
           {/* Enhanced Stats Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
-            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+            <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center justify-between">
                   <div className="flex items-center">
-                    <Building2 className="h-5 w-5 mr-2" />
-                    Applications
+                    <Building2 className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm lg:text-base">Applications</span>
                   </div>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 opacity-60" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1">
+              <CardContent className="pt-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
                   {dashboardData.stats.totalApplications}
                 </div>
-                <p className="text-purple-100 text-sm">
+                <p className="text-purple-100 text-xs sm:text-sm opacity-90">
                   {dashboardData.stats.pendingApplications} pending
                 </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
+            <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center justify-between">
                   <div className="flex items-center">
-                    <Calendar className="h-5 w-5 mr-2" />
-                    Available Drives
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm lg:text-base">Available Drives</span>
                   </div>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 opacity-60" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1">{dashboardData.upcomingDrives.length}</div>
-                <p className="text-blue-100 text-sm">Open for application</p>
+              <CardContent className="pt-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
+                  {dashboardData.upcomingDrives.length}
+                </div>
+                <p className="text-blue-100 text-xs sm:text-sm opacity-90">Open for application</p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
+            <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center justify-between">
                   <div className="flex items-center">
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Selected
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm lg:text-base">Selected</span>
                   </div>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 opacity-60" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1">
+              <CardContent className="pt-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
                   {dashboardData.stats.selectedApplications}
                 </div>
-                <p className="text-green-100 text-sm">Successful applications</p>
+                <p className="text-green-100 text-xs sm:text-sm opacity-90">
+                  Successful applications
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg flex items-center justify-between">
+            <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:scale-105 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl">
+              <CardHeader className="pb-2 sm:pb-3">
+                <CardTitle className="text-sm sm:text-base lg:text-lg flex items-center justify-between">
                   <div className="flex items-center">
-                    <Bell className="h-5 w-5 mr-2" />
-                    Notifications
+                    <Bell className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 mr-1 sm:mr-2" />
+                    <span className="text-xs sm:text-sm lg:text-base">Notifications</span>
                   </div>
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 opacity-60" />
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold mb-1">
+              <CardContent className="pt-0">
+                <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1">
                   {dashboardData.stats.unreadNotifications}
                 </div>
-                <p className="text-orange-100 text-sm">Unread messages</p>
+                <p className="text-orange-100 text-xs sm:text-sm opacity-90">Unread messages</p>
               </CardContent>
             </Card>
           </div>
 
           {/* Enhanced Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 bg-white shadow-sm border h-auto p-1">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 bg-white shadow-sm border h-auto p-1 gap-1">
               <TabsTrigger
                 value="drives"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
-                Available Drives
+                <span className="hidden sm:inline">Available Drives</span>
+                <span className="sm:hidden">Drives</span>
               </TabsTrigger>
               <TabsTrigger
                 value="applied"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
-                Applications
+                <span className="hidden sm:inline">Applications</span>
+                <span className="sm:hidden">Applied</span>
               </TabsTrigger>
               <TabsTrigger
                 value="tests"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
                 Tests
               </TabsTrigger>
               <TabsTrigger
                 value="resume"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
                 Resume
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
-                Training
+                <span className="hidden sm:inline">Training</span>
+                <span className="sm:hidden">Training</span>
               </TabsTrigger>
               <TabsTrigger
                 value="profile"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
-                Counselling
+                <span className="hidden sm:inline">Counselling</span>
+                <span className="sm:hidden">Counsel</span>
               </TabsTrigger>
               <TabsTrigger
                 value="applied-jobs"
-                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-2 sm:px-4 py-2 sm:py-3"
+                className="data-[state=active]:bg-purple-600 data-[state=active]:text-white transition-all text-xs sm:text-sm px-1 sm:px-2 md:px-4 py-2 sm:py-3 text-center"
               >
-                Applied Jobs
+                <span className="hidden sm:inline">Applied Jobs</span>
+                <span className="sm:hidden">Jobs</span>
               </TabsTrigger>
             </TabsList>
 
             {/* Available Drives */}
-            <TabsContent value="drives" className="space-y-4 sm:space-y-6 animate-fade-in">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <TabsContent
+              value="drives"
+              className="space-y-3 sm:space-y-4 lg:space-y-6 animate-fade-in"
+            >
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
                   Available Placement Drives
                 </h2>
                 <Button
                   variant="outline"
                   onClick={() => setShowCalendarView(true)}
-                  className="hover:scale-105 transition-transform shadow-sm w-full sm:w-auto"
+                  className="hover:scale-105 transition-transform shadow-sm w-full sm:w-auto text-sm h-9 sm:h-10"
                 >
-                  <Calendar className="h-4 w-4 mr-2" />
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Calendar View
                 </Button>
               </div>
 
-              <ScrollArea className="h-[500px] sm:h-[600px] pr-2 sm:pr-4">
-                <div className="space-y-4">
+              <ScrollArea className="h-[450px] sm:h-[500px] lg:h-[600px] pr-1 sm:pr-2 lg:pr-4">
+                <div className="space-y-3 sm:space-y-4">
                   {loadingDrives ? (
-                    <div className="text-center py-8">
-                      <Loader className="h-6 w-6 animate-spin mx-auto mb-2" />
-                      <p className="text-gray-600">Loading drives...</p>
+                    <div className="text-center py-6 sm:py-8">
+                      <Loader className="h-5 w-5 sm:h-6 sm:w-6 animate-spin mx-auto mb-2" />
+                      <p className="text-gray-600 text-sm sm:text-base">Loading drives...</p>
                     </div>
                   ) : availableDrives.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600">No placement drives available at the moment</p>
+                    <div className="text-center py-6 sm:py-8">
+                      <Calendar className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+                      <p className="text-gray-600 text-sm sm:text-base">
+                        No placement drives available at the moment
+                      </p>
                     </div>
                   ) : (
                     availableDrives.map((drive, index) => (
@@ -792,32 +803,34 @@ ${applications
                         style={{ animationDelay: `${index * 100}ms` }}
                       >
                         <CardHeader>
-                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                            <div className="flex items-center space-x-3 w-full sm:w-auto">
-                              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Building2 className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+                            <div className="flex items-center space-x-2 sm:space-x-3 w-full sm:w-auto">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-gradient-to-br from-purple-100 to-purple-200 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <Building2 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-purple-600" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <CardTitle className="text-base sm:text-lg flex flex-col sm:flex-row sm:items-center gap-2">
-                                  <span className="truncate">{drive.company}</span>
+                                <CardTitle className="text-sm sm:text-base lg:text-lg flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                                  <span className="truncate text-xs sm:text-sm lg:text-base">
+                                    {drive.company}
+                                  </span>
                                   {studentAPI.isDeadlineUrgent(drive.registration_deadline) && (
                                     <Badge
                                       variant="destructive"
-                                      className="animate-pulse text-xs w-fit"
+                                      className="animate-pulse text-xs w-fit self-start sm:self-auto"
                                     >
                                       Urgent
                                     </Badge>
                                   )}
                                 </CardTitle>
-                                <CardDescription className="text-sm sm:text-base truncate">
+                                <CardDescription className="text-xs sm:text-sm lg:text-base truncate">
                                   {drive.role}
                                 </CardDescription>
                               </div>
                             </div>
-                            <div className="text-left sm:text-right w-full sm:w-auto">
+                            <div className="text-left sm:text-right w-full sm:w-auto mt-2 sm:mt-0">
                               <Badge
                                 variant="secondary"
-                                className={`mb-2 text-xs sm:text-sm ${
+                                className={`mb-1 sm:mb-2 text-xs sm:text-sm w-fit ${
                                   drive.status === 'Open'
                                     ? 'bg-green-100 text-green-700'
                                     : 'bg-gray-100 text-gray-700'
@@ -826,7 +839,7 @@ ${applications
                                 {drive.status}
                               </Badge>
                               {drive.salary_package && (
-                                <p className="text-lg sm:text-xl font-bold text-green-600">
+                                <p className="text-sm sm:text-base lg:text-lg font-bold text-green-600">
                                   {drive.salary_package}
                                 </p>
                               )}
@@ -834,25 +847,27 @@ ${applications
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <div className="space-y-3">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm">
+                          <div className="space-y-2 sm:space-y-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm">
                               <div className="flex items-center text-gray-600">
-                                <Calendar className="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">
+                                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                                <span className="truncate text-xs sm:text-sm">
                                   {studentAPI.formatDate(drive.drive_date)}
                                 </span>
                               </div>
                               <div className="flex items-center text-gray-600">
-                                <Clock className="h-4 w-4 mr-2 flex-shrink-0" />
-                                <span className="truncate">
+                                <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1.5 sm:mr-2 flex-shrink-0" />
+                                <span className="truncate text-xs sm:text-sm">
                                   Deadline: {studentAPI.formatDate(drive.registration_deadline)}
                                 </span>
                               </div>
                             </div>
                             {drive.eligibility_criteria && (
-                              <div className="bg-blue-50 p-3 rounded-lg">
-                                <p className="text-sm text-blue-700 font-medium">Eligibility</p>
-                                <p className="text-sm text-blue-600">
+                              <div className="bg-blue-50 p-2 sm:p-3 rounded-lg">
+                                <p className="text-xs sm:text-sm text-blue-700 font-medium">
+                                  Eligibility
+                                </p>
+                                <p className="text-xs sm:text-sm text-blue-600 leading-tight">
                                   {drive.eligibility_criteria}
                                 </p>
                               </div>
@@ -860,14 +875,14 @@ ${applications
 
                             {/* Verification Status Message */}
                             {!dashboardData.student.verifiedByCollege && (
-                              <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                              <div className="bg-amber-50 border border-amber-200 p-2 sm:p-3 rounded-lg">
                                 <div className="flex items-start space-x-2">
-                                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                                  <div>
-                                    <p className="text-sm text-amber-800 font-medium">
+                                  <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="text-xs sm:text-sm text-amber-800 font-medium">
                                       Self-Registered Account
                                     </p>
-                                    <p className="text-xs text-amber-700 mt-1">
+                                    <p className="text-xs text-amber-700 mt-0.5 sm:mt-1 leading-tight">
                                       Some companies may prefer college-verified students. Contact
                                       your college to get verified for better opportunities.
                                     </p>
@@ -876,16 +891,20 @@ ${applications
                               </div>
                             )}
 
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-3 gap-3">
+                            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center pt-2 sm:pt-3 gap-2 sm:gap-3">
                               <Link to={`/student/drive/${drive._id}`} className="w-full sm:w-auto">
-                                <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9"
+                                >
                                   View Details
                                 </Button>
                               </Link>
                               {hasAlreadyApplied(drive._id) ? (
-                                <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-1 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
                                   <Badge
-                                    className={`font-semibold text-xs sm:text-sm ${
+                                    className={`font-semibold text-xs w-full sm:w-auto justify-center sm:justify-start h-6 sm:h-7 px-2 sm:px-3 ${
                                       getApplicationStatus(drive._id) === 'Selected'
                                         ? 'bg-green-100 text-green-700'
                                         : getApplicationStatus(drive._id) === 'Rejected'
@@ -898,17 +917,17 @@ ${applications
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="cursor-not-allowed opacity-60 w-full sm:w-auto"
+                                    className="cursor-not-allowed opacity-60 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9"
                                     disabled
                                   >
-                                    <CheckCircle className="h-4 w-4 mr-2" />
+                                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                                     Applied
                                   </Button>
                                 </div>
                               ) : (
                                 <Button
                                   size="sm"
-                                  className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto"
+                                  className="bg-purple-600 hover:bg-purple-700 w-full sm:w-auto text-xs sm:text-sm h-8 sm:h-9"
                                   onClick={() => handleApplyToDrive(drive._id)}
                                 >
                                   Apply Now
@@ -1297,36 +1316,35 @@ ${applications
               </div>
 
               {counsellorData.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {counsellorData.map((counsellor, index) => (
                     <Card
                       key={counsellor._id}
                       className="group cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-2 border-0 shadow-md bg-white overflow-hidden"
                       style={{ animationDelay: `${index * 100}ms` }}
-                     
                     >
-                      <CardHeader className="pb-4">
-                        <div className="flex items-center justify-between">
+                      <CardHeader className="pb-3 sm:pb-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
                           <Badge
                             variant="secondary"
-                            className="bg-purple-100 text-purple-700 text-xs"
+                            className="bg-purple-100 text-purple-700 text-xs self-start"
                           >
                             {counsellor.specialization}
                           </Badge>
-                          <div className="flex items-center text-yellow-500">
-                            <Star className="h-4 w-4 fill-current" />
-                            <span className="text-sm ml-1 font-medium">
+                          <div className="flex items-center text-yellow-500 self-end sm:self-auto">
+                            <Star className="h-3 w-3 sm:h-4 sm:w-4 fill-current" />
+                            <span className="text-xs sm:text-sm ml-1 font-medium">
                               4.{Math.floor(Math.random() * 5) + 6}
                             </span>
                           </div>
                         </div>
                       </CardHeader>
 
-                      <CardContent className="pt-0">
-                        <div className="flex flex-col items-center text-center space-y-4">
+                      <CardContent className="pt-0 px-4 sm:px-6 pb-4 sm:pb-6">
+                        <div className="flex flex-col items-center text-center space-y-3 sm:space-y-4">
                           {/* Avatar with better styling */}
                           <div className="relative">
-                            <Avatar className="w-20 h-20 ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300">
+                            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 ring-2 sm:ring-4 ring-purple-100 group-hover:ring-purple-200 transition-all duration-300">
                               <AvatarImage
                                 src={
                                   counsellor.image ||
@@ -1335,30 +1353,30 @@ ${applications
                                 alt={counsellor.name}
                                 className="object-cover"
                               />
-                              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-lg font-semibold">
+                              <AvatarFallback className="bg-gradient-to-br from-purple-500 to-blue-600 text-white text-sm sm:text-lg font-semibold">
                                 {counsellor.name.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
                             {/* Online status indicator */}
-                            <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs px-2 py-1 rounded-full border-2 border-white">
+                            <div className="absolute -bottom-1 -right-1 bg-green-500 text-white text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full border-2 border-white">
                               Online
                             </div>
                           </div>
 
                           {/* Counsellor Info */}
-                          <div className="space-y-2">
-                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors">
+                          <div className="space-y-1 sm:space-y-2 w-full">
+                            <h3 className="text-base sm:text-lg font-bold text-gray-900 group-hover:text-purple-600 transition-colors line-clamp-2">
                               {counsellor.name}
                             </h3>
 
-                            <div className="flex items-center justify-center text-gray-600 text-sm">
-                              <Award className="h-4 w-4 mr-1 text-purple-500" />
+                            <div className="flex items-center justify-center text-gray-600 text-xs sm:text-sm">
+                              <Award className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-purple-500" />
                               <span>{Math.floor(Math.random() * 10) + 5} years experience</span>
                             </div>
 
-                            <div className="flex items-center justify-center text-gray-600 text-sm">
-                              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
-                              <span>
+                            <div className="flex items-center justify-center text-gray-600 text-xs sm:text-sm">
+                              <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-gray-400" />
+                              <span className="line-clamp-1">
                                 {counsellor.city || 'Mumbai'}, {counsellor.state || 'Maharashtra'}
                               </span>
                             </div>
@@ -1430,34 +1448,28 @@ ${applications
                 </Button> */}
               </div>
 
-<div className="flex items-center justify-center h-64 sm:h-80 bg-gradient-to-b from-gray-50 to-white">
-  <div className="flex flex-col sm:flex-row items-center gap-6 max-w-2xl mx-auto px-6 text-center sm:text-left">
-    
-    {/* Icon */}
-    <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-md">
-      <BaggageClaimIcon className="h-12 w-12 sm:h-14 sm:w-14 text-blue-600" />
-    </div>
+              <div className="flex items-center justify-center h-64 sm:h-80 bg-gradient-to-b from-gray-50 to-white">
+                <div className="flex flex-col sm:flex-row items-center gap-6 max-w-2xl mx-auto px-6 text-center sm:text-left">
+                  {/* Icon */}
+                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center shadow-md">
+                    <BaggageClaimIcon className="h-12 w-12 sm:h-14 sm:w-14 text-blue-600" />
+                  </div>
 
-    {/* Text + Button */}
-    <div className="space-y-3">
-      <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-        Applied Jobs
-      </h2>
-      <p className="text-gray-600 text-sm sm:text-base">
-        View all the jobs you’ve applied for and track your progress.
-      </p>
-      <Button
-        onClick={() => navigate('/jobseeker/applications')}
-        className="bg-blue-600 text-white font-medium rounded-xl shadow-md hover:scale-105 hover:shadow-lg transition-transform"
-      >
-        View Applied Jobs
-      </Button>
-    </div>
-  </div>
-</div>
-
-
-
+                  {/* Text + Button */}
+                  <div className="space-y-3">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Applied Jobs</h2>
+                    <p className="text-gray-600 text-sm sm:text-base">
+                      View all the jobs you’ve applied for and track your progress.
+                    </p>
+                    <Button
+                      onClick={() => navigate('/jobseeker/applications')}
+                      className="bg-blue-600 text-white font-medium rounded-xl shadow-md hover:scale-105 hover:shadow-lg transition-transform"
+                    >
+                      View Applied Jobs
+                    </Button>
+                  </div>
+                </div>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

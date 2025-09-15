@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   MapPin,
   Clock,
-  
   Building2,
   Users,
   Calendar,
@@ -366,20 +365,20 @@ const JobDetailsPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumb Navigation */}
         <div className="mb-4 md:mb-6">
-          <nav className="flex items-center space-x-2 text-sm text-gray-500">
-            <Link to="/" className="hover:text-blue-600 transition-colors">
+          <nav className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 text-sm text-gray-500">
+            <Link to="/" className="hover:text-blue-600 transition-colors text-sm">
               Home
             </Link>
-            <span>/</span>
-            <Link to="/jobs" className="hover:text-blue-600 transition-colors">
+            <span className="hidden sm:inline">/</span>
+            <Link to="/jobs" className="hover:text-blue-600 transition-colors text-sm">
               Jobs
             </Link>
-            <span>/</span>
-            <span className="text-gray-900 truncate">{job.title}</span>
+            <span className="hidden sm:inline">/</span>
+            <span className="text-gray-900 truncate text-sm">{job.title}</span>
           </nav>
           <Link
             to="/jobs"
-            className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors text-sm md:text-base mt-2"
+            className="inline-flex items-center text-gray-600 hover:text-blue-600 transition-colors text-sm mt-2"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Jobs
@@ -392,28 +391,18 @@ const JobDetailsPage = () => {
             {/* Job Header with Enhanced Info */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader className="pb-4">
-                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
-                  <Avatar className="h-16 w-16 md:h-20 md:w-20 mx-auto sm:mx-0 shadow-lg">
-                    <AvatarFallback className="text-xl md:text-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-bold">
+                <div className="flex flex-col gap-4">
+                  <Avatar className="h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 mx-auto sm:mx-0 shadow-lg">
+                    <AvatarFallback className="text-lg sm:text-xl md:text-2xl bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-bold">
                       {job.company_name?.substring(0, 2).toUpperCase() || 'CO'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1 text-center sm:text-left">
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
-                      <CardTitle className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
-                        {job.title}
-                      </CardTitle>
-                      {/* <div className="flex items-center justify-center sm:justify-end gap-2">
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Bookmark className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Share2 className="h-4 w-4" />
-                        </Button>
-                      </div> */}
-                    </div>
+                  <div className="text-center sm:text-left">
+                    <CardTitle className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 leading-tight mb-2">
+                      {job.title}
+                    </CardTitle>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 md:gap-4 text-gray-600 text-sm md:text-base mb-4">
+                    <div className="flex flex-col gap-2 text-gray-600 text-sm md:text-base mb-4">
                       <div className="flex items-center justify-center sm:justify-start gap-1">
                         <Building2 className="h-4 w-4 flex-shrink-0 text-blue-600" />
                         <span className="font-medium">{job.company_name}</span>
@@ -429,10 +418,10 @@ const JobDetailsPage = () => {
                     </div>
 
                     {/* Enhanced Job Badges */}
-                    <div className="flex flex-wrap justify-center sm:justify-start gap-2">
+                    <div className="flex flex-wrap justify-center sm:justify-start gap-2 mb-4">
                       <Badge
                         variant="secondary"
-                        className="capitalize bg-blue-100 text-blue-700 hover:bg-blue-200"
+                        className="text-xs sm:text-sm capitalize bg-blue-100 text-blue-700 hover:bg-blue-200"
                       >
                         <Briefcase className="h-3 w-3 mr-1" />
                         {formatJobType(job.employment_type || job.job_type)}
@@ -440,7 +429,7 @@ const JobDetailsPage = () => {
                       {job.remote_allowed && (
                         <Badge
                           variant="outline"
-                          className="text-green-600 border-green-200 bg-green-50 hover:bg-green-100"
+                          className="text-xs sm:text-sm text-green-600 border-green-200 bg-green-50 hover:bg-green-100"
                         >
                           <Home className="h-3 w-3 mr-1" />
                           Remote Friendly
@@ -449,7 +438,7 @@ const JobDetailsPage = () => {
                       {job.urgency_level && job.urgency_level !== 'normal' && (
                         <Badge
                           variant={getUrgencyBadgeVariant(job.urgency_level)}
-                          className="animate-pulse"
+                          className="text-xs sm:text-sm animate-pulse"
                         >
                           <TrendingUp className="h-3 w-3 mr-1" />
                           {formatJobType(job.urgency_level)} Hiring
@@ -458,7 +447,7 @@ const JobDetailsPage = () => {
                       {job.experience_level && (
                         <Badge
                           variant={getExperienceLevelBadgeVariant(job.experience_level)}
-                          className="capitalize bg-purple-50 text-purple-700 border-purple-200"
+                          className="text-xs sm:text-sm capitalize bg-purple-50 text-purple-700 border-purple-200"
                         >
                           <Shield className="h-3 w-3 mr-1" />
                           {formatJobType(job.experience_level)} Level
@@ -467,7 +456,7 @@ const JobDetailsPage = () => {
                       {job.job_category && (
                         <Badge
                           variant="outline"
-                          className="bg-indigo-50 text-indigo-700 border-indigo-200"
+                          className="text-xs sm:text-sm bg-indigo-50 text-indigo-700 border-indigo-200"
                         >
                           <Tag className="h-3 w-3 mr-1" />
                           {job.job_category}
@@ -476,7 +465,7 @@ const JobDetailsPage = () => {
                       {job.department && (
                         <Badge
                           variant="outline"
-                          className="bg-pink-50 text-pink-700 border-pink-200"
+                          className="text-xs sm:text-sm bg-pink-50 text-pink-700 border-pink-200"
                         >
                           <Building className="h-3 w-3 mr-1" />
                           {job.department}
@@ -485,7 +474,7 @@ const JobDetailsPage = () => {
                       {job.travel_required && (
                         <Badge
                           variant="outline"
-                          className="bg-yellow-50 text-yellow-700 border-yellow-200"
+                          className="text-xs sm:text-sm bg-yellow-50 text-yellow-700 border-yellow-200"
                         >
                           <MapPin className="h-3 w-3 mr-1" />
                           Travel Required
@@ -497,10 +486,9 @@ const JobDetailsPage = () => {
                     {(job.min_salary || job.max_salary) && (
                       <div className="mt-4 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200">
                         <div className="flex items-center justify-center sm:justify-start gap-2">
-                          {/* <DollarSign className="h-5 w-5 text-green-600" /> */}
-                          <span className="text-lg md:text-xl font-bold text-green-700">
+                          <span className="text-base sm:text-lg md:text-xl font-bold text-green-700">
                             {formatSalary(job.min_salary, job.max_salary, job.currency)}
-                            <span className="text-sm font-normal text-green-600 ml-1">
+                            <span className="text-xs sm:text-sm font-normal text-green-600 ml-1">
                               per annum
                             </span>
                           </span>
@@ -515,16 +503,16 @@ const JobDetailsPage = () => {
             {/* Enhanced Job Details */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-xl md:text-2xl flex items-center gap-2">
-                  <BookOpen className="h-6 w-6 text-blue-600" />
+                <CardTitle className="text-lg sm:text-xl md:text-2xl flex items-center gap-2">
+                  <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                   Job Description
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6 md:space-y-8">
+              <CardContent className="space-y-4 md:space-y-6">
                 {/* About the Role */}
-                <div className="bg-gray-50 p-4 md:p-6 rounded-lg">
-                  <h3 className="font-bold text-lg mb-4 text-gray-900 flex items-center gap-2">
-                    <Award className="h-5 w-5 text-blue-600" />
+                <div className="bg-gray-50 p-3 md:p-6 rounded-lg">
+                  <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4 text-gray-900 flex items-center gap-2">
+                    <Award className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                     About the Role
                   </h3>
                   <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
@@ -535,9 +523,9 @@ const JobDetailsPage = () => {
                 <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent h-px" />
 
                 {/* Requirements */}
-                <div className="bg-blue-50 p-4 md:p-6 rounded-lg">
-                  <h3 className="font-bold text-lg mb-4 text-gray-900 flex items-center gap-2">
-                    <CheckCircle className="h-5 w-5 text-green-600" />
+                <div className="bg-blue-50 p-3 md:p-6 rounded-lg">
+                  <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4 text-gray-900 flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-green-600" />
                     Requirements & Qualifications
                   </h3>
                   <div className="text-gray-700 whitespace-pre-wrap leading-relaxed text-sm md:text-base">
@@ -549,17 +537,17 @@ const JobDetailsPage = () => {
                 {job.skills_required && job.skills_required.length > 0 && (
                   <>
                     <Separator className="bg-gradient-to-r from-transparent via-gray-300 to-transparent h-px" />
-                    <div className="bg-purple-50 p-4 md:p-6 rounded-lg">
-                      <h3 className="font-bold text-lg mb-4 text-gray-900 flex items-center gap-2">
-                        <Shield className="h-5 w-5 text-purple-600" />
+                    <div className="bg-purple-50 p-3 md:p-6 rounded-lg">
+                      <h3 className="font-bold text-base md:text-lg mb-3 md:mb-4 text-gray-900 flex items-center gap-2">
+                        <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-purple-600" />
                         Required Skills & Technologies
                       </h3>
-                      <div className="flex flex-wrap gap-2 md:gap-3">
+                      <div className="flex flex-wrap gap-2">
                         {job.skills_required.map((skill: string, index: number) => (
                           <Badge
                             key={index}
                             variant="secondary"
-                            className="text-sm md:text-base px-3 py-2 bg-white border-2 border-purple-200 text-purple-700 hover:bg-purple-100 transition-colors"
+                            className="text-xs sm:text-sm md:text-base px-2 py-1 md:px-3 md:py-2 bg-white border-2 border-purple-200 text-purple-700 hover:bg-purple-100 transition-colors"
                           >
                             {skill}
                           </Badge>
@@ -812,21 +800,22 @@ const JobDetailsPage = () => {
             {/* Quick Stats - Enhanced */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl flex items-center gap-2">
-                  <Briefcase className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-base sm:text-lg md:text-xl flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                   Job Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 md:space-y-4">
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {/* <DollarSign className="h-5 w-5 text-green-600 flex-shrink-0" /> */}
-                      <span className="text-sm font-medium text-green-700">Salary Range</span>
+                      <span className="text-xs sm:text-sm font-medium text-green-700">
+                        Salary Range
+                      </span>
                     </div>
                   </div>
                   <div className="mt-1">
-                    <span className="text-lg font-bold text-green-700">
+                    <span className="text-sm sm:text-base md:text-lg font-bold text-green-700">
                       {job.min_salary && job.max_salary
                         ? `₹${job.min_salary.toLocaleString('en-IN')} - ₹${job.max_salary.toLocaleString('en-IN')}`
                         : 'Competitive'}
@@ -835,11 +824,11 @@ const JobDetailsPage = () => {
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                     <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                      <span className="text-sm font-medium">Job Type</span>
+                      <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium">Job Type</span>
                     </div>
                     <Badge variant="outline" className="text-xs capitalize">
                       {job.job_type?.replace('_', ' ')}
@@ -848,10 +837,10 @@ const JobDetailsPage = () => {
 
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                      <span className="text-sm font-medium">Experience</span>
+                      <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium">Experience</span>
                     </div>
-                    <span className="text-sm font-medium">
+                    <span className="text-xs sm:text-sm font-medium">
                       {job.experience_required || 0} years
                     </span>
                   </div>
@@ -859,8 +848,8 @@ const JobDetailsPage = () => {
                   {job.experience_level && (
                     <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-indigo-600 flex-shrink-0" />
-                        <span className="text-sm font-medium">Level</span>
+                        <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-indigo-600 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium">Level</span>
                       </div>
                       <Badge variant="outline" className="text-xs capitalize">
                         {job.experience_level}
@@ -870,19 +859,23 @@ const JobDetailsPage = () => {
 
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                     <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <span className="text-sm font-medium">Location</span>
+                      <MapPin className="h-3 w-3 sm:h-4 sm:w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium">Location</span>
                     </div>
-                    <span className="text-sm text-right font-medium">{job.location}</span>
+                    <span className="text-xs sm:text-sm text-right font-medium">
+                      {job.location}
+                    </span>
                   </div>
 
                   {job.application_deadline && (
                     <div className="flex items-center justify-between p-2 bg-red-50 rounded border border-red-200">
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-red-600 flex-shrink-0" />
-                        <span className="text-sm font-medium text-red-700">Deadline</span>
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-red-600 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium text-red-700">
+                          Deadline
+                        </span>
                       </div>
-                      <span className="text-sm text-red-600 text-right font-medium">
+                      <span className="text-xs sm:text-sm text-red-600 text-right font-medium">
                         {new Date(job.application_deadline).toLocaleDateString()}
                       </span>
                     </div>
@@ -891,8 +884,8 @@ const JobDetailsPage = () => {
 
                 {job.remote_allowed && (
                   <div className="flex items-center gap-2 text-green-600 bg-green-50 p-3 rounded-lg border border-green-200">
-                    <CheckCircle className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-sm font-medium">Remote work allowed</span>
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium">Remote work allowed</span>
                   </div>
                 )}
               </CardContent>
@@ -970,44 +963,44 @@ const JobDetailsPage = () => {
             {/* Enhanced Company Info */}
             <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
               <CardHeader>
-                <CardTitle className="text-lg md:text-xl flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-blue-600" />
+                <CardTitle className="text-base sm:text-lg md:text-xl flex items-center gap-2">
+                  <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600" />
                   About {job.company_name}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
-                  <Avatar className="h-12 w-12 md:h-14 md:w-14 shadow-md">
-                    <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-bold text-lg">
+              <CardContent className="space-y-3 md:space-y-4">
+                <div className="flex items-center gap-3 sm:gap-4 p-3 bg-gray-50 rounded-lg">
+                  <Avatar className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 shadow-md">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-100 to-blue-200 text-blue-700 font-bold text-sm sm:text-base md:text-lg">
                       {job.company_name?.substring(0, 2).toUpperCase() || 'CO'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h4 className="font-bold text-base md:text-lg text-gray-900">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-sm sm:text-base md:text-lg text-gray-900 truncate">
                       {job.company_name}
                     </h4>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-xs sm:text-sm text-gray-600 truncate">
                       {job.recruiter_id?.full_name
                         ? `Hiring Manager: ${job.recruiter_id.full_name}`
                         : 'Verified Employer'}
                     </p>
                     {job.recruiter_id?.email && (
-                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-                        <Mail className="h-3 w-3" />
+                      <p className="text-xs text-gray-500 flex items-center gap-1 mt-1 truncate">
+                        <Mail className="h-3 w-3 flex-shrink-0" />
                         {job.recruiter_id.email}
                       </p>
                     )}
                   </div>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2 md:space-y-3">
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                    <span className="text-sm text-gray-600">Industry</span>
-                    <span className="text-sm font-medium">Technology</span>
+                    <span className="text-xs sm:text-sm text-gray-600">Industry</span>
+                    <span className="text-xs sm:text-sm font-medium">Technology</span>
                   </div>
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
-                    <span className="text-sm text-gray-600">Company Size</span>
-                    <span className="text-sm font-medium">50-200 employees</span>
+                    <span className="text-xs sm:text-sm text-gray-600">Company Size</span>
+                    <span className="text-xs sm:text-sm font-medium">50-200 employees</span>
                   </div>
                   <div className="flex items-center justify-between p-2 hover:bg-gray-50 rounded">
                     <span className="text-sm text-gray-600">Founded</span>
@@ -1065,36 +1058,38 @@ const JobDetailsPage = () => {
         <Dialog open={showApplicationModal} onOpenChange={setShowApplicationModal}>
           <DialogContent className="sm:max-w-[700px] mx-4 max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-sm">
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 text-xl md:text-2xl pr-8 text-blue-900">
-                <Send className="h-6 w-6 text-blue-600" />
+              <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl md:text-2xl pr-8 text-blue-900">
+                <Send className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                 Apply for {job.title}
               </DialogTitle>
-              <p className="text-sm text-gray-600 mt-2">
+              <p className="text-xs sm:text-sm text-gray-600 mt-2">
                 at <strong>{job.company_name}</strong> • {job.location}
               </p>
             </DialogHeader>
 
-            <div className="space-y-6 pt-4">
+            <div className="space-y-4 sm:space-y-6 pt-4">
               {/* Job Summary in Modal */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-200">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Briefcase className="h-4 w-4 text-blue-600" />
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
                   </div>
                   <div>
-                    <h4 className="font-semibold text-blue-900">{job.title}</h4>
-                    <p className="text-sm text-blue-700">{job.company_name}</p>
+                    <h4 className="font-semibold text-sm sm:text-base text-blue-900">
+                      {job.title}
+                    </h4>
+                    <p className="text-xs sm:text-sm text-blue-700">{job.company_name}</p>
                   </div>
                 </div>
                 {(job.min_salary || job.max_salary) && (
-                  <p className="text-sm text-blue-700">
+                  <p className="text-xs sm:text-sm text-blue-700">
                     <strong>Salary:</strong> ₹{job.min_salary?.toLocaleString('en-IN')} - ₹
                     {job.max_salary?.toLocaleString('en-IN')}
                   </p>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-4">
                   <div>
                     <Label
@@ -1114,7 +1109,7 @@ const JobDetailsPage = () => {
                           coverLetter: e.target.value,
                         })
                       }
-                      rows={5}
+                      rows={4}
                       className="mt-2 text-sm md:text-base border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     />
                     <p className="text-xs text-gray-500 mt-1">
@@ -1129,7 +1124,6 @@ const JobDetailsPage = () => {
                       htmlFor="expectedSalary"
                       className="text-sm md:text-base font-semibold text-gray-900 flex items-center gap-2"
                     >
-                      {/* <DollarSign className="h-4 w-4 text-green-600" /> */}
                       Expected Salary *
                     </Label>
                     <Input
@@ -1169,7 +1163,9 @@ const JobDetailsPage = () => {
                   </div>
 
                   <div className="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                    <h5 className="font-semibold text-yellow-800 text-sm mb-1">Quick Tip</h5>
+                    <h5 className="font-semibold text-yellow-800 text-xs sm:text-sm mb-1">
+                      Quick Tip
+                    </h5>
                     <p className="text-xs text-yellow-700">
                       A well-written cover letter increases your chances by 40%!
                     </p>

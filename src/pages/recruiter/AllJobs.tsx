@@ -61,6 +61,9 @@ const JobPostings: React.FC = () => {
   const [departmentFilter, setDepartmentFilter] = useState<string>('');
   const [remoteAllowedFilter, setRemoteAllowedFilter] = useState<string>('');
 
+  // Filter visibility state for mobile
+  const [filtersVisible, setFiltersVisible] = useState<boolean>(false);
+
   useEffect(() => {
     fetchJobs();
   }, [
@@ -242,158 +245,15 @@ const JobPostings: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="flex items-center mb-6">
-        <button
-          onClick={goBack}
-          className="flex items-center text-blue-600 hover:text-blue-800 mr-4 transition-colors"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M10 19l-7-7m0 0l7-7m-7 7h18"
-            />
-          </svg>
-        </button>
-        <h1 className="text-3xl font-bold text-gray-800">Your Job Postings</h1>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white shadow-md rounded-lg p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-800">Filters</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-            <select
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Statuses</option>
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="paused">Paused</option>
-              <option value="closed">Closed</option>
-              <option value="expired">Expired</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
-            <select
-              value={jobTypeFilter}
-              onChange={e => setJobTypeFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All Types</option>
-              <option value="full_time">Full Time</option>
-              <option value="part_time">Part Time</option>
-              <option value="contract">Contract</option>
-              <option value="internship">Internship</option>
-              <option value="freelance">Freelance</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input
-              type="text"
-              value={locationFilter}
-              onChange={e => setLocationFilter(e.target.value)}
-              placeholder="Search by location"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-            <input
-              type="text"
-              value={companyNameFilter}
-              onChange={e => setCompanyNameFilter(e.target.value)}
-              placeholder="Search by company"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Job Title</label>
-            <input
-              type="text"
-              value={titleFilter}
-              onChange={e => setTitleFilter(e.target.value)}
-              placeholder="Search by title"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Experience Level</label>
-            <input
-              type="text"
-              value={experienceLevelFilter}
-              onChange={e => setExperienceLevelFilter(e.target.value)}
-              placeholder="e.g., junior, senior"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Department</label>
-            <input
-              type="text"
-              value={departmentFilter}
-              onChange={e => setDepartmentFilter(e.target.value)}
-              placeholder="Search by department"
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Remote Work</label>
-            <select
-              value={remoteAllowedFilter}
-              onChange={e => setRemoteAllowedFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">All</option>
-              <option value="true">Remote Only</option>
-              <option value="false">On-site Only</option>
-            </select>
-          </div>
-        </div>
-        <div className="mt-4 flex gap-2">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <button
-            onClick={() => {
-              setStatusFilter('');
-              setJobTypeFilter('');
-              setLocationFilter('');
-              setCompanyNameFilter('');
-              setTitleFilter('');
-              setExperienceLevelFilter('');
-              setDepartmentFilter('');
-              setRemoteAllowedFilter('');
-              setPage(1);
-            }}
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors"
+            onClick={goBack}
+            className="flex items-center text-blue-600 hover:text-blue-800 transition-colors text-sm md:text-base"
           >
-            Clear Filters
-          </button>
-        </div>
-      </div>
-      {/* Results Summary */}
-      {!loading && !error && (
-        <div className="mb-4 text-sm text-gray-600">
-          Showing {jobs.length} of {total} job postings
-        </div>
-      )}
-
-      {jobs.length === 0 && !loading ? (
-        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-6 py-5 rounded-lg">
-          <div className="flex items-center">
             <svg
-              className="w-6 h-6 mr-3"
+              className="w-4 h-4 md:w-5 md:h-5 mr-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -403,12 +263,37 @@ const JobPostings: React.FC = () => {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            <div>
-              <p className="font-medium">No job postings found</p>
-              <p className="text-sm mt-1">
+          </button>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Your Job Postings</h1>
+        </div>
+
+        {/* Filters */}
+        <div className="bg-white shadow-md rounded-lg p-3 sm:p-4 md:p-6 mb-4 sm:mb-6">
+          {/* Mobile Filter Toggle */}
+          <div className="sm:hidden">
+            <button
+              onClick={() => setFiltersVisible(!filtersVisible)}
+              className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 mr-2 text-gray-600"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+                <span className="font-medium text-gray-800">Filters</span>
                 {Object.values({
                   statusFilter,
                   jobTypeFilter,
@@ -418,91 +303,242 @@ const JobPostings: React.FC = () => {
                   experienceLevelFilter,
                   departmentFilter,
                   remoteAllowedFilter,
-                }).some(v => v)
-                  ? 'Try adjusting your filters to see more results.'
-                  : "You haven't posted any jobs yet. Create your first job posting to get started."}
-              </p>
+                }).some(v => v) && (
+                  <span className="ml-2 bg-blue-100 text-blue-700 text-xs px-2 py-1 rounded-full">
+                    Active
+                  </span>
+                )}
+              </div>
+              <svg
+                className={`w-5 h-5 text-gray-600 transform transition-transform ${filtersVisible ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+          </div>
+
+          {/* Desktop Filter Header */}
+          <div className="hidden sm:block">
+            <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-800">
+              Filters
+            </h3>
+          </div>
+
+          {/* Filter Content */}
+          <div
+            className={`sm:block ${filtersVisible ? 'block' : 'hidden'} transition-all duration-300 ease-in-out`}
+          >
+            <div className="grid grid-cols-1 xs:grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Status
+                </label>
+                <select
+                  value={statusFilter}
+                  onChange={e => {
+                    setStatusFilter(e.target.value);
+                    if (window.innerWidth < 640) setFiltersVisible(false); // Auto-close on mobile
+                  }}
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="draft">Draft</option>
+                  <option value="active">Active</option>
+                  <option value="paused">Paused</option>
+                  <option value="closed">Closed</option>
+                  <option value="expired">Expired</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Job Type
+                </label>
+                <select
+                  value={jobTypeFilter}
+                  onChange={e => {
+                    setJobTypeFilter(e.target.value);
+                    if (window.innerWidth < 640) setFiltersVisible(false); // Auto-close on mobile
+                  }}
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All Types</option>
+                  <option value="full_time">Full Time</option>
+                  <option value="part_time">Part Time</option>
+                  <option value="contract">Contract</option>
+                  <option value="internship">Internship</option>
+                  <option value="freelance">Freelance</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  value={locationFilter}
+                  onChange={e => setLocationFilter(e.target.value)}
+                  placeholder="Search by location"
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  value={companyNameFilter}
+                  onChange={e => setCompanyNameFilter(e.target.value)}
+                  placeholder="Search by company"
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  value={titleFilter}
+                  onChange={e => setTitleFilter(e.target.value)}
+                  placeholder="Search by title"
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Experience Level
+                </label>
+                <input
+                  type="text"
+                  value={experienceLevelFilter}
+                  onChange={e => setExperienceLevelFilter(e.target.value)}
+                  placeholder="e.g., junior, senior"
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Department
+                </label>
+                <input
+                  type="text"
+                  value={departmentFilter}
+                  onChange={e => setDepartmentFilter(e.target.value)}
+                  placeholder="Search by department"
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                  Remote Work
+                </label>
+                <select
+                  value={remoteAllowedFilter}
+                  onChange={e => {
+                    setRemoteAllowedFilter(e.target.value);
+                    if (window.innerWidth < 640) setFiltersVisible(false); // Auto-close on mobile
+                  }}
+                  className="w-full border border-gray-300 rounded-md px-2 sm:px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">All</option>
+                  <option value="true">Remote Only</option>
+                  <option value="false">On-site Only</option>
+                </select>
+              </div>
+            </div>
+            <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4">
+              <button
+                onClick={() => {
+                  setStatusFilter('');
+                  setJobTypeFilter('');
+                  setLocationFilter('');
+                  setCompanyNameFilter('');
+                  setTitleFilter('');
+                  setExperienceLevelFilter('');
+                  setDepartmentFilter('');
+                  setRemoteAllowedFilter('');
+                  setPage(1);
+                  setFiltersVisible(false); // Close filters on mobile after clearing
+                }}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-md transition-colors text-sm flex-1 sm:flex-none"
+              >
+                Clear Filters
+              </button>
             </div>
           </div>
         </div>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {jobs.map(job => (
-            <div
-              key={job._id}
-              className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
-              onClick={() => handleJobClick(job._id)}
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-4">
-                  <h2 className="text-xl font-semibold text-gray-800 line-clamp-2">{job.title}</h2>
-                  {getStatusBadge(job.status)}
-                </div>
+        {/* Results Summary */}
+        {!loading && !error && (
+          <div className="mb-4 text-sm text-gray-600">
+            Showing {jobs.length} of {total} job postings
+          </div>
+        )}
 
-                <div className="flex items-center text-gray-600 mb-3">
-                  <svg
-                    className="w-4 h-4 mr-1.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                    />
-                  </svg>
-                  <span className="text-sm">{job.company_name}</span>
-                </div>
+        {jobs.length === 0 && !loading ? (
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-6 py-5 rounded-lg">
+            <div className="flex items-center">
+              <svg
+                className="w-6 h-6 mr-3"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <p className="font-medium">No job postings found</p>
+                <p className="text-sm mt-1">
+                  {Object.values({
+                    statusFilter,
+                    jobTypeFilter,
+                    locationFilter,
+                    companyNameFilter,
+                    titleFilter,
+                    experienceLevelFilter,
+                    departmentFilter,
+                    remoteAllowedFilter,
+                  }).some(v => v)
+                    ? 'Try adjusting your filters to see more results.'
+                    : "You haven't posted any jobs yet. Create your first job posting to get started."}
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {jobs.map(job => (
+              <div
+                key={job._id}
+                className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer transform hover:-translate-y-1"
+                onClick={() => handleJobClick(job._id)}
+              >
+                <div className="p-4 sm:p-6">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-4 gap-2">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800 line-clamp-2">
+                      {job.title}
+                    </h2>
+                    {getStatusBadge(job.status)}
+                  </div>
 
-                <div className="flex items-center text-gray-600 mb-4">
-                  <svg
-                    className="w-4 h-4 mr-1.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                  <span className="text-sm">{job.location}</span>
-                </div>
-
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="bg-blue-100 text-blue-700 text-xs font-medium px-3 py-1.5 rounded-full">
-                    {getJobTypeDisplay(job.job_type)}
-                  </span>
-                  {job.remote_allowed && (
-                    <span className="bg-green-100 text-green-700 text-xs font-medium px-3 py-1.5 rounded-full">
-                      Remote
-                    </span>
-                  )}
-                  {job.experience_required && (
-                    <span className="bg-purple-100 text-purple-700 text-xs font-medium px-3 py-1.5 rounded-full">
-                      {job.experience_required}+ years
-                    </span>
-                  )}
-                </div>
-
-                <p className="text-gray-600 text-sm mb-5 line-clamp-3">{job.description}</p>
-
-                <div className="flex justify-between items-center text-xs text-gray-500 pt-4 border-t border-gray-100">
-                  <div className="flex items-center">
+                  <div className="flex items-center text-gray-600 mb-3">
                     <svg
-                      className="w-3.5 h-3.5 mr-1"
+                      className="w-4 h-4 mr-1.5 flex-shrink-0"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -512,16 +548,60 @@ const JobPostings: React.FC = () => {
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
                       />
                     </svg>
-                    <span>Posted: {formatDate(job.created_at)}</span>
+                    <span className="text-sm truncate">{job.company_name}</span>
                   </div>
 
-                  {job.application_deadline && (
+                  <div className="flex items-center text-gray-600 mb-3 sm:mb-4">
+                    <svg
+                      className="w-4 h-4 mr-1.5 flex-shrink-0"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                      />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                      />
+                    </svg>
+                    <span className="text-sm truncate">{job.location}</span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
+                    <span className="bg-blue-100 text-blue-700 text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+                      {getJobTypeDisplay(job.job_type)}
+                    </span>
+                    {job.remote_allowed && (
+                      <span className="bg-green-100 text-green-700 text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+                        Remote
+                      </span>
+                    )}
+                    {job.experience_required && (
+                      <span className="bg-purple-100 text-purple-700 text-xs font-medium px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
+                        {job.experience_required}+ years
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-gray-600 text-sm mb-4 sm:mb-5 line-clamp-3">
+                    {job.description}
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-xs text-gray-500 pt-3 sm:pt-4 border-t border-gray-100 gap-2">
                     <div className="flex items-center">
                       <svg
-                        className="w-3.5 h-3.5 mr-1"
+                        className="w-3.5 h-3.5 mr-1 flex-shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -531,64 +611,91 @@ const JobPostings: React.FC = () => {
                           strokeLinecap="round"
                           strokeLinejoin="round"
                           strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
-                      <span>Deadline: {formatDate(job.application_deadline)}</span>
+                      <span className="truncate">Posted: {formatDate(job.created_at)}</span>
                     </div>
-                  )}
+
+                    {job.application_deadline && (
+                      <div className="flex items-center">
+                        <svg
+                          className="w-3.5 h-3.5 mr-1 flex-shrink-0"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                          />
+                        </svg>
+                        <span className="truncate">
+                          Deadline: {formatDate(job.application_deadline)}
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="flex justify-between items-center mt-8 mb-6">
-          <button
-            onClick={() => setPage(p => Math.max(1, p - 1))}
-            disabled={!pagination.hasPrev}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 flex items-center hover:bg-gray-300 transition-colors"
-          >
-            <svg
-              className="w-4 h-4 mr-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+        {/* Pagination */}
+        {pagination.totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row justify-between items-center mt-6 lg:mt-8 mb-4 lg:mb-6 gap-4">
+            <button
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={!pagination.hasPrev}
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded disabled:opacity-50 flex items-center justify-center hover:bg-gray-300 transition-colors"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Previous
-          </button>
-          <span className="text-sm text-gray-700">
-            Page {pagination.page} of {pagination.totalPages}
-          </span>
-          <button
-            onClick={() => setPage(p => p + 1)}
-            disabled={!pagination.hasNext}
-            className="px-4 py-2 bg-gray-200 rounded disabled:opacity-50 flex items-center hover:bg-gray-300 transition-colors"
-          >
-            Next
-            <svg
-              className="w-4 h-4 ml-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
+              <svg
+                className="w-4 h-4 mr-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              Previous
+            </button>
+            <span className="text-sm text-gray-700 order-first sm:order-none">
+              Page {pagination.page} of {pagination.totalPages}
+            </span>
+            <button
+              onClick={() => setPage(p => p + 1)}
+              disabled={!pagination.hasNext}
+              className="w-full sm:w-auto px-4 py-2 bg-gray-200 rounded disabled:opacity-50 flex items-center justify-center hover:bg-gray-300 transition-colors"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      )}
+              Next
+              <svg
+                className="w-4 h-4 ml-1"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
