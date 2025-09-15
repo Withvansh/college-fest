@@ -34,26 +34,38 @@ import {
   Company,
 } from '@/lib/api/placementDrives';
 import { toast } from 'sonner';
+import studentAPI, { StudentProfile } from '@/lib/api/student';
 
 const CollegeDashboard = () => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState('drives');
   const [loading, setLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
+const [recentPlaced,SetRecentPlaced]=useState<StudentProfile[]>([])
   const [dashboardData, setDashboardData] = useState<{
     stats: DashboardStats;
     upcomingDrives: PlacementDrive[];
     topCompanies: Company[];
   } | null>(null);
 
-  // For now, using a mock college ID - replace with actual college ID from auth context
-  const collegeId = localStorage.getItem("user_id"); // Replace with actual college ID
+  
+  const collegeId = localStorage.getItem("user_id"); 
 
   useEffect(() => {
     fetchDashboardData();
+    fetchRecentPlacedStuents()
   }, []);
-
+const fetchRecentPlacedStuents=async()=>{
+try {
+  if(!collegeId) return;
+  const response= await studentAPI.getRecentPlacedStudents(collegeId);
+  console.log(response)
+SetRecentPlaced(response)
+  
+} catch (error:any) {
+  console.log(error)
+}
+}
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
@@ -428,31 +440,33 @@ const CollegeDashboard = () => {
                   <CardTitle className="text-base md:text-lg">Recent Placements</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 sm:space-y-3">
-                  {[
-                    { name: 'Rajesh Kumar', company: 'Google', package: '₹32 LPA', branch: 'CSE' },
-                    {
-                      name: 'Priya Sharma',
-                      company: 'Microsoft',
-                      package: '₹28 LPA',
-                      branch: 'IT',
-                    },
-                    { name: 'Amit Patel', company: 'Amazon', package: '₹25 LPA', branch: 'CSE' },
-                    { name: 'Sneha Singh', company: 'Adobe', package: '₹30 LPA', branch: 'IT' },
-                  ].map((placement, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-white to-gray-50 rounded-lg border border-gray-100 hover:shadow-sm transition-all duration-200"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">{placement.name}</p>
-                        <p className="text-xs sm:text-sm text-gray-600 truncate">{placement.branch}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0 ml-3">
-                        <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">{placement.company}</p>
-                        <p className="text-xs sm:text-sm text-green-600 font-medium">{placement.package}</p>
-                      </div>
-                    </div>
-                  ))}
+                {recentPlaced.map((placement, index) => (
+  <div
+    key={index}
+    className="flex items-center justify-between p-3 sm:p-4 bg-gradient-to-r from-white to-gray-50 rounded-lg border border-gray-100 hover:shadow-sm transition-all duration-200"
+  >
+    <div className="flex-1 min-w-0">
+      <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+        {placement.full_name}
+      </p>
+      <p className="text-xs sm:text-sm text-gray-600 truncate">
+        {placement.department}
+      </p>
+    </div>
+    <div className="text-right flex-shrink-0 ml-3">
+      <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+        {placement.placedAt?.drive_id.company || "N/A"}
+      </p>
+       <p className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+        {placement.placedAt?.drive_id.role || "N/A"}
+      </p>
+      <p className="text-xs sm:text-sm text-green-600 font-medium">
+        {placement.placedAt?.package ? `${placement.placedAt.package} LPA` : "N/A"}
+      </p>
+    </div>
+  </div>
+))}
+
                 </CardContent>
               </Card>
             </div>

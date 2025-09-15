@@ -1,23 +1,24 @@
 import BackendAPI from './backend';
 
 export interface StudentProfile {
-  _id: string;
-  full_name: string;
-  email: string;
-  enrollment_no: string;
-  verifiedByCollege:string;
-  course: string;
-  year: number;
+  full_name:string;
+    enrollment_no?: string;
+  course?: string;
+  year?: number;
+  college_name?: string;
+  verifiedByCollege: boolean;
   department?: string;
-  college_id: string;
+  college_id?:  string;
   phone?: string;
   cgpa?: number;
   resume_url?: string;
   skills?: string[];
+  panNumber?: string;
+  aadhaarNumber?: string;
   linkedin_url?: string;
   github_url?: string;
   portfolio_url?: string;
-  date_of_birth?: string;
+  date_of_birth?: Date;
   address?: string;
   city?: string;
   state?: string;
@@ -30,6 +31,13 @@ export interface StudentProfile {
   tenth_percentage?: number;
   twelfth_percentage?: number;
   graduation_percentage?: number;
+  isPlaced:boolean;
+  placedAt?: {
+    drive_id: PlacementDrive;
+    package: string;
+    startDate: Date;
+    placedDate: Date;
+  };
 }
 
 export interface PlacementDrive {
@@ -154,7 +162,10 @@ export interface StudentAnalytics {
 
     return this.get(`${this.baseUrl}/${studentId}/drives/available?${params.toString()}`);
   }
-
+ async getRecentPlacedStudents(collegeId: string): Promise<StudentProfile[]> {
+    const data:StudentProfile[]=await this.get(`${this.baseUrl}/placed_student/${collegeId}`);
+    return data;
+  }
   // Get student applications
   async getStudentApplications(
     studentId: string,
