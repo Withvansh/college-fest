@@ -38,6 +38,7 @@ export interface SignupResponse {
 
 export interface User {
   _id: string;
+  avatar_url?: string;
   email: string;
   full_name: string;
   name?: string; // Alias for full_name for backward compatibility

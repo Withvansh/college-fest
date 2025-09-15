@@ -107,35 +107,46 @@ ${analytics.testHistory
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/student/dashboard" className="flex items-center space-x-3">
-                <Button variant="outline" size="sm">
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4">
+          <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <Link to="/student/dashboard" className="flex items-center">
+                <Button variant="outline" size="sm" className="flex-shrink-0">
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Dashboard
+                  <span className="hidden sm:inline">Back to Dashboard</span>
+                  <span className="sm:hidden">Back</span>
                 </Button>
               </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Performance Analytics</h1>
-                <p className="text-gray-600">Detailed insights into your placement journey</p>
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">
+                  Performance Analytics
+                </h1>
+                <p className="text-gray-600 text-sm hidden sm:block">
+                  Detailed insights into your placement journey
+                </p>
               </div>
             </div>
-            <Button variant="outline" size="sm" onClick={handleExportReport}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportReport}
+              className="w-full sm:w-auto"
+            >
               <Download className="h-4 w-4 mr-2" />
-              Export Report
+              <span className="hidden sm:inline">Export Report</span>
+              <span className="sm:hidden">Export</span>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-6 py-8">
+      <div className="container mx-auto px-4 sm:px-6 py-4 sm:py-8">
         {/* Key Metrics */}
-        <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4 mb-6 sm:mb-8">
           <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-            <CardContent className="p-4 text-center">
-              <FileText className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 sm:p-4 text-center">
+              <FileText className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1 sm:mb-2" />
+              <div className="text-lg sm:text-2xl font-bold">
                 {analytics.performanceData.totalApplications}
               </div>
               <p className="text-xs text-blue-100">Applications</p>
@@ -143,9 +154,11 @@ ${analytics.testHistory
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-            <CardContent className="p-4 text-center">
-              <Target className="h-6 w-6 mx-auto mb-2" />
-              <div className="text-2xl font-bold">{analytics.performanceData.testsCompleted}</div>
+            <CardContent className="p-3 sm:p-4 text-center">
+              <Target className="h-4 w-4 sm:h-6 sm:w-6 mx-auto mb-1 sm:mb-2" />
+              <div className="text-lg sm:text-2xl font-bold">
+                {analytics.performanceData.testsCompleted}
+              </div>
               <p className="text-xs text-purple-100">Tests</p>
             </CardContent>
           </Card>
