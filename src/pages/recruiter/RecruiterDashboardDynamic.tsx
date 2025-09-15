@@ -191,10 +191,6 @@ const RecruiterDashboardDynamic = () => {
           ? applicationsResponse.total.length
           : applicationsResponse.total || 0;
 
-        // console.log(
-        //   `📊 Found ${totalApplicationsCount} total applications, showing ${applicationsArray?.length} recent ones`
-        // );
-
         if (Array.isArray(applicationsArray)) {
           console.log('📋 Processing applications data:', applicationsArray);
 
@@ -306,10 +302,6 @@ const RecruiterDashboardDynamic = () => {
         },
       };
 
-      console.log('✅ Dashboard loaded successfully:', dashboardData);
-      console.log(
-        `📊 Summary: ${realJobs.length} jobs, ${totalApplicationsCount} total applications, ${realApplications.length} recent applications`
-      );
       setDashboard(dashboardData);
     } catch (err) {
       console.error('💥 Error loading dashboard:', err);
@@ -327,14 +319,9 @@ const RecruiterDashboardDynamic = () => {
   }, [user, dashboardId, navigate]);
 
   useEffect(() => {
-    console.log('🎯 RecruiterDashboardDynamic - Component mounted');
-    console.log('📊 Dashboard ID from URL:', dashboardId);
-    console.log('👤 Current user:', user);
-
     if (user && dashboardId) {
       // Check if dashboardId is valid (not 'undefined' or empty)
       if (dashboardId === 'undefined' || !dashboardId.trim()) {
-        console.log('❌ Invalid dashboard ID, redirecting to HRMS');
         toast.error('Invalid dashboard. Redirecting to HRMS workspace.');
         navigate('/recruiter/hrms', { replace: true });
         return;
@@ -342,17 +329,14 @@ const RecruiterDashboardDynamic = () => {
 
       loadDashboard();
     } else if (user && !dashboardId) {
-      console.log('❌ No dashboard ID provided, redirecting to HRMS');
       navigate('/recruiter/hrms', { replace: true });
     } else {
-      console.log('⏳ Missing user or dashboardId:', { user: !!user, dashboardId });
       setLoading(false);
     }
 
     // Also listen for storage events to refresh when returning from job posting
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'refresh-dashboard' && e.newValue === 'true') {
-        console.log('🔄 Dashboard refresh requested via storage event');
         localStorage.removeItem('refresh-dashboard');
         if (user && dashboardId) {
           loadDashboard();
@@ -369,17 +353,14 @@ const RecruiterDashboardDynamic = () => {
 
   // Add detailed debugging for authentication
   if (!user) {
-    console.log('❌ User not authenticated, redirecting to auth');
     return <Navigate to="/auth/recruiter" replace />;
   }
 
   if (user.role !== 'recruiter') {
-    console.log('❌ User role is not recruiter:', user.role);
     return <Navigate to="/" replace />;
   }
 
   if (loading) {
-    console.log('⏳ Dashboard loading...');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -392,7 +373,6 @@ const RecruiterDashboardDynamic = () => {
   }
 
   if (error) {
-    console.log('❌ Dashboard error state:', error);
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -415,7 +395,6 @@ const RecruiterDashboardDynamic = () => {
   }
 
   if (!dashboard) {
-    console.log('❌ No dashboard data available');
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -427,8 +406,6 @@ const RecruiterDashboardDynamic = () => {
       </div>
     );
   }
-
-  console.log('✅ Rendering dashboard with data:', dashboard);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
@@ -571,85 +548,166 @@ const RecruiterDashboardDynamic = () => {
             {/* Recent Applicants */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>Recent Applicants</span>
+                <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                  <span className="text-lg sm:text-xl">Recent Applicants</span>
                   <Link to="/recruiter/applications">
-                    <Button size="sm">View All Applications</Button>
+                    <Button size="sm" className="w-full sm:w-auto text-sm">
+                      <span className="sm:hidden">View All</span>
+                      <span className="hidden sm:inline">View All Applications</span>
+                    </Button>
                   </Link>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {dashboard.mockData.applicants.length > 0 ? (
                     dashboard.mockData.applicants.map(applicant => (
                       <div
                         key={applicant._id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                        className="border rounded-lg hover:bg-gray-50 transition-colors overflow-hidden"
                       >
-                        <div className="flex-1">
-                          <h3 className="font-medium text-gray-900">{applicant.name}</h3>
-                          <p className="text-sm text-gray-600">{applicant.email}</p>
-                          {applicant.phone && (
-                            <p className="text-xs text-gray-500">📞 {applicant.phone}</p>
-                          )}
-                          <p className="text-xs text-gray-500 mt-1">
-                            Applied for: {applicant.position}
-                          </p>
-                          {applicant.location && (
-                            <p className="text-xs text-gray-400">📍 {applicant.location}</p>
-                          )}
-                          {applicant.expectedSalary && (
-                            <p className="text-xs text-green-600 mt-1">
-                              💰 Expected: ₹{applicant.expectedSalary.toLocaleString()}
+                        {/* Mobile Layout */}
+                        <div className="block sm:hidden p-4">
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex-1 min-w-0">
+                              <h3 className="font-semibold text-gray-900 text-base truncate">
+                                {applicant.name}
+                              </h3>
+                              <p className="text-sm text-gray-600 truncate">{applicant.email}</p>
+                            </div>
+                            <div className="ml-3 flex-shrink-0">
+                              <span
+                                className={`inline-block text-xs px-2 py-1 rounded-full font-medium ${
+                                  applicant.status === 'Interview Scheduled'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : applicant.status === 'Shortlisted'
+                                      ? 'bg-green-100 text-green-800'
+                                      : applicant.status === 'Under Review'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : applicant.status === 'Applied'
+                                          ? 'bg-purple-100 text-purple-800'
+                                          : applicant.status === 'Selected'
+                                            ? 'bg-emerald-100 text-emerald-800'
+                                            : applicant.status === 'Rejected'
+                                              ? 'bg-red-100 text-red-800'
+                                              : 'bg-gray-100 text-gray-800'
+                                }`}
+                              >
+                                {applicant.status}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            {applicant.phone && (
+                              <p className="text-sm text-gray-500 flex items-center">
+                                <span className="mr-2">📞</span>
+                                {applicant.phone}
+                              </p>
+                            )}
+                            <p className="text-sm text-gray-500">
+                              <span className="font-medium">Position:</span>{' '}
+                              <span className="text-gray-700">{applicant.position}</span>
                             </p>
-                          )}
+                            {applicant.location && (
+                              <p className="text-sm text-gray-400 flex items-center">
+                                <span className="mr-2">📍</span>
+                                {applicant.location}
+                              </p>
+                            )}
+                            {applicant.expectedSalary && (
+                              <p className="text-sm text-green-600 flex items-center">
+                                <span className="mr-2">💰</span>
+                                Expected: ₹{applicant.expectedSalary.toLocaleString()}
+                              </p>
+                            )}
+                            {applicant.testScore && (
+                              <p className="text-sm text-blue-600 flex items-center">
+                                <span className="mr-2">📊</span>
+                                Test Score: {applicant.testScore}%
+                              </p>
+                            )}
+                            <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                              <p className="text-sm text-gray-500">
+                                Applied: {applicant.appliedDate}
+                              </p>
+                              <Link to={`/recruiter/applications/${applicant._id}`}>
+                                <Button size="sm" variant="outline" className="text-xs">
+                                  View Details
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
                         </div>
-                        <div className="text-right ml-4">
-                          <p className="text-sm font-medium text-gray-900">
-                            {applicant.appliedDate}
-                          </p>
-                          {applicant.testScore && (
-                            <p className="text-xs text-blue-600 mt-1">
-                              📊 Test Score: {applicant.testScore}%
+
+                        {/* Desktop Layout */}
+                        <div className="hidden sm:flex items-center justify-between p-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-medium text-gray-900">{applicant.name}</h3>
+                            <p className="text-sm text-gray-600">{applicant.email}</p>
+                            {applicant.phone && (
+                              <p className="text-xs text-gray-500">📞 {applicant.phone}</p>
+                            )}
+                            <p className="text-xs text-gray-500 mt-1">
+                              Applied for: {applicant.position}
                             </p>
-                          )}
-                          <span
-                            className={`inline-block text-xs px-2 py-1 rounded-full mt-2 ${
-                              applicant.status === 'Interview Scheduled'
-                                ? 'bg-blue-100 text-blue-800'
-                                : applicant.status === 'Shortlisted'
-                                  ? 'bg-green-100 text-green-800'
-                                  : applicant.status === 'Under Review'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : applicant.status === 'Applied'
-                                      ? 'bg-purple-100 text-purple-800'
-                                      : applicant.status === 'Selected'
-                                        ? 'bg-emerald-100 text-emerald-800'
-                                        : applicant.status === 'Rejected'
-                                          ? 'bg-red-100 text-red-800'
-                                          : 'bg-gray-100 text-gray-800'
-                            }`}
-                          >
-                            {applicant.status}
-                          </span>
+                            {applicant.location && (
+                              <p className="text-xs text-gray-400">📍 {applicant.location}</p>
+                            )}
+                            {applicant.expectedSalary && (
+                              <p className="text-xs text-green-600 mt-1">
+                                💰 Expected: ₹{applicant.expectedSalary.toLocaleString()}
+                              </p>
+                            )}
+                          </div>
+                          <div className="text-right ml-4 flex-shrink-0">
+                            <p className="text-sm font-medium text-gray-900">
+                              {applicant.appliedDate}
+                            </p>
+                            {applicant.testScore && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                📊 Test Score: {applicant.testScore}%
+                              </p>
+                            )}
+                            <span
+                              className={`inline-block text-xs px-2 py-1 rounded-full mt-2 font-medium ${
+                                applicant.status === 'Interview Scheduled'
+                                  ? 'bg-blue-100 text-blue-800'
+                                  : applicant.status === 'Shortlisted'
+                                    ? 'bg-green-100 text-green-800'
+                                    : applicant.status === 'Under Review'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : applicant.status === 'Applied'
+                                        ? 'bg-purple-100 text-purple-800'
+                                        : applicant.status === 'Selected'
+                                          ? 'bg-emerald-100 text-emerald-800'
+                                          : applicant.status === 'Rejected'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-gray-100 text-gray-800'
+                              }`}
+                            >
+                              {applicant.status}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-center py-8">
-                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500 mb-2">No applications yet</p>
-                      <p className="text-sm text-gray-400 mb-4">
+                    <div className="text-center py-8 sm:py-12">
+                      <Users className="h-12 w-12 sm:h-16 sm:w-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-gray-500 mb-2 text-base sm:text-lg">No applications yet</p>
+                      <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6 px-4">
                         Applications will appear here once candidates start applying to your jobs
                       </p>
-                      <div className="space-y-2">
+                      <div className="space-y-3 sm:space-y-2">
                         <Link to="/recruiter/post-job">
-                          <Button size="sm" variant="outline">
+                          <Button size="sm" variant="outline" className="w-full sm:w-auto">
                             <Plus className="h-4 w-4 mr-2" />
-                            Post a Job
+                            <span className="sm:hidden">Post a Job</span>
+                            <span className="hidden sm:inline">Post Your First Job</span>
                           </Button>
                         </Link>
-                        <p className="text-xs text-gray-400">
+                        <p className="text-xs sm:text-sm text-gray-400 px-4 sm:px-0">
                           Start receiving applications by posting your first job
                         </p>
                       </div>
