@@ -1,9 +1,8 @@
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Building2, Calendar, FileText, TrendingUp, MapPin, Users } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Building2, Calendar, FileText, TrendingUp, MapPin, Users } from 'lucide-react';
 
 interface Application {
   id: number;
@@ -21,35 +20,39 @@ interface ApplicationDetailsModalProps {
   application: Application | null;
 }
 
-const ApplicationDetailsModal = ({ isOpen, onClose, application }: ApplicationDetailsModalProps) => {
+const ApplicationDetailsModal = ({
+  isOpen,
+  onClose,
+  application,
+}: ApplicationDetailsModalProps) => {
   if (!application) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto mx-4">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-xl">
-            <Building2 className="h-6 w-6 mr-2 text-purple-600" />
-            {application.company} - Application Details
+          <DialogTitle className="flex items-center text-lg sm:text-xl">
+            <Building2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-purple-600" />
+            <span className="truncate">{application.company} - Application Details</span>
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-6">
+
+        <div className="space-y-4 sm:space-y-6">
           {/* Application Status */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center justify-between">
-                <span>{application.role}</span>
-                <Badge 
-                  variant={application.status === "Selected" ? "secondary" : "outline"}
-                  className={application.status === "Selected" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}
+              <CardTitle className="text-base sm:text-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <span className="line-clamp-2">{application.role}</span>
+                <Badge
+                  variant={application.status === 'Selected' ? 'secondary' : 'outline'}
+                  className={`${application.status === 'Selected' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'} w-fit`}
                 >
                   {application.status}
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <p className="text-sm text-gray-600">Applied Date</p>
                   <p className="font-semibold">{application.appliedDate}</p>
@@ -110,7 +113,9 @@ const ApplicationDetailsModal = ({ isOpen, onClose, application }: ApplicationDe
                   <h4 className="font-semibold mb-2">Responsibilities:</h4>
                   <ul className="list-disc list-inside text-sm space-y-1 text-gray-700">
                     <li>Develop and maintain web applications using modern technologies</li>
-                    <li>Collaborate with cross-functional teams to deliver high-quality software</li>
+                    <li>
+                      Collaborate with cross-functional teams to deliver high-quality software
+                    </li>
                     <li>Participate in code reviews and maintain coding standards</li>
                     <li>Debug and resolve technical issues</li>
                   </ul>
@@ -118,9 +123,13 @@ const ApplicationDetailsModal = ({ isOpen, onClose, application }: ApplicationDe
                 <div>
                   <h4 className="font-semibold mb-2">Required Skills:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {["React.js", "Node.js", "JavaScript", "TypeScript", "MongoDB", "AWS"].map((skill) => (
-                      <Badge key={skill} variant="outline">{skill}</Badge>
-                    ))}
+                    {['React.js', 'Node.js', 'JavaScript', 'TypeScript', 'MongoDB', 'AWS'].map(
+                      skill => (
+                        <Badge key={skill} variant="outline">
+                          {skill}
+                        </Badge>
+                      )
+                    )}
                   </div>
                 </div>
               </div>

@@ -147,9 +147,11 @@ const Navbar = () => {
                       variant="ghost"
                       className="h-10 w-10 rounded-full p-0 overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-300"
                     >
-                      {user.avatar ? (
+                     
+                      {user.avatar_url ? (
+                        
                         <img
-                          src={user.avatar}
+                          src={user.avatar_url}
                           alt={user.full_name || user.email || 'User'}
                           className="h-full w-full object-cover"
                           onError={e => {

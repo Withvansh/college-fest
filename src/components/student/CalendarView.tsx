@@ -17,23 +17,32 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
   // Show loading state if no drives data yet
   if (!drives || drives.length === 0) {
     return (
-      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <Button variant="outline" onClick={onBack} size="sm" className="flex-shrink-0">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+      <div className="space-y-3 sm:space-y-4 lg:space-y-6 p-3 sm:p-4 lg:p-6 max-h-[70vh] overflow-y-auto">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+            <Button
+              variant="outline"
+              onClick={onBack}
+              size="sm"
+              className="flex-shrink-0 h-8 sm:h-9"
+            >
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
               Back to List
             </Button>
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+            <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
               Placement Drive Calendar
             </h2>
           </div>
         </div>
 
-        <div className="text-center py-12">
-          <Building2 className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500 text-lg">No placement drives available</p>
-          <p className="text-gray-400 text-sm mt-2">Check back later for upcoming opportunities</p>
+        <div className="text-center py-8 sm:py-10 lg:py-12">
+          <Building2 className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 text-gray-400 mx-auto mb-3 sm:mb-4" />
+          <p className="text-gray-500 text-sm sm:text-base lg:text-lg">
+            No placement drives available
+          </p>
+          <p className="text-gray-400 text-xs sm:text-sm mt-1 sm:mt-2">
+            Check back later for upcoming opportunities
+          </p>
         </div>
       </div>
     );
@@ -65,27 +74,27 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
   ).length;
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 max-h-[70vh] overflow-y-auto">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 sm:space-x-4">
-          <Button variant="outline" onClick={onBack} size="sm" className="flex-shrink-0">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+    <div className="space-y-3 sm:space-y-4 lg:space-y-6 p-3 sm:p-4 lg:p-6 max-h-[70vh] overflow-y-auto">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
+          <Button variant="outline" onClick={onBack} size="sm" className="flex-shrink-0 h-8 sm:h-9">
+            <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
             Back to List
           </Button>
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900">
             Placement Drive Calendar
-            <span className="ml-2 text-sm font-normal text-gray-500">
+            <span className="ml-1 sm:ml-2 text-xs sm:text-sm font-normal text-gray-500">
               ({driveEvents.length} drives)
             </span>
           </h2>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
         {/* Calendar */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg sm:text-xl">Select Date</CardTitle>
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-base sm:text-lg lg:text-xl">Select Date</CardTitle>
           </CardHeader>
           <CardContent>
             <Calendar
@@ -103,11 +112,11 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
                   borderRadius: '4px',
                 },
               }}
-              className="rounded-md border w-full hover:shadow-md transition-shadow"
+              className="rounded-md border w-full hover:shadow-md transition-shadow text-sm"
             />
-            <div className="mt-4 text-xs sm:text-sm text-gray-600">
+            <div className="mt-3 sm:mt-4 text-xs sm:text-sm text-gray-600">
               <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 sm:w-4 sm:h-4 bg-indigo-200 rounded flex-shrink-0"></div>
+                <div className="w-2 h-2 sm:w-3 sm:h-3 lg:w-4 lg:h-4 bg-indigo-200 rounded flex-shrink-0"></div>
                 <span>Days with placement drives</span>
               </div>
             </div>
@@ -116,8 +125,8 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
 
         {/* Events for Selected Date */}
         <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-lg sm:text-xl">
+          <CardHeader className="pb-2 sm:pb-3">
+            <CardTitle className="text-base sm:text-lg lg:text-xl">
               {selectedDate
                 ? `Events on ${selectedDate.toLocaleDateString('en-US', {
                     weekday: 'long',
@@ -129,39 +138,41 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
           </CardHeader>
           <CardContent>
             {selectedDateEvents.length > 0 ? (
-              <div className="space-y-3 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                 {selectedDateEvents.map(event => (
                   <Card
                     key={event._id}
                     className="border-l-4 border-l-purple-500 hover:shadow-md transition-shadow"
                   >
                     <CardContent className="p-3 sm:p-4">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                        <h3 className="font-semibold text-base sm:text-lg flex items-center">
-                          <Building2 className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-600 flex-shrink-0" />
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-1 sm:gap-2">
+                        <h3 className="font-semibold text-sm sm:text-base lg:text-lg flex items-center">
+                          <Building2 className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5 mr-1 sm:mr-2 text-purple-600 flex-shrink-0" />
                           <span className="truncate">{event.company}</span>
                         </h3>
                         <Badge
                           variant="secondary"
-                          className="bg-green-100 text-green-700 text-xs sm:text-sm w-fit"
+                          className="bg-green-100 text-green-700 text-xs sm:text-sm w-fit self-start sm:self-auto"
                         >
                           {event.salary_package || 'Not disclosed'}
                         </Badge>
                       </div>
-                      <p className="text-gray-600 mb-3 text-sm sm:text-base">{event.role}</p>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs sm:text-sm">
-                        <div className="flex items-center space-x-2">
+                      <p className="text-gray-600 mb-2 sm:mb-3 text-xs sm:text-sm lg:text-base">
+                        {event.role}
+                      </p>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 lg:gap-4 text-xs sm:text-sm">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
                           <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
                           <span>{event.drive_time}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1 sm:space-x-2">
                           <Users className="h-3 w-3 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
                           <span>{event.positions_available} positions</span>
                         </div>
                       </div>
                       <Button
                         size="sm"
-                        className="mt-3 bg-purple-600 hover:bg-purple-700 w-full text-sm"
+                        className="mt-2 sm:mt-3 bg-purple-600 hover:bg-purple-700 w-full text-xs sm:text-sm h-8 sm:h-9"
                       >
                         Apply Now
                       </Button>
@@ -170,14 +181,12 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-6 sm:py-8">
-                <Building2 className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-500 text-sm sm:text-base">
+              <div className="text-center py-4 sm:py-6 lg:py-8">
+                <Building2 className="h-8 w-8 sm:h-10 sm:w-10 lg:h-12 lg:w-12 text-gray-400 mx-auto mb-2 sm:mb-3 lg:mb-4" />
+                <p className="text-gray-500 text-xs sm:text-sm lg:text-base">
                   No placement drives scheduled for this date
                 </p>
-                <p className="text-xs sm:text-sm text-gray-400 mt-2">
-                  Try selecting a different date
-                </p>
+                <p className="text-xs text-gray-400 mt-1 sm:mt-2">Try selecting a different date</p>
               </div>
             )}
           </CardContent>
@@ -186,28 +195,30 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
 
       {/* Upcoming Events Summary */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg sm:text-xl">All Available Drives</CardTitle>
+        <CardHeader className="pb-2 sm:pb-3">
+          <CardTitle className="text-base sm:text-lg lg:text-xl">All Available Drives</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
             {driveEvents.map(event => (
               <Card
                 key={event._id}
                 className="hover:shadow-md transition-shadow border hover:border-purple-200"
               >
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                    <h4 className="font-semibold text-sm sm:text-base truncate">{event.company}</h4>
-                    <Badge variant="outline" className="text-xs w-fit">
+                <CardContent className="p-2 sm:p-3 lg:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-1 sm:mb-2 gap-1 sm:gap-2">
+                    <h4 className="font-semibold text-xs sm:text-sm lg:text-base truncate">
+                      {event.company}
+                    </h4>
+                    <Badge variant="outline" className="text-xs w-fit self-start sm:self-auto">
                       {event.salary_package || 'Not disclosed'}
                     </Badge>
                   </div>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-2 truncate">{event.role}</p>
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <p className="text-xs text-gray-600 mb-1 sm:mb-2 truncate">{event.role}</p>
+                  <div className="text-xs text-gray-500 space-y-0.5 sm:space-y-1">
                     <div className="flex items-center space-x-1">
-                      <Clock className="h-3 w-3 flex-shrink-0" />
-                      <span className="truncate">
+                      <Clock className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
+                      <span className="truncate text-xs">
                         {new Date(event.drive_date).toLocaleDateString('en-US', {
                           month: 'short',
                           day: 'numeric',
@@ -216,8 +227,8 @@ const CalendarView = ({ onBack, drives }: CalendarViewProps) => {
                       </span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Users className="h-3 w-3 flex-shrink-0" />
-                      <span>{event.positions_available} positions</span>
+                      <Users className="h-2 w-2 sm:h-3 sm:w-3 flex-shrink-0" />
+                      <span className="text-xs">{event.positions_available} positions</span>
                     </div>
                   </div>
                 </CardContent>

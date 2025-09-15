@@ -1,11 +1,16 @@
-
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Building2, Calendar, CheckCircle, MapPin, DollarSign } from "lucide-react";
-import { toast } from "sonner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Building2, Calendar, CheckCircle, MapPin, DollarSign } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Drive {
   id: number;
@@ -29,9 +34,9 @@ const ApplyDriveModal = ({ isOpen, onClose, drive }: ApplyDriveModalProps) => {
 
   const handleApply = async () => {
     if (!drive) return;
-    
+
     setIsApplying(true);
-    
+
     // Simulate API call
     setTimeout(() => {
       toast.success(`Successfully applied to ${drive.company} for ${drive.role} position!`);
@@ -44,27 +49,29 @@ const ApplyDriveModal = ({ isOpen, onClose, drive }: ApplyDriveModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center text-xl">
-            <Building2 className="h-6 w-6 mr-2 text-purple-600" />
-            Apply to {drive.company}
+          <DialogTitle className="flex items-center text-lg sm:text-xl">
+            <Building2 className="h-5 w-5 sm:h-6 sm:w-6 mr-2 text-purple-600" />
+            <span className="truncate">Apply to {drive.company}</span>
           </DialogTitle>
         </DialogHeader>
-        
-        <div className="space-y-6">
+
+        <div className="space-y-4 sm:space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">{drive.role}</CardTitle>
-              <div className="flex items-center space-x-4">
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
+              <CardTitle className="text-base sm:text-lg line-clamp-2">{drive.role}</CardTitle>
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
+                <Badge variant="secondary" className="bg-green-100 text-green-700 w-fit">
                   {drive.status}
                 </Badge>
-                <span className="text-lg font-bold text-green-600">{drive.package}</span>
+                <span className="text-base sm:text-lg font-bold text-green-600">
+                  {drive.package}
+                </span>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="flex items-center space-x-2">
                   <Calendar className="h-4 w-4 text-gray-500" />
                   <div>
@@ -80,12 +87,12 @@ const ApplyDriveModal = ({ isOpen, onClose, drive }: ApplyDriveModalProps) => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <p className="text-sm text-gray-600">Eligibility Criteria</p>
                 <p className="font-semibold">{drive.eligibility}</p>
               </div>
-              
+
               <div className="bg-blue-50 p-4 rounded-lg">
                 <h4 className="font-semibold text-blue-900 mb-2">Important Information:</h4>
                 <ul className="text-sm text-blue-800 space-y-1">
@@ -103,8 +110,8 @@ const ApplyDriveModal = ({ isOpen, onClose, drive }: ApplyDriveModalProps) => {
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleApply} 
+          <Button
+            onClick={handleApply}
             disabled={isApplying}
             className="bg-purple-600 hover:bg-purple-700"
           >
