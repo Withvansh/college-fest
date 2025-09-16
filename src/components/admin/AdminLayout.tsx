@@ -73,6 +73,7 @@ const AdminLayout = () => {
             navigation={navigation}
             currentPath={location.pathname}
             onLogout={handleLogout}
+            closeSidebar={() => setSidebarOpen(false)}
           />
         </div>
       </div>
@@ -83,6 +84,7 @@ const AdminLayout = () => {
           navigation={navigation}
           currentPath={location.pathname}
           onLogout={handleLogout}
+          closeSidebar={() => {}} // No-op for desktop
         />
       </div>
 
@@ -114,10 +116,12 @@ const SidebarContent = ({
   navigation,
   currentPath,
   onLogout,
+  closeSidebar,
 }: {
   navigation: any[];
   currentPath: string;
   onLogout: () => void;
+  closeSidebar: () => void;
 }) => (
   <>
     <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
@@ -136,6 +140,7 @@ const SidebarContent = ({
               <Link
                 key={item.name}
                 to={item.href}
+                onClick={closeSidebar}
                 className={`${
                   isActive
                     ? 'bg-gray-100 text-gray-900'
@@ -154,7 +159,14 @@ const SidebarContent = ({
         </nav>
       </div>
       <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-        <Button variant="ghost" onClick={onLogout} className="flex-shrink-0 w-full group block">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onLogout();
+            closeSidebar();
+          }}
+          className="flex-shrink-0 w-full group block"
+        >
           <div className="flex items-center">
             <LogOut className="inline-block h-5 w-5 text-gray-400 group-hover:text-gray-500 mr-3" />
             <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">

@@ -60,31 +60,54 @@ const AdminDashboard = () => {
     documentsUploaded: 0,
     activeEmployees: 0,
     newApplications: 0,
+    totalProducts: 0,
+    totalOrders: 0,
+    totalRevenue: 0,
+    monthlyGrowth: 0,
   });
 
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [totalOrders, setTotalOrders] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
-      const data = await adminStatsService.getStats();
-      setStats({
-        totalUsers: data.totalUsers,
-        activeJobs: data.activeJobs,
-        testsCreated: data.totalInterviews || 0,
-        scheduledInterviews: data.scheduledInterviews,
-        pendingApprovals: data.draftJobs || 0,
-        documentsUploaded: 0,
-        activeEmployees: data.totalEmployees || 0,
-        newApplications: data.totalApplications || 0,
-      });
+      try {
+        setLoading(true);
+        setError(null);
 
-      // Mock data for products and orders
-      setTotalProducts(25);
-      setTotalOrders(150);
+        const data = await adminStatsService.getStats();
+
+        // Map API response to our stats structure with fallbacks
+        const apiData = data as any; // Type assertion for flexible API response
+        setStats({
+          totalUsers: apiData.totalUsers || 0,
+          activeJobs: apiData.activeJobs || 0,
+          testsCreated: apiData.testsCreated || apiData.totalInterviews || 0,
+          scheduledInterviews: apiData.scheduledInterviews || 0,
+          pendingApprovals: apiData.pendingApprovals || apiData.draftJobs || 0,
+          documentsUploaded: apiData.documentsUploaded || 0,
+          activeEmployees: apiData.activeEmployees || apiData.totalEmployees || 0,
+          newApplications: apiData.newApplications || apiData.totalApplications || 0,
+          totalProducts: apiData.totalProducts || 0,
+          totalOrders: apiData.totalOrders || 0,
+          totalRevenue: apiData.totalRevenue || 0,
+          monthlyGrowth: apiData.monthlyGrowth || 0,
+        });
+      } catch (err) {
+        console.error('Error fetching dashboard stats:', err);
+        setError('Failed to load dashboard statistics');
+        toast({
+          title: 'Error',
+          description: 'Failed to load dashboard statistics. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        setLoading(false);
+      }
     };
+
     fetchStats();
-  }, []);
+  }, [toast]);
 
   const [recentActivity, setRecentActivity] = useState([]);
   const [loadingActivity, setLoadingActivity] = useState(true);
@@ -153,85 +176,81 @@ const AdminDashboard = () => {
     }
   };
 
+  const cardData = [
+    {
+      title: 'Total Users',
+      value: stats.totalUsers,
+      icon: Users,
+      change: '+12% from last month',
+      changeColor: 'text-muted-foreground',
+    },
+    {
+      title: 'Active Jobs',
+      value: stats.activeJobs,
+      icon: Briefcase,
+      change: '+5% from last month',
+      changeColor: 'text-muted-foreground',
+    },
+    {
+      title: 'Tests Created',
+      value: stats.testsCreated,
+      icon: TestTube,
+      change: '+18% from last month',
+      changeColor: 'text-muted-foreground',
+    },
+    {
+      title: 'Pending Approvals',
+      value: stats.pendingApprovals,
+      icon: AlertTriangle,
+      change: 'Requires attention',
+      changeColor: 'text-orange-600',
+    },
+    {
+      title: 'Total Products',
+      value: stats.totalProducts,
+      icon: Package,
+      change: '+7% from last month',
+      changeColor: 'text-muted-foreground',
+    },
+    {
+      title: 'Total Orders',
+      value: stats.totalOrders,
+      icon: ShoppingCart,
+      change: '+25% from last month',
+      changeColor: 'text-muted-foreground',
+    },
+  ];
+
   const SuperAdminCards = () => (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalUsers}</div>
-          <p className="text-xs text-muted-foreground">+12% from last month</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-          <Briefcase className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.activeJobs}</div>
-          <p className="text-xs text-muted-foreground">+5% from last month</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Tests Created</CardTitle>
-          <TestTube className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.testsCreated}</div>
-          <p className="text-xs text-muted-foreground">+18% from last month</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Pending Approvals</CardTitle>
-          <AlertTriangle className="h-4 w-4 text-orange-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.pendingApprovals}</div>
-          <p className="text-xs text-orange-600">Requires attention</p>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Products</CardTitle>
-          <Package className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalProducts}</div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
-          <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalOrders}</div>
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-3 sm:mb-4 md:mb-6">
+      {cardData.map((card, index) => (
+        <Card key={index} className="p-2 sm:p-3 md:p-4 min-h-[80px] sm:min-h-[90px]">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+            <CardTitle className="text-xs sm:text-sm font-medium">{card.title}</CardTitle>
+            <card.icon
+              className={`h-3 w-3 sm:h-4 sm:w-4 ${card.title === 'Pending Approvals' ? 'text-orange-500' : 'text-muted-foreground'}`}
+            />
+          </CardHeader>
+          <CardContent className="pt-0 pb-1 sm:pb-2">
+            <div className="text-lg sm:text-xl md:text-2xl font-bold">{card.value}</div>
+            <p className={`text-xs ${card.changeColor}`}>{card.change}</p>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.full_name}!</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user?.full_name}!</h1>
           <p className="text-gray-600 mt-1">
             {isSuperAdmin ? 'Super Admin Dashboard' : 'HR Admin Dashboard'}
           </p>
         </div>
-        <div className="flex items-center space-x-4">
-          <Button variant="outline" asChild>
+        <div className="flex flex-row items-center space-x-2 sm:space-x-4">
+          <Button variant="outline" size="sm" asChild>
             <Link to={`${basePath}/profile`}>
               <User className="h-4 w-4 mr-2" />
               Profile
@@ -239,7 +258,7 @@ const AdminDashboard = () => {
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button>
+              <Button size="sm">
                 <BarChart3 className="h-4 w-4 mr-2" />
                 Generate Report
               </Button>
@@ -313,33 +332,33 @@ const AdminDashboard = () => {
 
       {isSuperAdmin && SuperAdminCards()}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Clock className="h-5 w-5 mr-2" />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+        <Card className="h-fit">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center text-base sm:text-lg">
+              <Clock className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Recent Activity
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-0">
             {loadingActivity ? (
               <p className="text-sm text-muted-foreground">Loading recent activity...</p>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentActivity.map(activity => (
                   <div
                     key={activity.id}
-                    className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                    className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg"
                   >
-                    <div>
-                      <p className="font-medium text-sm">{activity.action}</p>
-                      <p className="text-xs text-gray-600">{activity.user}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm truncate">{activity.action}</p>
+                      <p className="text-xs text-gray-600 truncate">{activity.user}</p>
                     </div>
-                    <div className="text-right">
-                      <Badge variant="secondary" className="text-xs">
+                    <div className="text-right ml-2 flex-shrink-0">
+                      <Badge variant="secondary" className="text-xs mb-1">
                         {activity.type}
                       </Badge>
-                      <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
                     </div>
                   </div>
                 ))}
@@ -348,54 +367,54 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2" />
+        <Card className="h-fit">
+          <CardHeader className="pb-3 sm:pb-4">
+            <CardTitle className="flex items-center text-base sm:text-lg">
+              <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
               Quick Actions
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               <Button
                 variant="outline"
-                className="h-20 flex-col"
+                className="h-14 sm:h-16 lg:h-20 flex-col p-2 sm:p-3"
                 onClick={() => handleQuickAction('manage-users')}
               >
-                <Users className="h-6 w-6 mb-2" />
-                <span className="text-sm">Manage Users</span>
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2" />
+                <span className="text-xs sm:text-sm">Manage Users</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex-col"
+                className="h-14 sm:h-16 lg:h-20 flex-col p-2 sm:p-3"
                 onClick={() => handleQuickAction('approve-jobs')}
               >
-                <Briefcase className="h-6 w-6 mb-2" />
-                <span className="text-sm">Approve Jobs</span>
+                <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2" />
+                <span className="text-xs sm:text-sm">Approve Jobs</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex-col"
+                className="h-14 sm:h-16 lg:h-20 flex-col p-2 sm:p-3"
                 onClick={() => handleQuickAction('create-test')}
               >
-                <TestTube className="h-6 w-6 mb-2" />
-                <span className="text-sm">Create Test</span>
+                <TestTube className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2" />
+                <span className="text-xs sm:text-sm">Create Test</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex-col"
+                className="h-14 sm:h-16 lg:h-20 flex-col p-2 sm:p-3"
                 onClick={() => handleQuickAction('view-reports')}
               >
-                <BarChart3 className="h-6 w-6 mb-2" />
-                <span className="text-sm">View Reports</span>
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2" />
+                <span className="text-xs sm:text-sm">View Reports</span>
               </Button>
               <Button
                 variant="outline"
-                className="h-20 flex-col"
+                className="h-14 sm:h-16 lg:h-20 flex-col p-2 sm:p-3"
                 onClick={() => handleQuickAction('manage-faqs')}
               >
-                <FileText className="h-6 w-6 mb-2" />
-                <span className="text-sm">Manage FAQs</span>
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 mb-1 sm:mb-2" />
+                <span className="text-xs sm:text-sm">Manage FAQs</span>
               </Button>
             </div>
           </CardContent>

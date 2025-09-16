@@ -160,7 +160,7 @@ const Employees = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Manage Employees</h1>
           <p className="text-gray-600">View and manage your employee information</p>
@@ -172,7 +172,7 @@ const Employees = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -234,7 +234,7 @@ const Employees = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Select value={filterDepartment} onValueChange={setFilterDepartment}>
               <SelectTrigger>
                 <SelectValue placeholder="Filter by Department" />
@@ -306,56 +306,60 @@ const Employees = () => {
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Employee</TableHead>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Department</TableHead>
-                  <TableHead>Designation</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joining Date</TableHead>
-                  <TableHead>Location</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredEmployees.map(employee => (
-                  <TableRow key={employee.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{employee.profiles?.full_name || 'N/A'}</p>
-                        <p className="text-sm text-gray-500">{employee.profiles?.email || 'N/A'}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-mono">{employee.employee_id}</TableCell>
-                    <TableCell>{employee.department || 'N/A'}</TableCell>
-                    <TableCell>{employee.designation || 'N/A'}</TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusColor(employee.employment_status)}>
-                        {employee.employment_status || 'N/A'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{employee.joining_date || 'N/A'}</TableCell>
-                    <TableCell>{employee.work_location || 'N/A'}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button variant="ghost" size="sm">
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleArchiveEmployee(employee.id)}
-                        >
-                          <Archive className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Employee</TableHead>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Department</TableHead>
+                    <TableHead>Designation</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Joining Date</TableHead>
+                    <TableHead>Location</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredEmployees.map(employee => (
+                    <TableRow key={employee.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{employee.profiles?.full_name || 'N/A'}</p>
+                          <p className="text-sm text-gray-500">
+                            {employee.profiles?.email || 'N/A'}
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-mono">{employee.employee_id}</TableCell>
+                      <TableCell>{employee.department || 'N/A'}</TableCell>
+                      <TableCell>{employee.designation || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge variant={getStatusColor(employee.employment_status)}>
+                          {employee.employment_status || 'N/A'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{employee.joining_date || 'N/A'}</TableCell>
+                      <TableCell>{employee.work_location || 'N/A'}</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleArchiveEmployee(employee.id)}
+                          >
+                            <Archive className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

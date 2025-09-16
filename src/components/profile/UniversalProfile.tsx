@@ -412,7 +412,7 @@ setProfile({
       case 'startup':
         return '/startup/dashboard';
       case 'admin':
-        return '/admin/dashboard';
+        return '/super-admin/dashboard';
       default:
         return '/dashboard';
     }

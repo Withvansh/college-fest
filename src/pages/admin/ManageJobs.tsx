@@ -28,6 +28,7 @@ import {
   Trash2,
   CheckCircle,
   XCircle,
+  X,
 } from 'lucide-react';
 import { jobsApi, Job } from '@/lib/api/jobs';
 import { useToast } from '@/hooks/use-toast';
@@ -172,61 +173,76 @@ const ManageJobs = () => {
     );
   }
 
+  const jobCardData = [
+    {
+      title: 'Total Jobs',
+      value: stats.total,
+      icon: Briefcase,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+    {
+      title: 'Active Jobs',
+      value: stats.active,
+      icon: CheckCircle,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50',
+    },
+    {
+      title: 'Pending',
+      value: stats.pending,
+      icon: XCircle,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50',
+    },
+    {
+      title: 'Applications',
+      value: stats.totalApplications,
+      icon: Eye,
+      color: 'text-blue-600',
+      bgColor: 'bg-blue-50',
+    },
+  ];
+
+  const renderJobStatsCards = () => (
+    <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+      {jobCardData.map((card, index) => (
+        <Card key={index} className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
+          <CardContent className="p-0">
+            <div className="flex items-center justify-between">
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm text-gray-600 font-medium">{card.title}</p>
+                <p className={`text-xl sm:text-2xl md:text-3xl font-bold mt-1 ${card.color}`}>
+                  {card.value}
+                </p>
+              </div>
+              <div className="flex-shrink-0 ml-3">
+                <card.icon className={`h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 ${card.color}`} />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 sm:space-y-6 p-3 sm:p-4 md:p-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Jobs</h1>
-          <p className="text-gray-600 mt-1">View and manage all job postings across the platform</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Manage Jobs</h1>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">
+            View and manage all job postings across the platform
+          </p>
         </div>
-        <Button>
+        <Button size="sm" className="w-full sm:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           Create Job
         </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.total}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
-            <XCircle className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.pending}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
-            <Eye className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-600">{stats.totalApplications}</div>
-          </CardContent>
-        </Card>
-      </div>
+      {renderJobStatsCards()}
 
       {/* Jobs Management */}
       <Card>
@@ -234,101 +250,176 @@ const ManageJobs = () => {
           <CardTitle>Job Listings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-6">
-            <div className="flex-1">
+          <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+            {/* Search Section */}
+            <div className="flex-1 min-w-0">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search jobs by title or company..."
+                  placeholder="Search jobs..."
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 pr-4 py-2.5 text-sm w-full h-11 sm:h-10"
                 />
               </div>
             </div>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-48">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="closed">Closed</SelectItem>
-              </SelectContent>
-            </Select>
+
+            {/* Filter and Clear Section */}
+            <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+              <Select value={filterStatus} onValueChange={setFilterStatus}>
+                <SelectTrigger className="w-full xs:w-auto xs:min-w-[140px] sm:w-48 h-11 sm:h-10">
+                  <Filter className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Status</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="closed">Closed</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearchTerm('');
+                  setFilterStatus('all');
+                }}
+                className="w-full xs:w-auto xs:min-w-[80px] h-11 sm:h-10 px-4"
+                size="sm"
+              >
+                <X className="h-4 w-4 mr-1.5" />
+                Clear
+              </Button>
+            </div>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Job Title</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Applications</TableHead>
-                <TableHead>Posted By</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredJobs.map(job => (
-                <TableRow key={job.id}>
-                  <TableCell className="font-medium">{job.title}</TableCell>
-                  <TableCell>{job.company_name}</TableCell>
-                  <TableCell>{job.location}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Badge variant={getStatusBadgeVariant(job.status)}>{job.status}</Badge>
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3">
+            {filteredJobs.map(job => (
+              <Card key={job.id} className="p-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-sm text-gray-900 truncate">{job.title}</h3>
+                      <p className="text-xs text-gray-600 mt-1">{job.company_name}</p>
+                    </div>
+                    <Badge variant={getStatusBadgeVariant(job.status)} className="ml-2 text-xs">
+                      {job.status}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-gray-600">
+                    <span>{job.location}</span>
+                    <span>{getApplicationCount(job)} applications</span>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-500">
+                      {new Date(job.created_at).toLocaleDateString()}
+                    </span>
+                    <div className="flex gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleStatusToggle(job.id, job.status)}
-                        title={job.status === 'active' ? 'Close job' : 'Activate job'}
+                        className="h-8 px-2"
                       >
                         {job.status === 'active' ? (
-                          <XCircle className="h-4 w-4 text-red-500" />
+                          <XCircle className="h-3 w-3 text-red-500" />
                         ) : (
-                          <CheckCircle className="h-4 w-4 text-green-500" />
+                          <CheckCircle className="h-3 w-3 text-green-500" />
                         )}
-                      </Button>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-medium">{getApplicationCount(job)}</span>
-                  </TableCell>
-                  <TableCell>{job.profiles?.full_name || 'Unknown'}</TableCell>
-                  <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" title="View job">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" title="Edit job">
-                        <Edit className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleDeleteJob(job.id)}
-                        title="Delete job"
+                        className="h-8 px-2"
                       >
-                        <Trash2 className="h-4 w-4 text-red-500" />
+                        <Trash2 className="h-3 w-3 text-red-500" />
                       </Button>
                     </div>
-                  </TableCell>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Job Title</TableHead>
+                  <TableHead>Company</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Applications</TableHead>
+                  <TableHead>Posted By</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredJobs.map(job => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-medium">{job.title}</TableCell>
+                    <TableCell>{job.company_name}</TableCell>
+                    <TableCell>{job.location}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Badge variant={getStatusBadgeVariant(job.status)}>{job.status}</Badge>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleStatusToggle(job.id, job.status)}
+                          title={job.status === 'active' ? 'Close job' : 'Activate job'}
+                        >
+                          {job.status === 'active' ? (
+                            <XCircle className="h-4 w-4 text-red-500" />
+                          ) : (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          )}
+                        </Button>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium">{getApplicationCount(job)}</span>
+                    </TableCell>
+                    <TableCell>{job.profiles?.full_name || 'Unknown'}</TableCell>
+                    <TableCell>{new Date(job.created_at).toLocaleDateString()}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm" title="View job">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" title="Edit job">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteJob(job.id)}
+                          title="Delete job"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
 
           {filteredJobs.length === 0 && (
-            <div className="text-center py-12">
-              <Briefcase className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
-              <p className="text-gray-600">Try adjusting your search or filters</p>
+            <div className="text-center py-8 sm:py-12">
+              <Briefcase className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-3 sm:mb-4" />
+              <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-2">No jobs found</h3>
+              <p className="text-sm sm:text-base text-gray-600 px-4">
+                Try adjusting your search or filters
+              </p>
             </div>
           )}
         </CardContent>

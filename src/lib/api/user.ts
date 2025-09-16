@@ -187,13 +187,15 @@ export const userAPI = {
     recruiters: number;
     freelancers: number;
     clients: number;
+    startups: number;
+    superadmins: number;
     colleges: number;
     students: number;
     admins: number;
   }> {
     try {
       // This could be a separate endpoint, but for now we'll calculate from all users
-      const { users } = await this.getAllUsers(1, 1000); // Get all users to calculate stats
+      const { users } = await this.getAllUsers(1,99999); // Get all users to calculate stats
       
       const stats = {
         total: users.length,
@@ -204,6 +206,8 @@ export const userAPI = {
         colleges: users.filter(u => u.role === 'college').length,
         students: users.filter(u => u.role === 'student').length,
         admins: users.filter(u => u.role.includes('admin')).length,
+        superadmins: users.filter(u => u.role === 'super_admin').length,
+        startups: users.filter(u => u.role === 'startup').length,
       };
 
       return stats;
