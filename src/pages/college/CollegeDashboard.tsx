@@ -271,35 +271,35 @@ SetRecentPlaced(response)
                 className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
               >
                 <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Drives</span>
+                <span className=" xs:inline">Drives</span>
               </TabsTrigger>
               <TabsTrigger
                 value="students"
                 className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
               >
                 <Users className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Students</span>
+                <span className=" xs:inline">Students</span>
               </TabsTrigger>
               <TabsTrigger
                 value="companies"
                 className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
               >
                 <Building2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Companies</span>
+                <span className=" xs:inline">Companies</span>
               </TabsTrigger>
               <TabsTrigger
                 value="analytics"
                 className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
               >
                 <BarChart3 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Analytics</span>
+                <span className=" xs:inline">Analytics</span>
               </TabsTrigger>
               <TabsTrigger
                 value="reports"
                 className="text-xs sm:text-sm px-2 sm:px-3 py-2 sm:py-2.5 data-[state=active]:bg-orange-600 data-[state=active]:text-white transition-all duration-200"
               >
                 <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden xs:inline">Reports</span>
+                <span className=" xs:inline">Reports</span>
               </TabsTrigger>
             </TabsList>
           </div>

@@ -12,7 +12,8 @@ interface AuthContextType {
   // Actions
   login: (
     email: string,
-    password: string
+    password: string,
+    role?: UserRole
   ) => Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }>;
   signup: (
     email: string,
@@ -93,7 +94,8 @@ export const UnifiedAuthProvider: React.FC<AuthProviderProps> = ({ children }) =
 
   const login = async (
     email: string,
-    password: string
+    password: string,
+    role?: UserRole
   ): Promise<{ success: boolean; requiresEmailVerification?: boolean; email?: string }> => {
     try {
       setLoading(true);

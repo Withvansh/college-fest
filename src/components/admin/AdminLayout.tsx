@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import {
@@ -18,25 +17,29 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
-  const { logout } = useAdminAuth();
+  const { logout, user } = useAuth();
+
+  // Determine base path based on current route
+  const isSuperAdmin = user?.role === 'super_admin';
+  const basePath = isSuperAdmin ? '/super-admin' : '/admin';
 
   const navigation = [
-    { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Users', href: '/admin/users', icon: Users },
-    { name: 'Jobs', href: '/admin/jobs', icon: Briefcase },
-    { name: 'Tests', href: '/admin/tests', icon: FileText },
-    { name: 'Interviews', href: '/admin/interviews', icon: Calendar },
-    { name: 'Digital Products', href: '/admin/products', icon: Package },
-    { name: 'Orders', href: '/admin/orders', icon: ShoppingBag },
-    { name: 'Documents', href: '/admin/documents', icon: FileText },
-    { name: 'Reports', href: '/admin/reports', icon: BarChart3 },
-    { name: 'Blog', href: '/admin/blog', icon: MessageSquare },
-    { name: 'Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Dashboard', href: `${basePath}/dashboard`, icon: LayoutDashboard },
+    { name: 'Users', href: `${basePath}/users`, icon: Users },
+    { name: 'Jobs', href: `${basePath}/jobs`, icon: Briefcase },
+    { name: 'Tests', href: `${basePath}/tests`, icon: FileText },
+    { name: 'Interviews', href: `${basePath}/interviews`, icon: Calendar },
+    { name: 'Digital Products', href: `${basePath}/products`, icon: Package },
+    { name: 'Orders', href: `${basePath}/orders`, icon: ShoppingBag },
+    { name: 'Documents', href: `${basePath}/documents`, icon: FileText },
+    { name: 'Reports', href: `${basePath}/reports`, icon: BarChart3 },
+    { name: 'Blog', href: `${basePath}/blog`, icon: MessageSquare },
+    { name: 'Settings', href: `${basePath}/settings`, icon: Settings },
   ];
 
   const handleLogout = async () => {
@@ -51,7 +54,10 @@ const AdminLayout = () => {
     <div className="min-h-screen bg-gray-100">
       {/* Mobile sidebar */}
       <div className={`fixed inset-0 flex z-40 md:hidden ${sidebarOpen ? '' : 'hidden'}`}>
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75" onClick={() => setSidebarOpen(false)} />
+        <div
+          className="fixed inset-0 bg-gray-600 bg-opacity-75"
+          onClick={() => setSidebarOpen(false)}
+        />
         <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">
           <div className="absolute top-0 right-0 -mr-12 pt-2">
             <Button
@@ -63,13 +69,21 @@ const AdminLayout = () => {
               <X className="h-6 w-6 text-white" />
             </Button>
           </div>
-          <SidebarContent navigation={navigation} currentPath={location.pathname} onLogout={handleLogout} />
+          <SidebarContent
+            navigation={navigation}
+            currentPath={location.pathname}
+            onLogout={handleLogout}
+          />
         </div>
       </div>
 
       {/* Desktop sidebar */}
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
-        <SidebarContent navigation={navigation} currentPath={location.pathname} onLogout={handleLogout} />
+        <SidebarContent
+          navigation={navigation}
+          currentPath={location.pathname}
+          onLogout={handleLogout}
+        />
       </div>
 
       {/* Main content */}
@@ -96,14 +110,14 @@ const AdminLayout = () => {
   );
 };
 
-const SidebarContent = ({ 
-  navigation, 
-  currentPath, 
-  onLogout 
-}: { 
-  navigation: any[], 
-  currentPath: string, 
-  onLogout: () => void 
+const SidebarContent = ({
+  navigation,
+  currentPath,
+  onLogout,
+}: {
+  navigation: any[];
+  currentPath: string;
+  onLogout: () => void;
 }) => (
   <>
     <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
@@ -113,10 +127,11 @@ const SidebarContent = ({
           <h1 className="ml-2 text-xl font-bold text-gray-900">Admin Panel</h1>
         </div>
         <nav className="mt-5 flex-1 px-2 space-y-1">
-          {navigation.map((item) => {
-            const isActive = currentPath === item.href || 
+          {navigation.map(item => {
+            const isActive =
+              currentPath === item.href ||
               (item.href !== '/admin' && currentPath.startsWith(item.href));
-            
+
             return (
               <Link
                 key={item.name}
@@ -139,11 +154,7 @@ const SidebarContent = ({
         </nav>
       </div>
       <div className="flex-shrink-0 flex border-t border-gray-200 p-4">
-        <Button
-          variant="ghost"
-          onClick={onLogout}
-          className="flex-shrink-0 w-full group block"
-        >
+        <Button variant="ghost" onClick={onLogout} className="flex-shrink-0 w-full group block">
           <div className="flex items-center">
             <LogOut className="inline-block h-5 w-5 text-gray-400 group-hover:text-gray-500 mr-3" />
             <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900">

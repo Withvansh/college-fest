@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useAdminAuth } from '@/contexts/AdminAuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { adminStatsService } from '@/services/adminStatsService';
@@ -42,10 +41,11 @@ import {
 } from 'lucide-react';
 
 const AdminDashboard = () => {
-  const { admin } = useAdminAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const isSuperAdmin = admin?.role === 'super_admin';
+  const isSuperAdmin = user?.role === 'super_admin';
+  const basePath = isSuperAdmin ? '/super-admin' : '/admin';
 
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [reportType, setReportType] = useState('');
@@ -119,31 +119,31 @@ const AdminDashboard = () => {
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'manage-users':
-        navigate('/admin/users');
+        navigate(`${basePath}/users`);
         break;
       case 'approve-jobs':
-        navigate('/admin/jobs?filter=pending');
+        navigate(`${basePath}/jobs?filter=pending`);
         break;
       case 'create-test':
-        navigate('/admin/tests');
+        navigate(`${basePath}/tests`);
         break;
       case 'view-reports':
-        navigate('/admin/reports');
+        navigate(`${basePath}/reports`);
         break;
       case 'onboard':
-        navigate('/admin/onboarding');
+        navigate(`${basePath}/onboarding`);
         break;
       case 'post-job':
-        navigate('/admin/hr-jobs');
+        navigate(`${basePath}/hr-jobs`);
         break;
       case 'schedule-interview':
-        navigate('/admin/hr-interviews');
+        navigate(`${basePath}/hr-interviews`);
         break;
       case 'manage-faqs':
-        navigate('/admin/faqs');
+        navigate(`${basePath}/faqs`);
         break;
       case 'view-applications':
-        navigate('/admin/employees');
+        navigate(`${basePath}/employees`);
         break;
       default:
         toast({
@@ -225,14 +225,14 @@ const AdminDashboard = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {admin?.name}!</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Welcome back, {user?.full_name}!</h1>
           <p className="text-gray-600 mt-1">
             {isSuperAdmin ? 'Super Admin Dashboard' : 'HR Admin Dashboard'}
           </p>
         </div>
         <div className="flex items-center space-x-4">
           <Button variant="outline" asChild>
-            <Link to="/admin/profile">
+            <Link to={`${basePath}/profile`}>
               <User className="h-4 w-4 mr-2" />
               Profile
             </Link>
