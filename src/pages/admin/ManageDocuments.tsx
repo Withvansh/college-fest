@@ -1,12 +1,30 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Upload, FileText, Download, Trash2, Filter } from 'lucide-react';
@@ -21,7 +39,7 @@ const ManageDocuments = () => {
       type: 'PDF',
       assignedTo: 'All Employees',
       uploadedDate: '2024-01-15',
-      size: '2.3 MB'
+      size: '2.3 MB',
     },
     {
       id: 2,
@@ -29,7 +47,7 @@ const ManageDocuments = () => {
       type: 'DOCX',
       assignedTo: 'HR Team',
       uploadedDate: '2024-01-10',
-      size: '856 KB'
+      size: '856 KB',
     },
     {
       id: 3,
@@ -37,7 +55,7 @@ const ManageDocuments = () => {
       type: 'PDF',
       assignedTo: 'HR Team',
       uploadedDate: '2024-01-08',
-      size: '1.2 MB'
+      size: '1.2 MB',
     },
     {
       id: 4,
@@ -45,8 +63,8 @@ const ManageDocuments = () => {
       type: 'PDF',
       assignedTo: 'Recruiters',
       uploadedDate: '2024-01-05',
-      size: '945 KB'
-    }
+      size: '945 KB',
+    },
   ]);
 
   const [isUploading, setIsUploading] = useState(false);
@@ -56,15 +74,15 @@ const ManageDocuments = () => {
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsUploading(false);
     toast({
-      title: "Document Uploaded",
-      description: "Your document has been successfully uploaded.",
+      title: 'Document Uploaded',
+      description: 'Your document has been successfully uploaded.',
     });
   };
 
   const handleDelete = (id: number) => {
     toast({
-      title: "Document Deleted",
-      description: "The document has been removed from the system.",
+      title: 'Document Deleted',
+      description: 'The document has been removed from the system.',
     });
   };
 
@@ -79,7 +97,7 @@ const ManageDocuments = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Manage Documents</h1>
           <p className="text-gray-600">Upload and manage platform documents</p>
@@ -101,7 +119,7 @@ const ManageDocuments = () => {
                 <Input id="file" type="file" accept=".pdf,.doc,.docx" />
                 <p className="text-xs text-gray-500 mt-1">Supported: PDF, DOC, DOCX. Max 10MB</p>
               </div>
-              
+
               <div>
                 <Label htmlFor="assign-to">Assign To</Label>
                 <Select>
@@ -125,7 +143,9 @@ const ManageDocuments = () => {
 
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                <p className="mt-2 text-sm text-gray-600">Drag and drop your file here, or click to browse</p>
+                <p className="mt-2 text-sm text-gray-600">
+                  Drag and drop your file here, or click to browse
+                </p>
               </div>
 
               <div className="flex gap-2 justify-end">
@@ -148,9 +168,9 @@ const ManageDocuments = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Select value={filter} onValueChange={setFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -159,7 +179,7 @@ const ManageDocuments = () => {
                 <SelectItem value="docx">Word Documents</SelectItem>
               </SelectContent>
             </Select>
-            <Input placeholder="Search documents..." className="w-64" />
+            <Input placeholder="Search documents..." className="w-full sm:w-64" />
           </div>
         </CardContent>
       </Card>
@@ -170,50 +190,48 @@ const ManageDocuments = () => {
           <CardTitle>Documents Library</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Document</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Assigned To</TableHead>
-                <TableHead>Upload Date</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredDocuments.map((doc) => (
-                <TableRow key={doc.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      {getFileIcon(doc.type)}
-                      <span className="font-medium">{doc.name}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{doc.type}</Badge>
-                  </TableCell>
-                  <TableCell>{doc.assignedTo}</TableCell>
-                  <TableCell>{doc.uploadedDate}</TableCell>
-                  <TableCell>{doc.size}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(doc.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Document</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Assigned To</TableHead>
+                  <TableHead>Upload Date</TableHead>
+                  <TableHead>Size</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredDocuments.map(doc => (
+                  <TableRow key={doc.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getFileIcon(doc.type)}
+                        <span className="font-medium">{doc.name}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{doc.type}</Badge>
+                    </TableCell>
+                    <TableCell>{doc.assignedTo}</TableCell>
+                    <TableCell>{doc.uploadedDate}</TableCell>
+                    <TableCell>{doc.size}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(doc.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

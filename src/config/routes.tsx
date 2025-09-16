@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { RouteObject } from 'react-router-dom';
+import { RouteObject, Navigate } from 'react-router-dom';
 
 // Lazy load components
 const LandingPage = lazy(() => import('@/pages/LandingPage'));
@@ -117,7 +117,6 @@ const HRInterviews = lazy(() => import('@/pages/admin/HRInterviews'));
 const HRAnalytics = lazy(() => import('@/pages/admin/HRAnalytics'));
 const Employees = lazy(() => import('@/pages/admin/Employees'));
 const Onboarding = lazy(() => import('@/pages/admin/Onboarding'));
-const SuperAdminLogin = lazy(() => import('@/pages/admin/SuperAdminLogin'));
 
 import { UserRole } from '@/services/unifiedAuth';
 
@@ -523,7 +522,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/superadmin/login',
-    element: <SuperAdminLogin />,
+    element: <Navigate to="/auth" replace />,
   },
 
   // 404 route

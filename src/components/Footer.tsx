@@ -94,7 +94,7 @@ const Footer = () => {
         </div>
 
         {/* Newsletter Section */}
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+        {/* <div className="border-t border-gray-800 mt-8 pt-8 text-center">
           <h3 className="text-xl font-semibold mb-2">Stay Updated</h3>
           <p className="text-gray-400 mb-6">Get the latest hiring insights and platform updates.</p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 max-w-md mx-auto">
@@ -107,14 +107,14 @@ const Footer = () => {
               Subscribe
             </button>
           </div>
-        </div>
+        </div> */}
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-4 mb-4 md:mb-0">
             <div className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png" 
+                src="/Logo.png" 
                 alt="MinuteHire Logo" 
                 className="h-8 w-auto"
               />
@@ -155,14 +155,14 @@ const Footer = () => {
             </div>
             
             {/* Admin Access Links */}
-            <div className="flex items-center space-x-4 text-sm">
+            {/* <div className="flex items-center space-x-4 text-sm">
               <Link to="/admin-access" className="text-gray-400 hover:text-white transition-colors">
                 Admin
               </Link>
               <Link to="/super-admin-login" className="text-gray-400 hover:text-white transition-colors">
                 Super Admin
               </Link>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

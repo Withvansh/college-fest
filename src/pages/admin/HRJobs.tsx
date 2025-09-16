@@ -1,13 +1,25 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
@@ -22,72 +34,77 @@ const HRJobs = () => {
 
   // Mock data for HR job postings
   const [jobs, setJobs] = useState([
-    { 
-      id: 1, 
-      title: 'Senior Frontend Developer', 
+    {
+      id: 1,
+      title: 'Senior Frontend Developer',
       department: 'Engineering',
       location: 'Remote',
       type: 'Full-time',
-      status: 'Active', 
+      status: 'Active',
       applications: 45,
       datePosted: '2024-01-15',
       salary: '₹10L-12.5L',
       hasTest: true,
-      testName: 'Frontend Dev Assessment'
+      testName: 'Frontend Dev Assessment',
     },
-    { 
-      id: 2, 
-      title: 'Product Manager', 
+    {
+      id: 2,
+      title: 'Product Manager',
       department: 'Product',
       location: 'New York, NY',
       type: 'Full-time',
-      status: 'Closed', 
+      status: 'Closed',
       applications: 23,
       datePosted: '2024-01-20',
       salary: '₹8.4L-10.9L',
       hasTest: false,
-      testName: null
+      testName: null,
     },
-    { 
-      id: 3, 
-      title: 'UX Designer', 
+    {
+      id: 3,
+      title: 'UX Designer',
       department: 'Design',
       location: 'San Francisco, CA',
       type: 'Contract',
-      status: 'Active', 
+      status: 'Active',
       applications: 12,
       datePosted: '2024-01-25',
       salary: '₹7.5L-9.2L',
       hasTest: true,
-      testName: 'Design Portfolio Review'
+      testName: 'Design Portfolio Review',
     },
   ]);
 
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === 'all' || job.status === filterStatus;
     return matchesSearch && matchesStatus;
   });
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
-      case 'Active': return 'default';
-      case 'Closed': return 'secondary';
-      case 'Draft': return 'outline';
-      default: return 'secondary';
+      case 'Active':
+        return 'default';
+      case 'Closed':
+        return 'secondary';
+      case 'Draft':
+        return 'outline';
+      default:
+        return 'secondary';
     }
   };
 
   const handleToggleStatus = (jobId: number) => {
-    setJobs(jobs.map(job => 
-      job.id === jobId 
-        ? { ...job, status: job.status === 'Active' ? 'Closed' : 'Active' }
-        : job
-    ));
+    setJobs(
+      jobs.map(job =>
+        job.id === jobId ? { ...job, status: job.status === 'Active' ? 'Closed' : 'Active' } : job
+      )
+    );
     toast({
-      title: "Job Status Updated",
-      description: "The job status has been successfully changed.",
+      title: 'Job Status Updated',
+      description: 'The job status has been successfully changed.',
     });
   };
 
@@ -100,12 +117,12 @@ const HRJobs = () => {
         title: `${jobToDuplicate.title} (Copy)`,
         status: 'Draft',
         applications: 0,
-        datePosted: new Date().toISOString().split('T')[0]
+        datePosted: new Date().toISOString().split('T')[0],
       };
       setJobs([...jobs, newJob]);
       toast({
-        title: "Job Duplicated",
-        description: "The job has been successfully duplicated as a draft.",
+        title: 'Job Duplicated',
+        description: 'The job has been successfully duplicated as a draft.',
       });
     }
   };
@@ -113,8 +130,8 @@ const HRJobs = () => {
   const handleDeleteJob = (jobId: number) => {
     setJobs(jobs.filter(job => job.id !== jobId));
     toast({
-      title: "Job Deleted",
-      description: "The job posting has been successfully deleted.",
+      title: 'Job Deleted',
+      description: 'The job posting has been successfully deleted.',
     });
   };
 
@@ -146,7 +163,7 @@ const HRJobs = () => {
               </Select>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-3 gap-4">
             <div>
               <Label htmlFor="location">Location</Label>
@@ -174,12 +191,20 @@ const HRJobs = () => {
 
           <div>
             <Label htmlFor="description">Job Description</Label>
-            <Textarea id="description" placeholder="Describe the role and responsibilities..." rows={4} />
+            <Textarea
+              id="description"
+              placeholder="Describe the role and responsibilities..."
+              rows={4}
+            />
           </div>
 
           <div>
             <Label htmlFor="skills">Required Skills</Label>
-            <Textarea id="skills" placeholder="List required skills and qualifications..." rows={3} />
+            <Textarea
+              id="skills"
+              placeholder="List required skills and qualifications..."
+              rows={3}
+            />
           </div>
 
           <div className="flex items-center space-x-2">
@@ -191,9 +216,7 @@ const HRJobs = () => {
             <Button variant="outline" onClick={() => setIsCreatingJob(false)}>
               Save as Draft
             </Button>
-            <Button onClick={() => setIsCreatingJob(false)}>
-              Publish Job
-            </Button>
+            <Button onClick={() => setIsCreatingJob(false)}>Publish Job</Button>
           </div>
         </div>
       </DialogContent>
@@ -202,7 +225,7 @@ const HRJobs = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Job Postings</h1>
           <p className="text-gray-600">Manage your job postings and track applications</p>
@@ -214,7 +237,7 @@ const HRJobs = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -231,7 +254,9 @@ const HRJobs = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Active Jobs</p>
-                <p className="text-2xl font-bold">{jobs.filter(j => j.status === 'Active').length}</p>
+                <p className="text-2xl font-bold">
+                  {jobs.filter(j => j.status === 'Active').length}
+                </p>
               </div>
               <div className="h-3 w-3 rounded-full bg-green-500"></div>
             </div>
@@ -242,7 +267,9 @@ const HRJobs = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Applications</p>
-                <p className="text-2xl font-bold">{jobs.reduce((sum, job) => sum + job.applications, 0)}</p>
+                <p className="text-2xl font-bold">
+                  {jobs.reduce((sum, job) => sum + job.applications, 0)}
+                </p>
               </div>
               <div className="h-3 w-3 rounded-full bg-purple-500"></div>
             </div>
@@ -267,20 +294,20 @@ const HRJobs = () => {
           <CardTitle>Your Job Postings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search jobs by title or department..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -293,70 +320,74 @@ const HRJobs = () => {
             </Select>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Job Title</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Applications</TableHead>
-                <TableHead>Test</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredJobs.map((job) => (
-                <TableRow key={job.id}>
-                  <TableCell className="font-medium">{job.title}</TableCell>
-                  <TableCell>{job.department}</TableCell>
-                  <TableCell>{job.location}</TableCell>
-                  <TableCell>{job.type}</TableCell>
-                  <TableCell>
-                    <Badge variant={getStatusBadgeVariant(job.status)}>
-                      {job.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{job.applications}</TableCell>
-                  <TableCell>
-                    {job.hasTest ? (
-                      <Badge variant="outline" className="text-green-600">
-                        <TestTube className="h-3 w-3 mr-1" />
-                        Attached
-                      </Badge>
-                    ) : (
-                      <span className="text-gray-400">None</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDuplicateJob(job.id)}>
-                        <Copy className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleToggleStatus(job.id)}
-                        className={job.status === 'Active' ? 'text-red-600' : 'text-green-600'}
-                      >
-                        {job.status === 'Active' ? 'Close' : 'Activate'}
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Job Title</TableHead>
+                  <TableHead>Department</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Applications</TableHead>
+                  <TableHead>Test</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredJobs.map(job => (
+                  <TableRow key={job.id}>
+                    <TableCell className="font-medium">{job.title}</TableCell>
+                    <TableCell>{job.department}</TableCell>
+                    <TableCell>{job.location}</TableCell>
+                    <TableCell>{job.type}</TableCell>
+                    <TableCell>
+                      <Badge variant={getStatusBadgeVariant(job.status)}>{job.status}</Badge>
+                    </TableCell>
+                    <TableCell>{job.applications}</TableCell>
+                    <TableCell>
+                      {job.hasTest ? (
+                        <Badge variant="outline" className="text-green-600">
+                          <TestTube className="h-3 w-3 mr-1" />
+                          Attached
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-400">None</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDuplicateJob(job.id)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(job.id)}
+                          className={job.status === 'Active' ? 'text-red-600' : 'text-green-600'}
+                        >
+                          {job.status === 'Active' ? 'Close' : 'Activate'}
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => handleDeleteJob(job.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

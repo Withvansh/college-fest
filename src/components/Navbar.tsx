@@ -77,6 +77,12 @@ const Navbar = () => {
   // role from user or localStorage
   const role = user?.role || localStorage.getItem('user_role');
 
+  // Convert role to correct path format (super_admin -> super-admin)
+  const getRolePath = (role: string | null) => {
+    if (!role) return '';
+    return role.replace(/_/g, '-');
+  };
+
   // Scroll shadow effect
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10);
@@ -147,9 +153,7 @@ const Navbar = () => {
                       variant="ghost"
                       className="h-10 w-10 rounded-full p-0 overflow-hidden border-2 border-gray-200 hover:border-blue-300 transition-all duration-300"
                     >
-                     
                       {user.avatar_url ? (
-                        
                         <img
                           src={user.avatar_url}
                           alt={user.full_name || user.email || 'User'}
@@ -175,7 +179,7 @@ const Navbar = () => {
                     align="end"
                   >
                     <DropdownMenuItem
-                      onClick={() => navigate(`/${role}/profile`)}
+                      onClick={() => navigate(`/${getRolePath(role)}/profile`)}
                       className="cursor-pointer hover:bg-blue-50/80"
                     >
                       <User className="mr-2 h-4 w-4 text-blue-600" />

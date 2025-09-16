@@ -5,6 +5,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuth } from '@/hooks/useAuth';
 import { UserRole, unifiedAuthService } from '@/services/unifiedAuth';
 import { otpService } from '@/services/otpService';
@@ -76,6 +83,13 @@ const userTypes = [
     icon: Rocket,
     color: 'from-orange-500 to-red-600',
     description: 'Build your team',
+  },
+  {
+    id: 'super_admin' as UserRole,
+    label: 'Super Admin',
+    icon: Shield,
+    color: 'from-red-500 to-orange-600',
+    description: 'Full system access',
   },
 ];
 
@@ -337,33 +351,35 @@ const UnifiedAuth = () => {
                       </div>
 
                       <div className="space-y-2 sm:space-y-3">
-                        {userTypes.map(type => {
-                          const Icon = type.icon;
-                          return (
-                            <button
-                              key={type.id}
-                              onClick={() => handleSignupRoleSelect(type.id)}
-                              className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left group"
-                            >
-                              <div className="flex items-center space-x-3">
-                                <div
-                                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r ${type.color} flex items-center justify-center shadow-sm`}
-                                >
-                                  <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-gray-900 text-sm sm:text-base truncate">
-                                    {type.label}
+                        {userTypes
+                          .filter(type => type.id !== 'super_admin') // Exclude super admin from signup
+                          .map(type => {
+                            const Icon = type.icon;
+                            return (
+                              <button
+                                key={type.id}
+                                onClick={() => handleSignupRoleSelect(type.id)}
+                                className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left group"
+                              >
+                                <div className="flex items-center space-x-3">
+                                  <div
+                                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r ${type.color} flex items-center justify-center shadow-sm`}
+                                  >
+                                    <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                                   </div>
-                                  <div className="text-xs sm:text-sm text-gray-500 truncate">
-                                    {type.description}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-medium text-gray-900 text-sm sm:text-base truncate">
+                                      {type.label}
+                                    </div>
+                                    <div className="text-xs sm:text-sm text-gray-500 truncate">
+                                      {type.description}
+                                    </div>
                                   </div>
+                                  <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
                                 </div>
-                                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
-                              </div>
-                            </button>
-                          );
-                        })}
+                              </button>
+                            );
+                          })}
                       </div>
 
                       {/* <div className="text-center text-xs text-gray-500">

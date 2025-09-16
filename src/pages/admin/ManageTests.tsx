@@ -1,13 +1,25 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { TestTube, Plus, Edit, Trash2, Search, Filter, Eye, BarChart3 } from 'lucide-react';
 
@@ -18,9 +30,9 @@ const ManageTests = () => {
 
   // Mock data
   const [tests] = useState([
-    { 
-      id: 1, 
-      name: 'Frontend Development Assessment', 
+    {
+      id: 1,
+      name: 'Frontend Development Assessment',
       type: 'Technical',
       category: 'Coding',
       questions: 15,
@@ -29,11 +41,11 @@ const ManageTests = () => {
       attempts: 156,
       avgScore: 78,
       createdBy: 'Admin',
-      dateCreated: '2024-01-10'
+      dateCreated: '2024-01-10',
     },
-    { 
-      id: 2, 
-      name: 'Project Management Skills', 
+    {
+      id: 2,
+      name: 'Project Management Skills',
       type: 'Soft Skills',
       category: 'Management',
       questions: 20,
@@ -42,11 +54,11 @@ const ManageTests = () => {
       attempts: 89,
       avgScore: 82,
       createdBy: 'HR Team',
-      dateCreated: '2024-01-15'
+      dateCreated: '2024-01-15',
     },
-    { 
-      id: 3, 
-      name: 'Data Science Challenge', 
+    {
+      id: 3,
+      name: 'Data Science Challenge',
       type: 'Technical',
       category: 'Analytics',
       questions: 12,
@@ -55,11 +67,11 @@ const ManageTests = () => {
       attempts: 67,
       avgScore: 65,
       createdBy: 'Tech Lead',
-      dateCreated: '2024-01-20'
+      dateCreated: '2024-01-20',
     },
-    { 
-      id: 4, 
-      name: 'Communication Assessment', 
+    {
+      id: 4,
+      name: 'Communication Assessment',
       type: 'Behavioral',
       category: 'Communication',
       questions: 25,
@@ -68,23 +80,28 @@ const ManageTests = () => {
       attempts: 234,
       avgScore: 85,
       createdBy: 'HR Team',
-      dateCreated: '2024-01-25'
+      dateCreated: '2024-01-25',
     },
   ]);
 
   const filteredTests = tests.filter(test => {
-    const matchesSearch = test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         test.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      test.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      test.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'all' || test.type === filterType;
     return matchesSearch && matchesType;
   });
 
   const getDifficultyBadgeVariant = (difficulty: string) => {
     switch (difficulty) {
-      case 'Beginner': return 'secondary';
-      case 'Intermediate': return 'default';
-      case 'Advanced': return 'destructive';
-      default: return 'secondary';
+      case 'Beginner':
+        return 'secondary';
+      case 'Intermediate':
+        return 'default';
+      case 'Advanced':
+        return 'destructive';
+      default:
+        return 'secondary';
     }
   };
 
@@ -155,15 +172,17 @@ const ManageTests = () => {
           </div>
           <div>
             <Label htmlFor="description">Test Description</Label>
-            <Textarea id="description" placeholder="Describe what this test evaluates..." rows={3} />
+            <Textarea
+              id="description"
+              placeholder="Describe what this test evaluates..."
+              rows={3}
+            />
           </div>
           <div className="flex gap-2 justify-end pt-4">
             <Button variant="outline" onClick={() => setIsAddingTest(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setIsAddingTest(false)}>
-              Create Test
-            </Button>
+            <Button onClick={() => setIsAddingTest(false)}>Create Test</Button>
           </div>
         </div>
       </DialogContent>
@@ -172,7 +191,7 @@ const ManageTests = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Manage Tests</h1>
           <p className="text-gray-600">Create and manage assessment tests for candidates</p>
@@ -184,7 +203,7 @@ const ManageTests = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -201,7 +220,9 @@ const ManageTests = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Technical Tests</p>
-                <p className="text-2xl font-bold">{tests.filter(t => t.type === 'Technical').length}</p>
+                <p className="text-2xl font-bold">
+                  {tests.filter(t => t.type === 'Technical').length}
+                </p>
               </div>
               <div className="h-3 w-3 rounded-full bg-green-500"></div>
             </div>
@@ -212,7 +233,9 @@ const ManageTests = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Attempts</p>
-                <p className="text-2xl font-bold">{tests.reduce((sum, test) => sum + test.attempts, 0)}</p>
+                <p className="text-2xl font-bold">
+                  {tests.reduce((sum, test) => sum + test.attempts, 0)}
+                </p>
               </div>
               <div className="h-3 w-3 rounded-full bg-purple-500"></div>
             </div>
@@ -223,7 +246,9 @@ const ManageTests = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Avg Score</p>
-                <p className="text-2xl font-bold">{Math.round(tests.reduce((sum, test) => sum + test.avgScore, 0) / tests.length)}%</p>
+                <p className="text-2xl font-bold">
+                  {Math.round(tests.reduce((sum, test) => sum + test.avgScore, 0) / tests.length)}%
+                </p>
               </div>
               <div className="h-3 w-3 rounded-full bg-orange-500"></div>
             </div>
@@ -237,20 +262,20 @@ const ManageTests = () => {
           <CardTitle>Test Library</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
                   placeholder="Search tests by name or category..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
             <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-full sm:w-48">
                 <Filter className="h-4 w-4 mr-2" />
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
@@ -263,55 +288,57 @@ const ManageTests = () => {
             </Select>
           </div>
 
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Test Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Questions</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Difficulty</TableHead>
-                <TableHead>Attempts</TableHead>
-                <TableHead>Avg Score</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTests.map((test) => (
-                <TableRow key={test.id}>
-                  <TableCell className="font-medium">{test.name}</TableCell>
-                  <TableCell>{test.type}</TableCell>
-                  <TableCell>{test.category}</TableCell>
-                  <TableCell>{test.questions}</TableCell>
-                  <TableCell>{test.duration}m</TableCell>
-                  <TableCell>
-                    <Badge variant={getDifficultyBadgeVariant(test.difficulty)}>
-                      {test.difficulty}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{test.attempts}</TableCell>
-                  <TableCell>{test.avgScore}%</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button variant="ghost" size="sm">
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <BarChart3 className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Test Name</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
+                  <TableHead>Questions</TableHead>
+                  <TableHead>Duration</TableHead>
+                  <TableHead>Difficulty</TableHead>
+                  <TableHead>Attempts</TableHead>
+                  <TableHead>Avg Score</TableHead>
+                  <TableHead>Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredTests.map(test => (
+                  <TableRow key={test.id}>
+                    <TableCell className="font-medium">{test.name}</TableCell>
+                    <TableCell>{test.type}</TableCell>
+                    <TableCell>{test.category}</TableCell>
+                    <TableCell>{test.questions}</TableCell>
+                    <TableCell>{test.duration}m</TableCell>
+                    <TableCell>
+                      <Badge variant={getDifficultyBadgeVariant(test.difficulty)}>
+                        {test.difficulty}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{test.attempts}</TableCell>
+                    <TableCell>{test.avgScore}%</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button variant="ghost" size="sm">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <BarChart3 className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
