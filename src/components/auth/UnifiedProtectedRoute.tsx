@@ -39,7 +39,7 @@ const UnifiedProtectedRoute: React.FC<UnifiedProtectedRouteProps> = ({
   // Check role requirements
   if (allowedRoles && user && !allowedRoles.includes(user.role)) {
     // Redirect to user's appropriate dashboard instead of blocking
-    const userDashboard = `/auth/${user.role}`;
+    const userDashboard = `/auth?tab=${user.role}`;
     return <Navigate to={userDashboard} replace />;
   }
 

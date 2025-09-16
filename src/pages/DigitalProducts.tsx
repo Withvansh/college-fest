@@ -286,7 +286,7 @@ const DigitalProducts = () => {
                       </span>
                     </div>
                     <CardTitle className="text-lg">
-                      Original Price: <del>{`${product.price}`}</del> Now: ₹0
+                      Original Price: <del>{`${product.price}`}</del> Now: ₹1
                     </CardTitle>
                   </CardHeader>
 
@@ -315,7 +315,8 @@ const DigitalProducts = () => {
                       {!isPurchased ? (
                         <PhonePePayment productId={product.id} className="w-full">
                           <ShoppingCart className="h-4 w-4 mr-2" />
-                          Buy Now - ₹{product.price}
+                          Buy Now - ₹ 1
+                             {/* {product.price} */}
                         </PhonePePayment>
                       ) : (
                         <Button
