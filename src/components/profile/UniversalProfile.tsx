@@ -122,16 +122,16 @@ export interface UserProfile {
   tenth_percentage?: number;
   twelfth_percentage?: number;
   graduation_percentage?: number;
-  verifiedByCollege?: boolean; 
-  panNumber?: string; 
-  aadhaarNumber?: string; 
-isPlaced?: boolean;
-placedAt?: {
-  drive_id:any;  
-  package: string;
-  startDate: Date;
-  placedDate: Date;
-};
+  verifiedByCollege?: boolean;
+  panNumber?: string;
+  aadhaarNumber?: string;
+  isPlaced?: boolean;
+  placedAt?: {
+    drive_id: any;
+    package: string;
+    startDate: Date;
+    placedDate: Date;
+  };
   // Client specific
   client_company_name?: string;
   industry?: string;
@@ -171,92 +171,94 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
       setLoading(true);
       const res = await axios.get(`/user/${user._id}`);
       const data = res.data.user;
-setProfile({
-  id: data._id,
-  name: data.full_name,
-  email: data.email,
-  phone: userRole === 'college' ? data.tpo_mobile || '' : data.phone || '',
-  location: userRole === 'college' ? data.city || '' : data.location || '',
-  bio: data.bio || '',
-  skills: ['jobseeker', 'freelancer', 'student'].includes(userRole) ? data.skills || [] : [],
-  avatarUrl: data.avatar_url || '',
+      setProfile({
+        id: data._id,
+        name: data.full_name,
+        email: data.email,
+        phone: userRole === 'college' ? data.tpo_mobile || '' : data.phone || '',
+        location:
+          userRole === 'college'
+            ? data.city || ''
+            : data.location || data.city || data.address || '',
+        bio: data.bio || '',
+        skills: ['jobseeker', 'freelancer', 'student'].includes(userRole) ? data.skills || [] : [],
+        avatarUrl: data.avatar_url || '',
 
-  // JobSeeker specific
-  resume_url: data.resume_url || '',
-  experience: data.experience || 0,
+        // JobSeeker specific
+        resume_url: data.resume_url || '',
+        experience: data.experience || 0,
 
-  // College specific
-  college_name: data.college_name || '',
-  institute_code: data.institute_code || '',
-  university_affiliation: data.university_affiliation || '',
-  city: data.city || '',
-  state: data.state || '',
-  accreditation: data.accreditation || '',
-  tpo_name: data.tpo_name || '',
-  tpo_email: data.tpo_email || '',
-  tpo_mobile: data.tpo_mobile || '',
-  course_branch: data.course_branch || '',
-  total_students: data.total_students || 0,
+        // College specific
+        college_name: data.college_name || '',
+        institute_code: data.institute_code || '',
+        university_affiliation: data.university_affiliation || '',
+        city: data.city || '',
+        state: data.state || '',
+        accreditation: data.accreditation || '',
+        tpo_name: data.tpo_name || '',
+        tpo_email: data.tpo_email || '',
+        tpo_mobile: data.tpo_mobile || '',
+        course_branch: data.course_branch || '',
+        total_students: data.total_students || 0,
 
-  // Student specific (ALL fields from User model including verification)
-  enrollment_no: data.enrollment_no || '',
-  course: data.course || '',
-  year: data.year || 0,
-  department: data.department || '',
-  college_id: data.college_id || '',
-  cgpa: data.cgpa || 0,
-  linkedin_url: data.linkedin_url || '',
-  github_url: data.github_url || '',
-  portfolio_url: data.portfolio_url || '',
-  date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
-  address: data.address || '',
-  pincode: data.pincode || '',
-  father_name: data.father_name || '',
-  mother_name: data.mother_name || '',
-  emergency_contact: data.emergency_contact || '',
-  blood_group: data.blood_group || '',
-  profile_complete: data.profile_complete ?? false,
-  tenth_percentage: data.tenth_percentage || 0,
-  twelfth_percentage: data.twelfth_percentage || 0,
-  graduation_percentage: data.graduation_percentage || 0,
-  verifiedByCollege: data.verifiedByCollege ?? false,
-  isPlaced: data.isPlaced ?? false,
-  placedAt: data.placedAt
-    ? {
-        drive_id: data.placedAt.drive_id?.company || '',
-        package: data.placedAt.package || '',
-        startDate: data.placedAt.startDate ? new Date(data.placedAt.startDate) : null,
-        placedDate: data.placedAt.placedDate ? new Date(data.placedAt.placedDate) : null,
-      }
-    : null,
+        // Student specific (ALL fields from User model including verification)
+        enrollment_no: data.enrollment_no || '',
+        course: data.course || '',
+        year: data.year || 0,
+        department: data.department || '',
+        college_id: data.college_id || '',
+        cgpa: data.cgpa || 0,
+        linkedin_url: data.linkedin_url || '',
+        github_url: data.github_url || '',
+        portfolio_url: data.portfolio_url || '',
+        date_of_birth: data.date_of_birth ? new Date(data.date_of_birth) : undefined,
+        address: data.address || '',
+        pincode: data.pincode || '',
+        father_name: data.father_name || '',
+        mother_name: data.mother_name || '',
+        emergency_contact: data.emergency_contact || '',
+        blood_group: data.blood_group || '',
+        profile_complete: data.profile_complete ?? false,
+        tenth_percentage: data.tenth_percentage || 0,
+        twelfth_percentage: data.twelfth_percentage || 0,
+        graduation_percentage: data.graduation_percentage || 0,
+        verifiedByCollege: data.verifiedByCollege ?? false,
+        isPlaced: data.isPlaced ?? false,
+        placedAt: data.placedAt
+          ? {
+              drive_id: data.placedAt.drive_id?.company || '',
+              package: data.placedAt.package || '',
+              startDate: data.placedAt.startDate ? new Date(data.placedAt.startDate) : null,
+              placedDate: data.placedAt.placedDate ? new Date(data.placedAt.placedDate) : null,
+            }
+          : null,
 
-  // ADDED: Verification status
-  panNumber: data.panNumber || '',
-  aadhaarNumber: data.aadhaarNumber || '',
+        // ADDED: Verification status
+        panNumber: data.panNumber || '',
+        aadhaarNumber: data.aadhaarNumber || '',
 
-  // Client specific
-  client_company_name: data.client_company_name || '',
-  industry: data.industry || '',
+        // Client specific
+        client_company_name: data.client_company_name || '',
+        industry: data.industry || '',
 
-  // Freelancer specific
-  hourly_rate: data.hourly_rate || 0,
+        // Freelancer specific
+        hourly_rate: data.hourly_rate || 0,
 
-  // Recruiter specific (using base user fields)
-  company_name: data.company_name || '',
-  company_website: data.company_website || '',
+        // Recruiter specific (using base user fields)
+        company_name: data.company_name || '',
+        company_website: data.company_website || '',
 
-  // Startup specific
-  startup_name: data.startup_name || '',
-  founder_name: data.founder_name || '',
-  website: data.website || '',
-  funding_stage: data.funding_stage || '',
-  employees_count: data.employees_count || 0,
-  logo_url: data.logo_url || '',
-  description: data.description || '',
+        // Startup specific
+        startup_name: data.startup_name || '',
+        founder_name: data.founder_name || '',
+        website: data.website || '',
+        funding_stage: data.funding_stage || '',
+        employees_count: data.employees_count || 0,
+        logo_url: data.logo_url || '',
+        description: data.description || '',
 
-  publicProfile: data.publicProfile ?? true,
-});
-
+        publicProfile: data.publicProfile ?? true,
+      });
     } catch (error) {
       console.error('Error loading profile:', error);
       toast.error('Failed to load profile');
@@ -287,7 +289,6 @@ setProfile({
     if (!profile || !user?._id) return;
     setSaving(true);
     try {
-      // 1. Define the payload with all possible keys from your profile state
       const payload = {
         full_name: profile.name,
         // email is not included since it's verified and should not be changed
@@ -303,7 +304,12 @@ setProfile({
         college_name: profile.college_name,
         institute_code: profile.institute_code,
         university_affiliation: profile.university_affiliation,
-        city: userRole === 'college' ? profile.location : profile.city,
+        city:
+          userRole === 'college'
+            ? profile.location
+            : userRole === 'student'
+              ? profile.location
+              : profile.city,
         state: profile.state,
         accreditation: profile.accreditation,
         tpo_name: profile.tpo_name,
@@ -1235,68 +1241,97 @@ setProfile({
                 placeholder="Enter your complete address"
               />
             </div>
-       <div className="mt-4">
-  <Label htmlFor="placed_company" className="text-sm sm:text-base">
-    Placed Company <span className="text-xs text-gray-500">(Locked)</span>
-  </Label>
-  <Input
-    id="placed_company"
-    value={profile?.placedAt?.drive_id?.company || ''}
-    disabled
-    className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
-    placeholder="Company"
-  />
-</div>
 
-<div className="mt-4">
-  <Label htmlFor="placed_package" className="text-sm sm:text-base">
-    Package <span className="text-xs text-gray-500">(Locked)</span>
-  </Label>
-  <Input
-    id="placed_package"
-    value={profile?.placedAt?.package || 0}
-    disabled
-    className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
-    placeholder="Package"
-  />
-</div>
+            <div className="mt-4">
+              <Label htmlFor="location" className="text-sm sm:text-base">
+                Location
+              </Label>
+              <Input
+                id="location"
+                value={profile?.location || ''}
+                onChange={e =>
+                  setProfile(prev => (prev ? { ...prev, location: e.target.value } : null))
+                }
+                className="h-9 sm:h-10 text-sm sm:text-base"
+                placeholder="City, State"
+              />
+            </div>
 
-<div className="mt-4">
-  <Label htmlFor="start_date" className="text-sm sm:text-base">
-    Start Date <span className="text-xs text-gray-500">(Locked)</span>
-  </Label>
-  <Input
-    id="start_date"
-    type="date"
-    value={
-      profile?.placedAt?.startDate
-        ? new Date(profile.placedAt.startDate).toISOString().split("T")[0]
-        : ""
-    }
-    disabled
-    className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
-    placeholder="Start Date"
-  />
-</div>
+            <div className="mt-4">
+              <Label htmlFor="bio" className="text-sm sm:text-base">
+                Bio
+              </Label>
+              <Textarea
+                id="bio"
+                value={profile?.bio || ''}
+                onChange={e => setProfile(prev => (prev ? { ...prev, bio: e.target.value } : null))}
+                rows={3}
+                className="text-sm sm:text-base resize-none"
+                placeholder="Tell us about yourself..."
+              />
+            </div>
 
-<div className="mt-4">
-  <Label htmlFor="placed_date" className="text-sm sm:text-base">
-    Placed Date <span className="text-xs text-gray-500">(Locked)</span>
-  </Label>
-  <Input
-    id="placed_date"
-    type="date"
-    value={
-      profile?.placedAt?.placedDate
-        ? new Date(profile.placedAt.placedDate).toISOString().split("T")[0]
-        : ""
-    }
-    disabled
-    className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
-    placeholder="Placed Date"
-  />
-</div>
+            <div className="mt-4">
+              <Label htmlFor="placed_company" className="text-sm sm:text-base">
+                Placed Company <span className="text-xs text-gray-500">(Locked)</span>
+              </Label>
+              <Input
+                id="placed_company"
+                value={profile?.placedAt?.drive_id?.company || ''}
+                disabled
+                className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
+                placeholder="Company"
+              />
+            </div>
 
+            <div className="mt-4">
+              <Label htmlFor="placed_package" className="text-sm sm:text-base">
+                Package <span className="text-xs text-gray-500">(Locked)</span>
+              </Label>
+              <Input
+                id="placed_package"
+                value={profile?.placedAt?.package || 0}
+                disabled
+                className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
+                placeholder="Package"
+              />
+            </div>
+
+            <div className="mt-4">
+              <Label htmlFor="start_date" className="text-sm sm:text-base">
+                Start Date <span className="text-xs text-gray-500">(Locked)</span>
+              </Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={
+                  profile?.placedAt?.startDate
+                    ? new Date(profile.placedAt.startDate).toISOString().split('T')[0]
+                    : ''
+                }
+                disabled
+                className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
+                placeholder="Start Date"
+              />
+            </div>
+
+            <div className="mt-4">
+              <Label htmlFor="placed_date" className="text-sm sm:text-base">
+                Placed Date <span className="text-xs text-gray-500">(Locked)</span>
+              </Label>
+              <Input
+                id="placed_date"
+                type="date"
+                value={
+                  profile?.placedAt?.placedDate
+                    ? new Date(profile.placedAt.placedDate).toISOString().split('T')[0]
+                    : ''
+                }
+                disabled
+                className="text-sm sm:text-base bg-gray-100 cursor-not-allowed"
+                placeholder="Placed Date"
+              />
+            </div>
           </>
         );
 
@@ -1697,6 +1732,18 @@ setProfile({
                 >
                   Portfolio
                 </a>
+              </div>
+            )}
+            {profile?.location && (
+              <div className="flex items-center text-sm text-gray-600">
+                <MapPin className="h-4 w-4 mr-2" />
+                <span>{profile.location}</span>
+              </div>
+            )}
+            {profile?.bio && (
+              <div className="flex items-center text-sm text-gray-600">
+                <User className="h-4 w-4 mr-2" />
+                <span>{profile.bio}</span>
               </div>
             )}
           </>
