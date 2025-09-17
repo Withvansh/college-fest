@@ -17,7 +17,7 @@ const navLinks = [
   { name: 'Hire', href: '/hire' },
   { name: 'Products', href: '/products' },
   { name: 'StartUp', href: '/startup-job' },
-  { name: 'Services', href: '/services' },
+  // { name: 'Services', href: '/services' },
   { name: 'About', href: '/about' },
   { name: 'Plans', href: '/pricing' },
 ];
