@@ -85,6 +85,11 @@ const Students = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('all');
+  const [courseFilter, setCourseFilter] = useState('all');
+  const [yearFilter, setYearFilter] = useState('all');
+  const [cgpaFilter, setCgpaFilter] = useState('all');
+  const [profileCompleteFilter, setProfileCompleteFilter] = useState('all');
+  const [placementStatusFilter, setPlacementStatusFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [uploadStatus, setUploadStatus] = useState<{
     status?: string;
@@ -103,12 +108,64 @@ const Students = () => {
     course: 'B.Tech',
     year: '1',
   });
+  const [departments, setDepartments] = useState<string[]>([]);
+  const [courses, setCourses] = useState<string[]>([]);
+  const [stats, setStats] = useState({
+    placed: 0,
+    registered: 0,
+    notRegistered: 0,
+  });
 
-  // Track if any upload is queued/processing in persistent store
-  const [hasPendingUpload, setHasPendingUpload] = useState<boolean>(false);
-  const [pendingJobInfo, setPendingJobInfo] = useState<{ jobId?: string; status?: string } | null>(
-    null
-  );
+  // Function to start polling for upload status
+  const startUploadPolling = () => {
+    const collegeId = localStorage.getItem('user_id');
+    if (!collegeId) return;
+
+    let interval: number | undefined;
+
+    const poll = async () => {
+      try {
+        const url = `${import.meta.env.VITE_API_URL_EXCEL}/uploads/college/${collegeId}?limit=5`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+
+        const contentType = res.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          throw new Error('Response is not JSON');
+        }
+
+        const uploads = await res.json();
+        const active = (uploads || []).find(
+          (u: any) => u.status === 'queued' || u.status === 'processing'
+        );
+        setHasPendingUpload(!!active);
+        setPendingJobInfo(active ? { jobId: active.jobId, status: active.status } : null);
+
+        // If no active uploads, stop polling
+        if (!active && interval) {
+          window.clearInterval(interval);
+          interval = undefined;
+        }
+      } catch (e) {
+        console.warn('Upload polling error:', e);
+        if (interval) {
+          window.clearInterval(interval);
+          interval = undefined;
+        }
+      }
+    };
+
+    // Start polling immediately and then every 2s
+    poll();
+    interval = window.setInterval(poll, 2000) as unknown as number;
+
+    // Store interval reference for cleanup
+    return () => {
+      if (interval) window.clearInterval(interval);
+    };
+  };
 
   // Pagination state
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -123,52 +180,95 @@ const Students = () => {
   const [sortOrder, setSortOrder] = useState('desc');
   const [loading, setLoading] = useState(false);
 
-  // Fetch students data on component mount and when pagination changes
+  // Track if any upload is queued/processing in persistent store
+  const [hasPendingUpload, setHasPendingUpload] = useState<boolean>(false);
+  const [pendingJobInfo, setPendingJobInfo] = useState<{ jobId?: string; status?: string } | null>(
+    null
+  );
+
+  // Fetch students data on component mount and when pagination/search/filter changes
   useEffect(() => {
     fetchStudentData();
-  }, [pagination.page, pagination.limit, sortField, sortOrder, departmentFilter]);
+  }, [
+    pagination.page,
+    pagination.limit,
+    sortField,
+    sortOrder,
+    departmentFilter,
+    courseFilter,
+    yearFilter,
+    cgpaFilter,
+    profileCompleteFilter,
+    placementStatusFilter,
+    searchTerm,
+  ]);
 
-  // Apply client-side filtering when search term changes
+  // Fetch departments on component mount
   useEffect(() => {
-    applyClientSideFilters(students);
-  }, [students, searchTerm]);
-
-  // Poll persistent uploads API for this college
-  useEffect(() => {
-    const collegeId = localStorage.getItem('user_id');
-    if (!collegeId) return;
-
-    let interval: number | undefined;
-    const poll = async () => {
-      try {
-        const url = `${import.meta.env.VITE_API_URL_EXCEL}/uploads/college/${collegeId}?limit=5`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Failed to fetch uploads');
-        const uploads = await res.json();
-        const active = (uploads || []).find(
-          (u: any) => u.status === 'queued' || u.status === 'processing'
-        );
-        setHasPendingUpload(!!active);
-        setPendingJobInfo(active ? { jobId: active.jobId, status: active.status } : null);
-
-        // If still pending, keep polling; otherwise clear
-        if (!active && interval) {
-          window.clearInterval(interval);
-        }
-      } catch (e) {
-        // don't spam toasts here; keep UI resilient
-        console.error('Upload polling error', e);
-      }
-    };
-
-    // Start immediately and then every 2s
-    poll();
-    interval = window.setInterval(poll, 2000) as unknown as number;
-
-    return () => {
-      if (interval) window.clearInterval(interval);
-    };
+    fetchDepartments();
+    fetchCourses();
   }, []);
+
+  // Update formData department when departments are loaded
+  useEffect(() => {
+    if (departments.length > 0 && formData.department === 'Computer Science') {
+      setFormData(prev => ({
+        ...prev,
+        department: departments[0],
+      }));
+    }
+  }, [departments]);
+
+  // Update formData course when courses are loaded
+  useEffect(() => {
+    if (courses.length > 0 && formData.course === 'B.Tech') {
+      setFormData(prev => ({
+        ...prev,
+        course: courses[0],
+      }));
+    }
+  }, [courses]);
+
+  const fetchDepartments = async () => {
+    try {
+      if (!id) return;
+
+      const response = await collegeProfileAPI.getDepartmentsByCollegeId(id);
+      if (response.success && response.departments) {
+        // Filter out empty strings and null values
+        setDepartments(response.departments.filter(dept => dept && dept.trim() !== ''));
+      }
+    } catch (error) {
+      console.error('Error fetching departments:', error);
+      // Fallback to some default departments if API fails
+      setDepartments([
+        'Computer Science',
+        'Electronics & Communication',
+        'Mechanical',
+        'Civil',
+        'Information Technology',
+        'Electrical',
+        'Mathematics',
+        'Physics',
+      ]);
+    }
+  };
+
+  const fetchCourses = async () => {
+    try {
+      if (!id) return;
+
+      const response = await collegeProfileAPI.getCoursesByCollegeId(id);
+      if (response.success && response.courses) {
+        // Filter out empty strings and null values
+        setCourses(response.courses.filter(course => course && course.trim() !== ''));
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      // Fallback to some default courses if API fails
+      setCourses(['B.Tech', 'B.E', 'B.Sc', 'B.Com', 'MBA', 'M.Tech', 'M.Sc']);
+    }
+  };
 
   const fetchStudentData = async () => {
     try {
@@ -185,15 +285,32 @@ const Students = () => {
         sort: sortField,
         order: sortOrder,
         ...(departmentFilter !== 'all' && { department: departmentFilter }),
+        ...(courseFilter !== 'all' && { course: courseFilter }),
+        ...(yearFilter !== 'all' && { year: yearFilter }),
+        ...(cgpaFilter !== 'all' && { cgpa: cgpaFilter }),
+        ...(profileCompleteFilter !== 'all' && { profile_complete: profileCompleteFilter }),
+        ...(placementStatusFilter !== 'all' && { placementStatus: placementStatusFilter }),
+        ...(searchTerm.trim() && { search: searchTerm.trim() }),
       });
 
       const studentData = response.data.students || response.data;
       setStudents(studentData);
-
-      // Apply client-side filtering
-      applyClientSideFilters(studentData);
+      setFilteredStudents(studentData); // No client-side filtering needed
 
       console.log(response);
+
+      // Update stats from API response
+      if (response.stats) {
+        console.log('Received stats from API:', response.stats);
+        setStats({
+          placed: response.stats.placed || 0,
+          registered: response.stats.registered || 0,
+          notRegistered: response.stats.notRegistered || 0,
+        });
+      } else {
+        console.log('No stats received from API');
+      }
+
       // Update pagination info if available from API
       if (response.total !== undefined) {
         // Handle case where API returns total, page, pages, limit directly
@@ -243,9 +360,9 @@ const Students = () => {
         email: '',
         phone: '',
         enrollment_no: '',
-        department: 'Computer Science',
+        department: departments.length > 0 ? departments[0] : 'Computer Science',
         cgpa: '',
-        course: 'B.Tech',
+        course: courses.length > 0 ? courses[0] : 'B.Tech',
         year: '1',
       });
 
@@ -325,6 +442,9 @@ const Students = () => {
       } else if (status.status === 'completed') {
         toast.success(`Successfully processed ${status.processedStudents} students`);
         fetchStudentData();
+        // Stop polling when upload is complete
+        setHasPendingUpload(false);
+        setPendingJobInfo(null);
       }
     } catch (error) {
       console.error('Error checking college status:', error);
@@ -370,6 +490,9 @@ const Students = () => {
       setHasPendingUpload(true);
       setPendingJobInfo({ jobId: result.jobId, status: 'queued' });
 
+      // Start polling for upload status
+      startUploadPolling();
+
       // Start checking status
       checkCollegeStatus();
 
@@ -390,11 +513,6 @@ const Students = () => {
 
   const handleLimitChange = (newLimit: number) => {
     setPagination(prev => ({ ...prev, limit: newLimit, page: 1 }));
-  };
-
-  const handleSearch = () => {
-    // Client-side search - no need to reset page or fetch data
-    // Filtering is handled automatically by the useEffect
   };
 
   const handleSortChange = (field: string) => {
@@ -422,25 +540,11 @@ const Students = () => {
   const clearFilters = () => {
     setSearchTerm('');
     setDepartmentFilter('all');
-  };
-
-  const applyClientSideFilters = (studentList: Student[]) => {
-    let filtered = [...studentList];
-
-    // Apply search filter (client-side)
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter(
-        student =>
-          student.full_name?.toLowerCase().includes(searchLower) ||
-          student.email?.toLowerCase().includes(searchLower) ||
-          student.enrollment_no?.toLowerCase().includes(searchLower) ||
-          student.department?.toLowerCase().includes(searchLower) ||
-          student.course?.toLowerCase().includes(searchLower)
-      );
-    }
-
-    setFilteredStudents(filtered);
+    setCourseFilter('all');
+    setYearFilter('all');
+    setCgpaFilter('all');
+    setProfileCompleteFilter('all');
+    setPlacementStatusFilter('all');
   };
 
   return (
@@ -598,16 +702,11 @@ const Students = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="Computer Science">Computer Science</SelectItem>
-                            <SelectItem value="Electronics & Communication">
-                              Electronics & Communication
-                            </SelectItem>
-                            <SelectItem value="Mechanical">Mechanical</SelectItem>
-                            <SelectItem value="Civil">Civil</SelectItem>
-                            <SelectItem value="IT">Information Technology</SelectItem>
-                            <SelectItem value="Electrical">Electrical</SelectItem>
-                            <SelectItem value="Mathematics">Mathematics</SelectItem>
-                            <SelectItem value="Physics">Physics</SelectItem>
+                            {departments.map(department => (
+                              <SelectItem key={department} value={department}>
+                                {department}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -623,11 +722,11 @@ const Students = () => {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="B.Tech">B.Tech</SelectItem>
-                            <SelectItem value="B.E">B.E</SelectItem>
-                            <SelectItem value="B.Sc">B.Sc</SelectItem>
-                            <SelectItem value="B.Com">B.Com</SelectItem>
-                            <SelectItem value="MBA">MBA</SelectItem>
+                            {courses.map(course => (
+                              <SelectItem key={course} value={course}>
+                                {course}
+                              </SelectItem>
+                            ))}
                           </SelectContent>
                         </Select>
                       </div>
@@ -706,7 +805,9 @@ const Students = () => {
                     placeholder="Search students..."
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    onKeyPress={e => e.key === 'Enter' && handleSearch()}
+                    onKeyPress={e =>
+                      e.key === 'Enter' && setPagination(prev => ({ ...prev, page: 1 }))
+                    }
                     className="pl-8 sm:pl-10 w-full h-8 sm:h-10 text-sm"
                   />
                 </div>
@@ -719,14 +820,26 @@ const Students = () => {
                   >
                     <Filter className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span>Filters</span>
-                    {departmentFilter !== 'all' && (
+                    {(departmentFilter !== 'all' ||
+                      courseFilter !== 'all' ||
+                      yearFilter !== 'all' ||
+                      cgpaFilter !== 'all' ||
+                      profileCompleteFilter !== 'all' ||
+                      placementStatusFilter !== 'all') && (
                       <Badge variant="secondary" className="ml-0.5 sm:ml-1 text-xs px-1">
-                        1
+                        {[
+                          departmentFilter !== 'all' ? 1 : 0,
+                          courseFilter !== 'all' ? 1 : 0,
+                          yearFilter !== 'all' ? 1 : 0,
+                          cgpaFilter !== 'all' ? 1 : 0,
+                          profileCompleteFilter !== 'all' ? 1 : 0,
+                          placementStatusFilter !== 'all' ? 1 : 0,
+                        ].reduce((a, b) => a + b, 0)}
                       </Badge>
                     )}
                   </Button>
                   <Button
-                    onClick={handleSearch}
+                    onClick={() => setPagination(prev => ({ ...prev, page: 1 }))}
                     variant="default"
                     size="sm"
                     className="h-8 sm:h-10 px-3 sm:px-6 flex-1 sm:flex-none whitespace-nowrap text-xs sm:text-sm"
@@ -763,7 +876,7 @@ const Students = () => {
                   </Button>
                 </div>
               </div>
-              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                 <div className="space-y-1 sm:space-y-2">
                   <Label htmlFor="department-filter" className="text-xs sm:text-sm font-medium">
                     Department
@@ -777,17 +890,116 @@ const Students = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Departments</SelectItem>
-                      <SelectItem value="Computer Science">Computer Science</SelectItem>
-                      <SelectItem value="Electronics & Communication">
-                        Electronics & Communication
-                      </SelectItem>
-                      <SelectItem value="Mechanical">Mechanical</SelectItem>
-                      <SelectItem value="Civil">Civil</SelectItem>
-                      <SelectItem value="Chemical">Chemical</SelectItem>
-                      <SelectItem value="IT">Information Technology</SelectItem>
-                      <SelectItem value="Electrical">Electrical</SelectItem>
-                      <SelectItem value="Mathematics">Mathematics</SelectItem>
-                      <SelectItem value="Physics">Physics</SelectItem>
+                      {departments.map(department => (
+                        <SelectItem key={department} value={department}>
+                          {department}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="course-filter" className="text-xs sm:text-sm font-medium">
+                    Course
+                  </Label>
+                  <Select value={courseFilter} onValueChange={setCourseFilter}>
+                    <SelectTrigger
+                      id="course-filter"
+                      className="w-full h-8 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <SelectValue placeholder="All Courses" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Courses</SelectItem>
+                      {courses.map(course => (
+                        <SelectItem key={course} value={course}>
+                          {course}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="year-filter" className="text-xs sm:text-sm font-medium">
+                    Year
+                  </Label>
+                  <Select value={yearFilter} onValueChange={setYearFilter}>
+                    <SelectTrigger
+                      id="year-filter"
+                      className="w-full h-8 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <SelectValue placeholder="All Years" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Years</SelectItem>
+                      <SelectItem value="1">1st Year</SelectItem>
+                      <SelectItem value="2">2nd Year</SelectItem>
+                      <SelectItem value="3">3rd Year</SelectItem>
+                      <SelectItem value="4">4th Year</SelectItem>
+                      <SelectItem value="5">5th Year</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="cgpa-filter" className="text-xs sm:text-sm font-medium">
+                    CGPA Range
+                  </Label>
+                  <Select value={cgpaFilter} onValueChange={setCgpaFilter}>
+                    <SelectTrigger
+                      id="cgpa-filter"
+                      className="w-full h-8 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <SelectValue placeholder="All CGPA" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All CGPA</SelectItem>
+                      <SelectItem value="9-10">9.0 - 10.0</SelectItem>
+                      <SelectItem value="8-9">8.0 - 8.9</SelectItem>
+                      <SelectItem value="7-8">7.0 - 7.9</SelectItem>
+                      <SelectItem value="6-7">6.0 - 6.9</SelectItem>
+                      <SelectItem value="below-6">Below 6.0</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="profile-filter" className="text-xs sm:text-sm font-medium">
+                    Profile Status
+                  </Label>
+                  <Select value={profileCompleteFilter} onValueChange={setProfileCompleteFilter}>
+                    <SelectTrigger
+                      id="profile-filter"
+                      className="w-full h-8 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <SelectValue placeholder="All Profiles" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Profiles</SelectItem>
+                      <SelectItem value="true">Complete</SelectItem>
+                      <SelectItem value="false">Incomplete</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1 sm:space-y-2">
+                  <Label htmlFor="placement-filter" className="text-xs sm:text-sm font-medium">
+                    Placement Status
+                  </Label>
+                  <Select value={placementStatusFilter} onValueChange={setPlacementStatusFilter}>
+                    <SelectTrigger
+                      id="placement-filter"
+                      className="w-full h-8 sm:h-10 text-xs sm:text-sm"
+                    >
+                      <SelectValue placeholder="All Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Status</SelectItem>
+                      <SelectItem value="Placed">Placed</SelectItem>
+                      <SelectItem value="Registered">Registered</SelectItem>
+                      <SelectItem value="Not Registered">Not Registered</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -816,7 +1028,7 @@ const Students = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-green-600">
-                {filteredStudents.filter(s => s.placementStatus === 'Placed').length}
+                {stats.placed}
               </div>
             </CardContent>
           </Card>
@@ -828,7 +1040,7 @@ const Students = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-blue-600">
-                {filteredStudents.filter(s => s.placementStatus === 'Registered').length}
+                {stats.registered}
               </div>
             </CardContent>
           </Card>
@@ -840,11 +1052,7 @@ const Students = () => {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               <div className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-600">
-                {
-                  filteredStudents.filter(
-                    s => s.placementStatus === 'Not Registered' || !s.placementStatus
-                  ).length
-                }
+                {stats.notRegistered}
               </div>
             </CardContent>
           </Card>
@@ -970,7 +1178,13 @@ const Students = () => {
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                         No students found.{' '}
-                        {searchTerm || departmentFilter !== 'all'
+                        {searchTerm ||
+                        departmentFilter !== 'all' ||
+                        courseFilter !== 'all' ||
+                        yearFilter !== 'all' ||
+                        cgpaFilter !== 'all' ||
+                        profileCompleteFilter !== 'all' ||
+                        placementStatusFilter !== 'all'
                           ? 'Try adjusting your filters.'
                           : 'Add students to get started.'}
                       </TableCell>
@@ -1059,7 +1273,13 @@ const Students = () => {
                 <GraduationCap className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                 <h3 className="text-lg font-medium mb-2">No students found</h3>
                 <p className="text-sm">
-                  {searchTerm || departmentFilter !== 'all'
+                  {searchTerm ||
+                  departmentFilter !== 'all' ||
+                  courseFilter !== 'all' ||
+                  yearFilter !== 'all' ||
+                  cgpaFilter !== 'all' ||
+                  profileCompleteFilter !== 'all' ||
+                  placementStatusFilter !== 'all'
                     ? 'Try adjusting your filters.'
                     : 'Add students to get started.'}
                 </p>

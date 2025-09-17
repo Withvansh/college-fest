@@ -167,7 +167,7 @@ const SocialMediaSection = () => {
       setCurrentIndex(prev => {
         const next = prev + 1;
         // For mobile, show one card at a time; for desktop, show 3 cards
-        const maxIndex = isMobile ? socialPosts.length : socialPosts.length;
+        const maxIndex = isMobile ? socialPosts.length : socialPosts.length - 2;
         if (next >= maxIndex) {
           setTimeout(() => setCurrentIndex(0), 700);
           return next;
@@ -188,7 +188,7 @@ const SocialMediaSection = () => {
 
   const handleNext = () => {
     setIsAutoScrolling(false);
-    const maxIndex = isMobile ? socialPosts.length - 1 : socialPosts.length - 1;
+    const maxIndex = isMobile ? socialPosts.length - 1 : socialPosts.length - 3;
     setCurrentIndex(prev => (prev >= maxIndex ? 0 : prev + 1));
     setTimeout(() => setIsAutoScrolling(true), 5000);
   };
@@ -238,10 +238,10 @@ const SocialMediaSection = () => {
               style={{
                 transform: isMobile
                   ? `translateX(-${currentIndex * 100}%)`
-                  : `translateX(-${currentIndex * (100 / 3)}%)`,
+                  : `translateX(-${currentIndex * 100}%)`,
                 width: isMobile
                   ? `${socialPosts.length * 100}%`
-                  : `${(extendedPosts.length * 100) / 3}%`,
+                  : `${(extendedPosts.length / 3) * 100}%`,
               }}
             >
               {(isMobile ? socialPosts : extendedPosts).map((post, index) => (

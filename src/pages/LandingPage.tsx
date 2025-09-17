@@ -211,8 +211,9 @@ const LandingPage = () => {
             </div>
 
             {/* Enhanced Main Heading */}
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold mb-4 sm:mb-6 leading-tight animate-fade-in">
-              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent drop-shadow-lg">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-4xl xl:text-6xl font-extrabold mb-4 sm:mb-6  animate-fade-in">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent 
+               drop-shadow-lg">
                 Find your dream job in Minutes
               </span>
               <br />
