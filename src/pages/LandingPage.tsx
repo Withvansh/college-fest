@@ -217,7 +217,7 @@ const LandingPage = () => {
               </span>
               <br />
               <span className="bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-lg">
-                Daily Job Offers & Freelance Proejcts
+                Daily Job Offers & Freelance Projects
               </span>
             </h1>
 
