@@ -213,17 +213,17 @@ const LandingPage = () => {
             {/* Enhanced Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-extrabold mb-4 sm:mb-6 leading-tight animate-fade-in">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent drop-shadow-lg">
-                Smart Hiring Meets
+                Find your dream job in Minutes
               </span>
               <br />
               <span className="bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-lg">
-                Seamless HRMS
+                Daily Job Offers & Freelance Projects
               </span>
             </h1>
 
             {/* Enhanced Subheadline */}
             <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-gray-700 mb-6 sm:mb-8 max-w-xs sm:max-w-2xl lg:max-w-4xl mx-auto leading-relaxed animate-fade-in font-medium px-4 sm:px-0">
-              Transform your workforce with an all-in-one platform for intelligent hiring,
+              Hire or Get Hired Everything at MinuteHire Transform your workforce with an all-in-one platform for intelligent hiring,
               effortless onboarding, and complete employee lifecycle management.
             </p>
 
@@ -236,13 +236,13 @@ const LandingPage = () => {
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3 text-gray-700 bg-white/70 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-white/60 shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto justify-center">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                <span className="font-bold text-gray-900 text-base sm:text-lg">95%</span>
+                <span className="font-bold text-gray-900 text-base sm:text-lg">99%</span>
                 <span className="font-medium text-sm sm:text-base">Faster Hiring</span>
               </div>
               <div className="flex items-center space-x-2 sm:space-x-3 text-gray-700 bg-white/70 backdrop-blur-md px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl border border-white/60 shadow-xl hover:shadow-2xl transition-all duration-300 w-full sm:w-auto justify-center">
                 <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
-                <span className="font-bold text-gray-900 text-base sm:text-lg">4.9/5</span>
-                <span className="font-medium text-sm sm:text-base">User Rating</span>
+                <span className="font-bold text-gray-900 text-base sm:text-lg">5/5</span>
+                <span className="font-medium text-sm sm:text-base">Highest Rating</span>
               </div>
             </div>
 
