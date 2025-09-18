@@ -14,7 +14,7 @@ const UnifiedProtectedRoute: React.FC<UnifiedProtectedRouteProps> = ({
   children,
   allowedRoles,
   requireAuth = true,
-  fallbackPath = '/auth/login',
+  fallbackPath = '/auth?tab=login',
 }) => {
   const { user, isAuthenticated, loading } = useAuth();
   const location = useLocation();

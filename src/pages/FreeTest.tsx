@@ -193,14 +193,14 @@ const FreeTest = () => {
               
               {/* LinkedIn Import */}
               <Button 
-                onClick={handleLinkedInImport}
+                // onClick={handleLinkedInImport}
                 variant="outline" 
                 className="w-full mb-6 border-2 border-blue-700 text-blue-700 hover:bg-blue-50"
               >
                 <div className="w-5 h-5 bg-blue-700 rounded mr-3 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">in</span>
                 </div>
-                Import from LinkedIn
+               LinkedIn coming soon...
               </Button>
 
               <div className="space-y-4">
@@ -255,13 +255,13 @@ const FreeTest = () => {
               )}
 
               <Button 
-                onClick={startTest}
+                // onClick={startTest}
                 size="lg" 
                 className="w-full mt-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-lg py-6 rounded-xl shadow-lg"
                 disabled={!selectedTest || !userInfo.name || !userInfo.email}
               >
                 <Play className="mr-3 h-6 w-6" />
-                Start Test Now
+                coming soon...
               </Button>
 
               <p className="text-xs text-gray-500 mt-4 text-center">

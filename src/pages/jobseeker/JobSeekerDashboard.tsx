@@ -154,7 +154,7 @@ const JobSeekerDashboard = () => {
               <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">2</div>
+              <div className="text-lg sm:text-2xl font-bold">0</div>
             </CardContent>
           </Card>
 
@@ -164,7 +164,7 @@ const JobSeekerDashboard = () => {
               <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-lg sm:text-2xl font-bold">1</div>
+              <div className="text-lg sm:text-2xl font-bold">0</div>
             </CardContent>
           </Card>
         </div>
