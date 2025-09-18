@@ -233,47 +233,76 @@ const AboutUs = () => {
               ⚡ Simple Process
             </Badge>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-gray-900">
-               Unlocking Efficiency: The MinuteHire Process
+              Unlocking Efficiency: The MinuteHire Process
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-              MinuteHire is a unified platform that simplifies hiring by providing all the tools you need to find, hire, and manage top talent with unmatched efficiency.
+              MinuteHire is a unified platform that simplifies hiring by providing all the tools you
+              need to find, hire, and manage top talent with unmatched efficiency.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 relative">
-            {howItWorks.map((step, index) => (
-              <div key={index} className="relative group">
-                {index < howItWorks.length - 1 && (
-                  <div className="hidden lg:block absolute top-20 -right-4 w-8 h-0.5 bg-gradient-to-r from-gray-300 to-gray-400 z-0"></div>
-                )}
-                <Card className="relative z-10 hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-blue-200">
-                  <CardContent className="p-6 md:p-8 text-center">
-                    <div
-                      className={`w-14 h-14 md:w-16 md:h-16 bg-gradient-to-r ${
-                        step.color === 'blue'
-                          ? 'from-blue-500 to-blue-600'
-                          : step.color === 'purple'
-                            ? 'from-purple-500 to-purple-600'
-                            : step.color === 'green'
-                              ? 'from-green-500 to-green-600'
-                              : 'from-orange-500 to-orange-600'
-                      } rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:rotate-12 transition-transform`}
-                    >
-                      <step.icon className="h-6 w-6 md:h-8 md:w-8 text-white" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
+            {/* College Dashboard Block */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-blue-200">
+              <CardContent className="p-6 md:p-8">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform">
+                  <Building className="h-7 w-7 md:h-10 md:w-10 text-white" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900 text-center">
+                  College Dashboard: Empowering Campus Placements
+                </h3>
+                <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-6 text-center">
+                  Simplify placement drives, track student progress, and manage campus hiring with
+                  our intuitive College Dashboard. Designed to streamline your recruitment process
+                  from start to finish.
+                </p>
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Key Features:</h4>
+                  {[
+                    'Placement management',
+                    'Student tracking',
+                    'Company partnerships',
+                    'Analytics dashboard',
+                  ].map((feature, idx) => (
+                    <div key={idx} className="flex items-center">
+                      <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mr-3 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-gray-700">{feature}</span>
                     </div>
-                    <div className="text-2xl md:text-3xl font-bold text-gray-400 mb-2">
-                      {step.step}
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* HRMS Integration Block */}
+            <Card className="group hover:shadow-2xl transition-all duration-300 hover:scale-105 border-2 border-transparent hover:border-blue-200">
+              <CardContent className="p-6 md:p-8">
+                <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-4 md:mb-6 group-hover:scale-110 transition-transform">
+                  <Briefcase className="h-7 w-7 md:h-10 md:w-10 text-white" />
+                </div>
+                <h3 className="text-xl md:text-2xl font-bold mb-4 text-gray-900 text-center">
+                  HRMS Integration: Corporate & Recruiter Solutions
+                </h3>
+                <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-6 text-center">
+                  Post jobs, shortlist candidates via AI, and manage end-to-end onboarding
+                  seamlessly. Our robust HRMS integration tools provide a comprehensive platform for
+                  all your hiring needs.
+                </p>
+                <div className="space-y-3">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-3">Key Features:</h4>
+                  {[
+                    'AI-powered screening',
+                    'Bulk hiring tools',
+                    'HRMS integration',
+                    'Analytics & reports',
+                  ].map((feature, idx) => (
+                    <div key={idx} className="flex items-center">
+                      <CheckCircle className="h-4 w-4 md:h-5 md:w-5 text-green-500 mr-3 flex-shrink-0" />
+                      <span className="text-sm md:text-base text-gray-700">{feature}</span>
                     </div>
-                    <h3 className="text-lg md:text-xl font-bold mb-3 text-gray-900">
-                      {step.title}
-                    </h3>
-                    <p className="text-sm md:text-base text-gray-600 leading-relaxed">
-                      {step.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>
@@ -290,8 +319,12 @@ const AboutUs = () => {
                 <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Core Purpose</h2>
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-4 md:mb-6">
-                We are on a mission to simplify the complex world of hiring and empower every individual to own their career path. By creating a seamless bridge between education and employment, we ensure talent finds opportunity and companies build their best teams. Our platform is designed to make the journey from the classroom to the boardroom—and every step in between—more efficient, transparent, and equitable for everyone involved.
-
+                We are on a mission to simplify the complex world of hiring and empower every
+                individual to own their career path. By creating a seamless bridge between education
+                and employment, we ensure talent finds opportunity and companies build their best
+                teams. Our platform is designed to make the journey from the classroom to the
+                boardroom—and every step in between—more efficient, transparent, and equitable for
+                everyone involved.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 {[
@@ -332,10 +365,16 @@ const AboutUs = () => {
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 md:mr-4">
                   <Eye className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Envisioning the Future of Talent</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
+                  Envisioning the Future of Talent
+                </h2>
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-4 md:mb-6">
-                We envision a future where talent discovery is instantaneous, fair, and beneficial for all. Our goal is to become the leading platform where the best talent and top opportunities converge without geographical or professional boundaries. We see a world where skills are the only currency that matters, and every individual is empowered to thrive in a career that fulfills them.
+                We envision a future where talent discovery is instantaneous, fair, and beneficial
+                for all. Our goal is to become the leading platform where the best talent and top
+                opportunities converge without geographical or professional boundaries. We see a
+                world where skills are the only currency that matters, and every individual is
+                empowered to thrive in a career that fulfills them.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 {[
