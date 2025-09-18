@@ -718,7 +718,7 @@ const RecruiterDashboardDynamic = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.testResults.map(result => (
+                  {/* {dashboard.mockData.testResults.map(result => (
                     <div
                       key={result._id}
                       className="flex items-center justify-between p-4 border rounded-lg"
@@ -742,7 +742,7 @@ const RecruiterDashboardDynamic = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))} */}
                 </div>
               </CardContent>
             </Card>
@@ -766,19 +766,19 @@ const RecruiterDashboardDynamic = () => {
                 </Card>
               </Link>
 
-              <Link to="/recruiter/create-test" className="block">
+              {/* <Link to="/recruiter/create-test" className="block"> */}
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-sm">
                       <TestTube className="mr-2 h-4 w-4 text-green-600" />
-                      Create Test
+                      Create Test Coming Soon....
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 text-xs">Design assessment tests for candidates.</p>
                   </CardContent>
                 </Card>
-              </Link>
+              {/* </Link> */}
 
               <Link to="/recruiter/college/drives" className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -793,12 +793,12 @@ const RecruiterDashboardDynamic = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/recruiter/hrms" className="block">
+              {/* <Link to="/recruiter/hrms" className="block"> */}
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-sm">
                       <Building2 className="mr-2 h-4 w-4 text-purple-600" />
-                      HRMS
+                      HRMS Coming Soon....
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -807,7 +807,7 @@ const RecruiterDashboardDynamic = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </Link>
+              {/* </Link> */}
             </div>
           </div>
         </div>

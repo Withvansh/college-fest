@@ -343,7 +343,7 @@ const Students = () => {
         verifiedByCollege: true,
         college_id: localStorage.getItem('user_id'),
         verify: true,
-        role: 'Student',
+        role: 'student',
         year: parseInt(formData.year),
         phone: formData.phone || '',
       };
