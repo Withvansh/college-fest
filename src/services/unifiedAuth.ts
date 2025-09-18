@@ -95,7 +95,7 @@ export type UserRole =
   | 'freelancer'
   | 'client'
   | 'college'
-  | 'Student'
+  | 'student'
   | 'startup'
   | 'admin'
   | 'hr_admin'
@@ -119,7 +119,7 @@ const DEMO_CREDENTIALS: Record<UserRole, { email: string; password: string }> = 
   recruiter: { email: 'demo.hr@minutehire.com', password: '#HRaccess123' },
   freelancer: { email: 'demo.freelancer@minutehire.com', password: '#Freelance123' },
   client: { email: 'demo.client@minutehire.com', password: '#Client123' },
-  Student: { email: 'demo.student@minutehire.com', password: '#Student123' },
+  student: { email: 'demo.student@minutehire.com', password: '#Student123' },
   college: { email: 'demo.college@minutehire.com', password: '#College123' },
   startup: { email: 'demo.startup@minutehire.com', password: '#Startup123' },
   admin: { email: 'admin@minutehire.com', password: 'admin123' },
@@ -134,7 +134,7 @@ export const DASHBOARD_ROUTES: Record<UserRole, string> = {
   freelancer: '/freelancer/dashboard',
   client: '/client/dashboard',
   college: '/college/dashboard',
-  Student: '/student/dashboard',
+  student: '/student/dashboard',
   startup: '/startup/dashboard',
   admin: '/admin/dashboard',
   hr_admin: '/admin/dashboard',

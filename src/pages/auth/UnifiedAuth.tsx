@@ -71,7 +71,7 @@ const userTypes = [
     description: 'Manage placements',
   },
   {
-    id: 'Student' as UserRole,
+    id: 'student' as UserRole, // Fixed: Changed from 'Student' to 'student' to match discriminator key
     label: 'Student',
     icon: GraduationCap,
     color: 'from-indigo-500 to-purple-600',
