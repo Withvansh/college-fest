@@ -46,7 +46,6 @@ const CreateTest = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Test created:", { testData, questions });
   };
 
   return (

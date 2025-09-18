@@ -216,10 +216,10 @@ const LandingPage = () => {
                drop-shadow-lg">
                 Find your dream job in Minutes
               </span>
-              <br />
+              {/* <br />
               <span className="bg-gradient-to-r from-gray-800 to-gray-900 bg-clip-text text-transparent drop-shadow-lg">
                 Daily Job Offers & Freelance Projects
-              </span>
+              </span> */}
             </h1>
 
             {/* Enhanced Subheadline */}

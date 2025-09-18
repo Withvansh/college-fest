@@ -6,7 +6,7 @@ const PostJob = () => {
   const navigate = useNavigate();
 
   const handleJobPostSuccess = () => {
-    console.log('Job posted successfully, navigating back to dashboard');
+  
     // Trigger dashboard refresh via localStorage
     localStorage.setItem('refresh-dashboard', 'true');
     // Navigate back to dashboard after successful job posting
