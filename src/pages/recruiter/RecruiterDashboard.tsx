@@ -8,21 +8,10 @@ const RecruiterDashboard = () => {
   const { dashboard, loading: dashboardLoading, error } = useRecruiterDashboard();
   const navigate = useNavigate();
 
-  console.log('RecruiterDashboard - Component state:', {
-    user: !!user,
-    userRole: user?.role,
-    authLoading,
-    dashboardLoading,
-    dashboard: !!dashboard,
-    dashboardId: dashboard?.id,
-    error,
-  });
-
   useEffect(() => {
     // If we have a dashboard, redirect to the specific dashboard URL
     if (dashboard && !dashboardLoading && !authLoading) {
       const dashboardUrl = `/recruiter/dashboard/${dashboard.id}`;
-
       navigate(dashboardUrl, { replace: true });
     }
   }, [dashboard, dashboardLoading, authLoading, navigate]);
@@ -40,15 +29,18 @@ const RecruiterDashboard = () => {
   }
 
   if (!user) {
+  
     return <Navigate to="/auth/recruiter" replace />;
   }
 
   if (user.role !== 'recruiter') {
+   
     return <Navigate to="/" replace />;
   }
 
   // If there's an error loading the dashboard, show error state
   if (error) {
+   
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">

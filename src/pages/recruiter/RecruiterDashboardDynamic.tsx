@@ -81,7 +81,6 @@ const RecruiterDashboardDynamic = () => {
 
   const loadDashboard = useCallback(async () => {
     if (!user || !dashboardId) {
-    
       return;
     }
 
@@ -89,14 +88,10 @@ const RecruiterDashboardDynamic = () => {
       setLoading(true);
       setError(null);
 
-
-
       // First get the user's dashboard to verify ownership
       const userDashboard = await recruiterDashboardsApi.getDashboard(user._id);
-  
 
       if (!userDashboard) {
-  
         toast.error('Dashboard not found. Redirecting to HRMS workspace.');
         navigate('/recruiter/hrms', { replace: true });
         return;
@@ -110,7 +105,6 @@ const RecruiterDashboardDynamic = () => {
 
       try {
         const jobsResponse = await recruiterDashboardsApi.getJobs(user._id, 1, 10);
-    
 
         // Handle the expected response structure
         const jobsArray = jobsResponse?.jobs || [];
@@ -136,7 +130,6 @@ const RecruiterDashboardDynamic = () => {
                   1,
                   1
                 );
-      
 
                 // Handle both possible response structures
                 const total =
@@ -145,8 +138,6 @@ const RecruiterDashboardDynamic = () => {
                   (Array.isArray(applicationsResponse?.applications)
                     ? applicationsResponse.applications.length
                     : 0);
-
-        
 
                 return {
                   ...job,
@@ -167,7 +158,6 @@ const RecruiterDashboardDynamic = () => {
               if (result.status === 'fulfilled') {
                 return result.value;
               } else {
-          
                 // Find the original job from the failed attempt
                 const failedJob = realJobs.find(job => job._id);
                 return failedJob || realJobs[0];
@@ -184,7 +174,6 @@ const RecruiterDashboardDynamic = () => {
       try {
         const applicationsResponse = await recruiterDashboardsApi.getApplications(user._id, 1, 10);
 
-
         // Updated to use the correct response structure
         const applicationsArray = applicationsResponse.applications || [];
         totalApplicationsCount = Array.isArray(applicationsResponse.total)
@@ -192,11 +181,7 @@ const RecruiterDashboardDynamic = () => {
           : applicationsResponse.total || 0;
 
         if (Array.isArray(applicationsArray)) {
-      
-
           realApplications = applicationsArray.map((application, index) => {
-        
-
             // Handle the actual API response structure
             const applicantName = application?.applicant_id?.full_name || 'Unknown Applicant';
             const applicantEmail = application?.applicant_id?.email || 'No email';
@@ -234,7 +219,6 @@ const RecruiterDashboardDynamic = () => {
                               : 'Applied',
             };
 
-          
             return processedApplication;
           });
 
@@ -793,7 +777,7 @@ const RecruiterDashboardDynamic = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/recruiter/hrms" className="block">
+              {/* <Link to="/recruiter/hrms" className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-sm">
@@ -807,7 +791,22 @@ const RecruiterDashboardDynamic = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </Link>
+              </Link> */}
+              <div className="block">
+                <Card className="hover:shadow-lg transition-shadow cursor-not-allowed opacity-60">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-sm">
+                      <Building2 className="mr-2 h-4 w-4 text-purple-600" />
+                      HRMS
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 text-xs">
+                      Coming Soon - Manage HR operations and onboard employees.
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </div>
         </div>

@@ -130,7 +130,7 @@ const DEMO_CREDENTIALS: Record<UserRole, { email: string; password: string }> = 
 // Role-based dashboard routes
 export const DASHBOARD_ROUTES: Record<UserRole, string> = {
   jobseeker: '/jobseeker/dashboard',
-  recruiter: '/recruiter/hrms', // Changed to HRMS as default
+  recruiter: '/recruiter/dashboard', // Changed to HRMS as default
   freelancer: '/freelancer/dashboard',
   client: '/client/dashboard',
   college: '/college/dashboard',
