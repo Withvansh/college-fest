@@ -1,5 +1,5 @@
 // lib/api/collegeProfile.ts
-import axiosInstance from "../utils/axios";
+import axiosInstance from '../utils/axios';
 
 export interface CollegeProfile {
   _id: string;
@@ -44,12 +44,20 @@ export const collegeProfileAPI = {
       throw error;
     }
   },
-async getStudentsByCollegeId(id: string, data: any) {
-  const response = await axiosInstance.get(`/college/students/${id}`, {
-    params: data,   
-  });
-  return response.data;
-},
+  async getStudentsByCollegeId(id: string, data: any) {
+    const response = await axiosInstance.get(`/college/students/${id}`, {
+      params: data,
+    });
+    return response.data;
+  },
+  async getDepartmentsByCollegeId(id: string) {
+    const response = await axiosInstance.get(`/college/departments/${id}`);
+    return response.data;
+  },
+  async getCoursesByCollegeId(id: string) {
+    const response = await axiosInstance.get(`/college/courses/${id}`);
+    return response.data;
+  },
   async updateProfile(updates: CollegeProfileUpdateData): Promise<CollegeProfile> {
     try {
       const response = await axiosInstance.put('/college/profile', updates);

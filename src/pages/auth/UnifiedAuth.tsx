@@ -113,6 +113,17 @@ const UnifiedAuth = () => {
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
   const [isSendingOtp, setIsSendingOtp] = useState(false);
 
+  // Forgot password state
+  const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: email input, 2: OTP verification, 3: new password
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordOtp, setForgotPasswordOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isForgotPasswordOtpSent, setIsForgotPasswordOtpSent] = useState(false);
+  const [isForgotPasswordVerifyingOtp, setIsForgotPasswordVerifyingOtp] = useState(false);
+  const [isForgotPasswordSendingOtp, setIsForgotPasswordSendingOtp] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+
   const { login, signup, isAuthenticated } = useAuth();
 
   // Redirect if already authenticated
@@ -125,7 +136,7 @@ const UnifiedAuth = () => {
   // Handle URL parameters
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
-    if (tabFromUrl && ['login', 'signup'].includes(tabFromUrl)) {
+    if (tabFromUrl && ['login', 'signup', 'forgot-password'].includes(tabFromUrl)) {
       setActiveTab(tabFromUrl);
       // Reset signup steps when switching tabs
       if (tabFromUrl === 'signup') {
@@ -135,6 +146,15 @@ const UnifiedAuth = () => {
         setIsEmailVerified(false);
         setOtpValue('');
         setIsOtpSent(false);
+      }
+      // Reset forgot password steps when switching tabs
+      if (tabFromUrl === 'forgot-password') {
+        setForgotPasswordStep(1);
+        setForgotPasswordEmail('');
+        setForgotPasswordOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setIsForgotPasswordOtpSent(false);
       }
     }
   }, [searchParams]);
@@ -239,9 +259,127 @@ const UnifiedAuth = () => {
       setIsEmailVerified(false);
       setOtpValue('');
       setIsOtpSent(false);
+      // Reset forgot password state
+      setForgotPasswordStep(1);
+      setForgotPasswordEmail('');
+      setForgotPasswordOtp('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setIsForgotPasswordOtpSent(false);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Forgot Password Handlers
+  const handleSendForgotPasswordOtp = async () => {
+    if (!forgotPasswordEmail.trim()) {
+      toast.error('Please enter your email address');
+      return;
+    }
+
+    setIsForgotPasswordSendingOtp(true);
+    try {
+      const response = await otpService.sendPasswordResetOTP(forgotPasswordEmail.trim());
+      if (response.success) {
+        setIsForgotPasswordOtpSent(true);
+        setForgotPasswordStep(2);
+        toast.success('Password reset OTP sent to your email. Please check your inbox.');
+      } else {
+        toast.error(response.message || 'Failed to send OTP');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to send OTP');
+    } finally {
+      setIsForgotPasswordSendingOtp(false);
+    }
+  };
+
+  const handleVerifyForgotPasswordOtp = async () => {
+    if (!forgotPasswordOtp.trim()) {
+      toast.error('Please enter the OTP');
+      return;
+    }
+
+    setIsForgotPasswordVerifyingOtp(true);
+    try {
+      // For password reset, we don't verify the OTP here, we verify it during password reset
+      setForgotPasswordStep(3);
+      toast.success('OTP verified! Please enter your new password.');
+    } catch (error: any) {
+      toast.error(error.message || 'Invalid OTP');
+    } finally {
+      setIsForgotPasswordVerifyingOtp(false);
+    }
+  };
+
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword.trim() || !confirmPassword.trim()) {
+      toast.error('Please fill in all password fields');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      toast.error('Password must be at least 6 characters long');
+      return;
+    }
+
+    setIsResettingPassword(true);
+    try {
+      const response = await otpService.resetPasswordWithOTP(
+        forgotPasswordEmail.trim(),
+        forgotPasswordOtp.trim(),
+        newPassword.trim()
+      );
+
+      if (response.success) {
+        toast.success('Password reset successfully! Please login with your new password.');
+        // Reset form and go to login
+        setActiveTab('login');
+        setForgotPasswordStep(1);
+        setForgotPasswordEmail('');
+        setForgotPasswordOtp('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setIsForgotPasswordOtpSent(false);
+        setEmail(forgotPasswordEmail); // Pre-fill email in login form
+      } else {
+        toast.error(response.message || 'Failed to reset password');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to reset password');
+    } finally {
+      setIsResettingPassword(false);
+    }
+  };
+
+  const goBackToLoginFromForgotPassword = () => {
+    setActiveTab('login');
+    setForgotPasswordStep(1);
+    setForgotPasswordEmail('');
+    setForgotPasswordOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setIsForgotPasswordOtpSent(false);
+  };
+
+  const goBackToForgotPasswordEmail = () => {
+    setForgotPasswordStep(1);
+    setForgotPasswordOtp('');
+    setNewPassword('');
+    setConfirmPassword('');
+  };
+
+  const goBackToForgotPasswordOtp = () => {
+    setForgotPasswordStep(2);
+    setNewPassword('');
+    setConfirmPassword('');
   };
 
   return (
@@ -264,12 +402,15 @@ const UnifiedAuth = () => {
 
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-2">
+                <TabsList className="grid w-full grid-cols-3">
                   <TabsTrigger value="login" className="text-sm">
                     Login
                   </TabsTrigger>
                   <TabsTrigger value="signup" className="text-sm">
                     Sign Up
+                  </TabsTrigger>
+                  <TabsTrigger value="forgot-password" className="text-sm">
+                    Reset Password
                   </TabsTrigger>
                 </TabsList>
 
@@ -334,6 +475,16 @@ const UnifiedAuth = () => {
                       {isLoading ? 'Logging in...' : 'Login'}
                     </Button>
                   </form>
+
+                  <div className="text-center mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('forgot-password')}
+                      className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                      Forgot Password?
+                    </button>
+                  </div>
                 </TabsContent>
 
                 {/* Signup Tab */}
@@ -612,6 +763,230 @@ const UnifiedAuth = () => {
                           {isLoading
                             ? 'Creating Account...'
                             : `Create ${userTypes.find(t => t.id === selectedSignupRole)?.label} Account`}
+                        </Button>
+                      </form>
+                    </div>
+                  )}
+                </TabsContent>
+
+                {/* Forgot Password Tab */}
+                <TabsContent value="forgot-password" className="space-y-4 mt-4 sm:mt-6">
+                  {forgotPasswordStep === 1 ? (
+                    // Step 1: Email Input
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="text-center">
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                          Reset Your Password
+                        </h2>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                          Enter your email address to receive a password reset code
+                        </p>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="forgot-email" className="text-sm">
+                            Email Address
+                          </Label>
+                          <Input
+                            id="forgot-email"
+                            type="email"
+                            placeholder="Enter your email address"
+                            value={forgotPasswordEmail}
+                            onChange={e => setForgotPasswordEmail(e.target.value)}
+                            className="h-10 sm:h-11 text-sm"
+                            required
+                          />
+                        </div>
+
+                        <Button
+                          onClick={handleSendForgotPasswordOtp}
+                          className="w-full h-10 sm:h-11 text-sm"
+                          disabled={isForgotPasswordSendingOtp || !forgotPasswordEmail.trim()}
+                        >
+                          <Mail className="h-4 w-4 mr-2" />
+                          {isForgotPasswordSendingOtp ? 'Sending...' : 'Send Reset Code'}
+                        </Button>
+
+                        <div className="text-center">
+                          <button
+                            type="button"
+                            onClick={goBackToLoginFromForgotPassword}
+                            className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+                          >
+                            Back to Login
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : forgotPasswordStep === 2 ? (
+                    // Step 2: OTP Verification
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={goBackToForgotPasswordEmail}
+                          className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                        >
+                          <ArrowLeft className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <div className="min-w-0">
+                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                            Verify Code
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Enter the 6-digit code sent to your email
+                          </p>
+                        </div>
+                      </div>
+
+                      {forgotPasswordEmail && (
+                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="flex items-center space-x-2">
+                            <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm font-medium text-blue-800 truncate">
+                              Code sent to: {forgotPasswordEmail}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="forgot-otp" className="text-sm">
+                            Verification Code
+                          </Label>
+                          <Input
+                            id="forgot-otp"
+                            type="text"
+                            placeholder="Enter the 6-digit code"
+                            value={forgotPasswordOtp}
+                            onChange={e =>
+                              setForgotPasswordOtp(
+                                e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
+                              )
+                            }
+                            className="h-10 sm:h-11 text-sm text-center tracking-wider"
+                            maxLength={6}
+                            required
+                          />
+                        </div>
+
+                        <div className="flex space-x-2">
+                          <Button
+                            onClick={handleVerifyForgotPasswordOtp}
+                            className="flex-1 h-10 sm:h-11 text-sm"
+                            disabled={
+                              isForgotPasswordVerifyingOtp || forgotPasswordOtp.length !== 6
+                            }
+                          >
+                            <Shield className="h-4 w-4 mr-2" />
+                            {isForgotPasswordVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={goBackToForgotPasswordEmail}
+                            className="h-10 sm:h-11 text-sm px-3"
+                            disabled={isForgotPasswordSendingOtp || isForgotPasswordVerifyingOtp}
+                          >
+                            Change Email
+                          </Button>
+                        </div>
+
+                        <Button
+                          variant="ghost"
+                          onClick={handleSendForgotPasswordOtp}
+                          className="w-full h-10 sm:h-11 text-sm"
+                          disabled={isForgotPasswordSendingOtp}
+                        >
+                          {isForgotPasswordSendingOtp ? 'Resending...' : 'Resend Code'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Step 3: New Password
+                    <div className="space-y-4 sm:space-y-6">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={goBackToForgotPasswordOtp}
+                          className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                        >
+                          <ArrowLeft className="h-4 w-4 text-gray-600" />
+                        </button>
+                        <div className="min-w-0">
+                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+                            Set New Password
+                          </h2>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            Create a strong password for your account
+                          </p>
+                        </div>
+                      </div>
+
+                      {forgotPasswordEmail && (
+                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="flex items-center space-x-2">
+                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm font-medium text-green-800 truncate">
+                              Email verified: {forgotPasswordEmail}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleResetPassword} className="space-y-4">
+                        <div>
+                          <Label htmlFor="new-password" className="text-sm">
+                            New Password
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id="new-password"
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="Enter new password (min. 6 characters)"
+                              value={newPassword}
+                              onChange={e => setNewPassword(e.target.value)}
+                              className="h-10 sm:h-11 pr-10 text-sm"
+                              required
+                              minLength={6}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <Label htmlFor="confirm-password" className="text-sm">
+                            Confirm New Password
+                          </Label>
+                          <Input
+                            id="confirm-password"
+                            type="password"
+                            placeholder="Confirm your new password"
+                            value={confirmPassword}
+                            onChange={e => setConfirmPassword(e.target.value)}
+                            className="h-10 sm:h-11 text-sm"
+                            required
+                            minLength={6}
+                          />
+                        </div>
+
+                        <Button
+                          type="submit"
+                          className="w-full h-10 sm:h-11 text-sm"
+                          disabled={
+                            isResettingPassword || !newPassword.trim() || !confirmPassword.trim()
+                          }
+                        >
+                          {isResettingPassword ? 'Resetting Password...' : 'Reset Password'}
                         </Button>
                       </form>
                     </div>

@@ -29,7 +29,7 @@ const Testimonials = () => {
                   content:
                     'MinuteHire reduced our hiring time from weeks to days. The AI matching is incredibly accurate and has transformed our recruitment process completely!',
                   avatar:
-                    'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+                    'https://images.unsplash.com/photo-1701615004837-40d8573b6652?q=80&w=880&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                   company: 'TechCorp',
                 },
                 {
