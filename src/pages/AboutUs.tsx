@@ -233,11 +233,10 @@ const AboutUs = () => {
               ⚡ Simple Process
             </Badge>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 md:mb-6 text-gray-900">
-              How MinuteHire Works
+               Unlocking Efficiency: The MinuteHire Process
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto px-2">
-              From signup to success in just four simple steps. Our AI-powered platform makes hiring
-              and job searching effortless.
+              MinuteHire is a unified platform that simplifies hiring by providing all the tools you need to find, hire, and manage top talent with unmatched efficiency.
             </p>
           </div>
 
@@ -288,19 +287,17 @@ const AboutUs = () => {
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mr-3 md:mr-4">
                   <Target className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Mission</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Core Purpose</h2>
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-4 md:mb-6">
-                To transform the hiring landscape by providing intelligent, efficient, and fair
-                recruitment solutions that connect the right talent with the right opportunities. We
-                believe in creating a world where every job seeker finds their dream career and
-                every employer builds their ideal team.
+                We are on a mission to simplify the complex world of hiring and empower every individual to own their career path. By creating a seamless bridge between education and employment, we ensure talent finds opportunity and companies build their best teams. Our platform is designed to make the journey from the classroom to the boardroom—and every step in between—more efficient, transparent, and equitable for everyone involved.
+
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 {[
-                  { icon: Shield, text: 'Fair & Unbiased' },
-                  { icon: Zap, text: 'Lightning Fast' },
-                  { icon: Heart, text: 'Human-Centered' },
+                  { icon: Shield, text: 'Simplify the Process' },
+                  { icon: Zap, text: 'Empower Individuals' },
+                  { icon: Heart, text: 'Create Connections' },
                 ].map((item, index) => (
                   <div key={index} className="flex items-center p-3 bg-blue-50 rounded-lg">
                     <item.icon className="h-4 w-4 md:h-5 md:w-5 text-blue-600 mr-2 flex-shrink-0" />
@@ -335,19 +332,16 @@ const AboutUs = () => {
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mr-3 md:mr-4">
                   <Eye className="h-5 w-5 md:h-6 md:w-6 text-white" />
                 </div>
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Our Vision</h2>
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Envisioning the Future of Talent</h2>
               </div>
               <p className="text-base md:text-lg text-gray-600 leading-relaxed mb-4 md:mb-6">
-                To become the global leader in intelligent hiring solutions, creating a future where
-                talent discovery is instantaneous, fair, and mutually beneficial. We envision a
-                world where geographic boundaries don't limit opportunities and where skills are the
-                only currency that matters.
+                We envision a future where talent discovery is instantaneous, fair, and beneficial for all. Our goal is to become the leading platform where the best talent and top opportunities converge without geographical or professional boundaries. We see a world where skills are the only currency that matters, and every individual is empowered to thrive in a career that fulfills them.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4">
                 {[
-                  { icon: Globe, text: 'Global Reach' },
-                  { icon: Rocket, text: 'Innovation First' },
-                  { icon: Users, text: 'Community Driven' },
+                  { icon: Globe, text: 'Seamless Connections' },
+                  { icon: Rocket, text: 'Empowering Potential' },
+                  { icon: Users, text: 'Beyond Boundaries' },
                 ].map((item, index) => (
                   <div key={index} className="flex items-center p-3 bg-purple-50 rounded-lg">
                     <item.icon className="h-4 w-4 md:h-5 md:w-5 text-purple-600 mr-2 flex-shrink-0" />
