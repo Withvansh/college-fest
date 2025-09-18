@@ -33,6 +33,10 @@ import {
   Rocket,
 } from 'lucide-react';
 
+// Central toggle to enable/disable signup per role. Remove from set to enable later.
+const DISABLED_SIGNUP_ROLES = new Set<UserRole>(['freelancer', 'client']);
+const isRoleEnabled = (role: UserRole) => !DISABLED_SIGNUP_ROLES.has(role);
+
 // Now includes student and startup roles for direct registration
 const userTypes = [
   {
@@ -55,6 +59,7 @@ const userTypes = [
     icon: Code,
     color: 'from-purple-500 to-pink-600',
     description: 'Showcase your skills',
+    comingSoon: !isRoleEnabled('freelancer' as UserRole),
   },
   {
     id: 'client' as UserRole,
@@ -62,6 +67,7 @@ const userTypes = [
     icon: Building2,
     color: 'from-blue-500 to-green-600',
     description: 'Hire freelancers',
+    comingSoon: !isRoleEnabled('client' as UserRole),
   },
   {
     id: 'college' as UserRole,
@@ -160,6 +166,11 @@ const UnifiedAuth = () => {
   }, [searchParams]);
 
   const handleSignupRoleSelect = (role: UserRole) => {
+    if (!isRoleEnabled(role)) {
+      const roleLabel = userTypes.find(t => t.id === role)?.label || 'This role';
+      toast.info(`${roleLabel} signup is coming soon.`);
+      return;
+    }
     setSelectedSignupRole(role);
     setSignupStep(2);
   };
@@ -506,11 +517,18 @@ const UnifiedAuth = () => {
                           .filter(type => type.id !== 'super_admin') // Exclude super admin from signup
                           .map(type => {
                             const Icon = type.icon;
+                            const disabled = !isRoleEnabled(type.id);
                             return (
                               <button
                                 key={type.id}
                                 onClick={() => handleSignupRoleSelect(type.id)}
-                                className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left group"
+                                disabled={disabled}
+                                aria-disabled={disabled}
+                                className={`w-full p-3 sm:p-4 rounded-lg border-2 text-left group transition-all duration-200 ${
+                                  disabled
+                                    ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-70'
+                                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                                }`}
                               >
                                 <div className="flex items-center space-x-3">
                                   <div
@@ -526,7 +544,13 @@ const UnifiedAuth = () => {
                                       {type.description}
                                     </div>
                                   </div>
-                                  <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                                  {disabled ? (
+                                    <span className="text-[10px] sm:text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700 flex-shrink-0">
+                                      Coming soon
+                                    </span>
+                                  ) : (
+                                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                                  )}
                                 </div>
                               </button>
                             );

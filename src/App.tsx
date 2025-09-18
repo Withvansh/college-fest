@@ -209,7 +209,7 @@ const App = () => {
                     <Route
                       path="/jobseeker/applications"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['jobseeker', 'student']}>
+                        <UnifiedProtectedRoute allowedRoles={['jobseeker', 'student',"startup","client","freelancer","college"]}>
                           <JobSeekerApplications />
                         </UnifiedProtectedRoute>
                       }
