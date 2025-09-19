@@ -8,27 +8,15 @@ const RecruiterDashboard = () => {
   const { dashboard, loading: dashboardLoading, error } = useRecruiterDashboard();
   const navigate = useNavigate();
 
-  console.log('RecruiterDashboard - Component state:', {
-    user: !!user,
-    userRole: user?.role,
-    authLoading,
-    dashboardLoading,
-    dashboard: !!dashboard,
-    dashboardId: dashboard?.id,
-    error,
-  });
-
   useEffect(() => {
     // If we have a dashboard, redirect to the specific dashboard URL
     if (dashboard && !dashboardLoading && !authLoading) {
       const dashboardUrl = `/recruiter/dashboard/${dashboard.id}`;
-      console.log('✅ Redirecting to dashboard:', dashboardUrl);
       navigate(dashboardUrl, { replace: true });
     }
   }, [dashboard, dashboardLoading, authLoading, navigate]);
 
   if (authLoading || dashboardLoading) {
-    console.log('⏳ Loading state - auth:', authLoading, 'dashboard:', dashboardLoading);
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">
@@ -41,18 +29,18 @@ const RecruiterDashboard = () => {
   }
 
   if (!user) {
-    console.log('❌ No user found, redirecting to auth');
+  
     return <Navigate to="/auth/recruiter" replace />;
   }
 
   if (user.role !== 'recruiter') {
-    console.log('❌ User role is not recruiter:', user.role);
+   
     return <Navigate to="/" replace />;
   }
 
   // If there's an error loading the dashboard, show error state
   if (error) {
-    console.log('❌ Dashboard error:', error);
+   
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
         <div className="text-center">

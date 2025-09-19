@@ -44,7 +44,7 @@ axiosInstance.interceptors.response.use(
       localStorage.removeItem('userId');
       
       // Redirect to login if needed
-      if (window.location.pathname !== '/auth/login') {
+      if (window.location.pathname !== '/auth?tab=login') {
         console.log('Authentication failed, redirecting to login');
       }
     }

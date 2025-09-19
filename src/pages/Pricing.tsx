@@ -32,6 +32,11 @@ import { Link } from 'react-router-dom';
 import { PremiumSubscriptionModal } from '@/components/PremiumSubscriptionModal';
 import FloatingActionButtons from '@/components/FloatingActionButtons';
 import Footer from '@/components/Footer';
+import { packageApi } from '@/lib/api/package';
+import type { Package as ApiPackage } from '@/types/package';
+import PhonePePayment from '@/components/PhonePePayment';
+import { getToken } from '@/lib/utils/storage';
+import { toast } from 'sonner';
 
 // Custom styles for animations
 const customStyles = `
@@ -85,6 +90,10 @@ const Pricing = () => {
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: string } | null>(null);
   const [activeTab, setActiveTab] = useState('individual');
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [individualPlans, setIndividualPlans] = useState<any[]>([]);
+  const [businessPlans, setBusinessPlans] = useState<any[]>([]);
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -93,234 +102,46 @@ const Pricing = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const individualPlans = [
-    {
-      name: 'Free',
-      price: 'Free',
-      yearlyPrice: 'Free',
-      category: 'Job Seekers',
-      icon: <Heart className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-emerald-400 to-teal-500',
-      description: 'Perfect for getting started on your career journey',
-      features: [
-        'Create professional profile',
-        'Apply to jobs',
-        'Basic skill tests (1/month)',
-        'Basic job recommendations',
-        'Email support',
-      ],
-      cta: 'Get Started Free',
-      ctaLink: '/auth/jobseeker',
-    },
-    {
-      name: 'Elite',
-      price: '₹699',
-      yearlyPrice: '₹6,990',
-      category: 'Job Seekers',
-      icon: <Crown className="h-6 w-6" />,
-      popular: true,
-      gradient: 'from-blue-500 to-indigo-600',
-      description: 'AI-powered career acceleration with coaching',
-      features: [
-        'Everything in Free',
-        'AI Resume Feedback',
-        'Unlimited Applications',
-        'Career Coaching',
-        'Premium Training',
-        'Interview Preparation',
-        'Unlimited skill tests',
-        'Priority support',
-      ],
-      cta: 'Start Free Trial',
-      ctaLink: '/auth/jobseeker',
-    },
-    {
-      name: 'Basic',
-      price: 'Free',
-      yearlyPrice: 'Free',
-      category: 'Freelancers',
-      icon: <Briefcase className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-orange-400 to-red-500',
-      description: 'Explore freelancing opportunities',
-      features: [
-        'Explore available gigs',
-        'Build freelancer profile',
-        'Basic project browsing',
-        'Contact freelancers',
-        'Community access',
-      ],
-      cta: 'Start Free',
-      ctaLink: '/freelancer-login',
-    },
-    {
-      name: 'Pro',
-      price: '₹599',
-      yearlyPrice: '₹5,990',
-      category: 'Freelancers',
-      icon: <Rocket className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-cyan-400 to-blue-500',
-      description: 'Professional freelancing with full features',
-      features: [
-        'Everything in Basic',
-        'Apply to gigs',
-        'Unlimited bids',
-        'Portfolio hosting',
-        'Payment protection',
-        'Project management tools',
-        'Priority support',
-      ],
-      cta: 'Upgrade to Pro',
-      ctaLink: '/freelancer-login',
-    },
-    {
-      name: 'Client Free',
-      price: 'Free',
-      yearlyPrice: 'Free',
-      category: 'Clients (Hiring Freelancers)',
-      icon: <Building2 className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-purple-400 to-pink-500',
-      description: 'Start hiring freelancers',
-      features: [
-        'Post projects',
-        'Browse freelancers',
-        'Basic communication',
-        'View portfolios',
-        'Community access',
-      ],
-      cta: 'Start Hiring',
-      ctaLink: '/client-login',
-    },
-    {
-      name: 'Client Pro',
-      price: '₹599',
-      yearlyPrice: '₹5,990',
-      category: 'Clients (Hiring Freelancers)',
-      icon: <Shield className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-indigo-500 to-purple-600',
-      description: 'Advanced project management for clients',
-      features: [
-        'Everything in Free',
-        'Project management dashboard',
-        'Milestone tracking',
-        'Escrow payments',
-        'Advanced freelancer search',
-        'Priority support',
-      ],
-      cta: 'Upgrade to Pro',
-      ctaLink: '/client-login',
-    },
-  ];
+  const iconFromName = (name: string) => {
+    const map: Record<string, JSX.Element> = {
+      Heart: <Heart className="w-6 h-6" />,
+      Crown: <Crown className="w-6 h-6" />,
+      Briefcase: <Briefcase className="w-6 h-6" />,
+      Rocket: <Rocket className="w-6 h-6" />,
+      Building2: <Building2 className="w-6 h-6" />,
+      Shield: <Shield className="w-6 h-6" />,
+      Sparkles: <Sparkles className="w-6 h-6" />,
+      GraduationCap: <GraduationCap className="w-6 h-6" />,
+      Users: <Users className="w-6 h-6" />,
+      Zap: <Zap className="w-6 h-6" />,
+      Star: <Star className="w-6 h-6" />,
+    };
+    return map[name] || <Star className="w-6 h-6" />;
+  };
 
-  const businessPlans = [
-    {
-      name: 'HR Free',
-      price: 'Free',
-      yearlyPrice: 'Free',
-      category: 'HR / Recruiters',
-      icon: <Building2 className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-green-400 to-emerald-500',
-      description: 'Essential hiring tools for small teams',
-      features: [
-        'Post jobs',
-        'View applicants',
-        'Basic candidate management',
-        'Email notifications',
-        'Basic analytics',
-      ],
-      cta: 'Start Free',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'HRMS',
-      price: '₹599',
-      yearlyPrice: '₹5,990',
-      category: 'HR / Recruiters',
-      icon: <Shield className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-blue-500 to-cyan-500',
-      description: 'Complete HR management system',
-      features: [
-        'Everything in Free',
-        'Attendance management',
-        'Payroll processing',
-        'Leave management',
-        'Employee database',
-        'HR analytics',
-        'Document management',
-      ],
-      cta: 'Get HRMS',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'AI Screening & Interview',
-      price: '₹1,499',
-      yearlyPrice: '₹14,990',
-      category: 'HR / Recruiters',
-      icon: <Sparkles className="h-6 w-6" />,
-      popular: true,
-      gradient: 'from-purple-500 to-pink-600',
-      description: 'AI-powered recruitment automation',
-      features: [
-        'Everything in HRMS',
-        'AI-driven candidate shortlisting',
-        'Automated interview scheduling',
-        'Video interview platform',
-        'AI assessment tools',
-        'Candidate scoring',
-        'Interview automation',
-      ],
-      cta: 'Try AI Screening',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'Complete Package',
-      price: '₹1,999',
-      yearlyPrice: '₹19,990',
-      category: 'HR / Recruiters',
-      icon: <Crown className="h-6 w-6" />,
-      popular: false,
-      gradient: 'from-indigo-600 to-purple-700',
-      description: 'All-in-one HR & recruitment solution',
-      features: [
-        'HRMS + AI Screening',
-        'Advanced job posting',
-        'Compliance management',
-        'Advanced analytics',
-        'Custom integrations',
-        'Priority support',
-        'Training & onboarding',
-      ],
-      cta: 'Get Complete Package',
-      ctaLink: '/auth/recruiter',
-    },
-    {
-      name: 'Campus Elite',
-      price: '₹1,499',
-      yearlyPrice: '₹14,990',
-      category: 'Campus (Colleges / CRC)',
-      icon: <Crown className="h-6 w-6" />,
-      popular: true,
-      gradient: 'from-purple-500 to-pink-600',
-      description: 'Complete campus placement automation',
-      features: [
-        'Everything in Growth',
-        'Unlimited placement drives',
-        'Automated scheduling',
-        'AI skill gap analysis',
-        'Recruiter CRM',
-        'Custom reporting',
-        'Dedicated support',
-      ],
-      cta: 'Go Elite',
-      ctaLink: '/college-login',
-    },
-  ];
+  const formatPrice = (amount?: number) => {
+    if (amount === undefined || amount === null) return '';
+    if (amount === 0) return 'Free';
+    return `₹${amount}`;
+  };
+
+  const isIndividualCategory = (category: string) => {
+    const groups = [
+      'Job Seekers',
+      'Freelancers',
+      'Clients (Hiring Freelancers)'
+    ];
+    return groups.includes(category);
+  };
+
+  const buildUiPlan = (p: ApiPackage) => ({
+    ...p,
+    rawPrice: p.price,
+    rawYearlyPrice: p.yearlyPrice,
+    icon: iconFromName(p.icon),
+    price: p.price === 0 ? 'Free' : formatPrice(p.price),
+    yearlyPrice: p.yearlyPrice === 0 ? 'Free' : formatPrice(p.yearlyPrice),
+  });
 
   const comparisonFeatures = [
     {
@@ -467,7 +288,29 @@ const Pricing = () => {
         "Yes, you can cancel your subscription anytime. You'll continue to have access until the end of your current billing period, then automatically switch to the free plan.",
     },
   ];
+  const fetchPackages = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await packageApi.getAllPackages();
+      const packages: ApiPackage[] = Array.isArray(response?.data) ? response.data : (Array.isArray(response) ? response : []);
 
+      const uiPlans = packages.map(buildUiPlan).filter((p: any) => p.isActive);
+      const individuals = uiPlans.filter((p: any) => isIndividualCategory(p.category));
+      const business = uiPlans.filter((p: any) => !isIndividualCategory(p.category));
+
+      setIndividualPlans(individuals);
+      setBusinessPlans(business);
+    } catch (err: any) {
+      setError(err?.message || 'Failed to load plans');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPackages();
+  }, []);
   const handleGetStarted = (plan: any) => {
     if (plan.price === 'Custom' || plan.cta === 'Talk to Sales') {
       // Handle contact sales
@@ -475,7 +318,7 @@ const Pricing = () => {
       return;
     }
 
-    if (plan.price === 'Free') {
+    if (plan.price === 'Free' || plan.price === 0) {
       // Direct to login/signup
       window.location.href = plan.ctaLink;
       return;
@@ -571,18 +414,53 @@ const Pricing = () => {
 
         <CardFooter className="px-4 sm:px-6 pb-4 sm:pb-6 mt-auto relative z-10">
           <div className="w-full space-y-2">
-            <Button
-              onClick={() => handleGetStarted(plan)}
-              className={`w-full py-2 sm:py-2.5 font-semibold transition-all duration-300 text-xs sm:text-sm ${
-                isPopular
-                  ? `bg-gradient-to-r ${plan.gradient} hover:shadow-2xl hover:shadow-blue-500/40 text-white border-0`
-                  : `bg-gradient-to-r ${plan.gradient} text-white hover:shadow-xl border-0 hover:scale-105`
-              }`}
-              size="sm"
-            >
-              <span>{plan.cta}</span>
-              <ArrowRight className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
+            {plan.price === 'Free' || plan.price === 'Custom' ? (
+              <Button
+                onClick={() => handleGetStarted(plan)}
+                className={`w-full py-2 sm:py-2.5 font-semibold transition-all duration-300 text-xs sm:text-sm ${
+                  isPopular
+                    ? `bg-gradient-to-r ${plan.gradient} hover:shadow-2xl hover:shadow-blue-500/40 text-white border-0`
+                    : `bg-gradient-to-r ${plan.gradient} text-white hover:shadow-xl border-0 hover:scale-105`
+                }`}
+                size="sm"
+              >
+                <span>{plan.cta}</span>
+                <ArrowRight className="w-3 h-3 ml-2 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            ) : (
+              (() => {
+                const token = getToken();
+                if (!token) {
+                  return (
+                    <Button
+                      onClick={() => {
+                        toast.info('Please login to purchase a plan');
+                        window.location.href = plan.ctaLink || '/auth/jobseeker';
+                      }}
+                      className={`w-full py-2 sm:py-2.5 font-semibold transition-all duration-300 text-xs sm:text-sm ${
+                        isPopular
+                          ? `bg-gradient-to-r ${plan.gradient} hover:shadow-2xl hover:shadow-blue-500/40 text-white border-0`
+                          : `bg-gradient-to-r ${plan.gradient} text-white hover:shadow-xl border-0 hover:scale-105`
+                      }`}
+                      size="sm"
+                    >
+                      Login to Purchase
+                    </Button>
+                  );
+                }
+                return (
+                  <PhonePePayment
+                    planName={plan.name}
+                    planAmount={isYearly ? plan.rawYearlyPrice : plan.rawPrice}
+                    className={`w-full ${isPopular ? '' : ''}`}
+                    size="sm"
+                    requireEmail={false}
+                  >
+                    Pay with PhonePe
+                  </PhonePePayment>
+                );
+              })()
+            )}
 
             {plan.price !== 'Custom' && plan.price !== 'Free' && (
               <p className="text-xs text-gray-500 text-center">

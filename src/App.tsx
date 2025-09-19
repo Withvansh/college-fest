@@ -209,7 +209,7 @@ const App = () => {
                     <Route
                       path="/jobseeker/applications"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['jobseeker', 'Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['jobseeker', 'student',"startup","client","freelancer","college"]}>
                           <JobSeekerApplications />
                         </UnifiedProtectedRoute>
                       }
@@ -570,7 +570,7 @@ const App = () => {
                     <Route
                       path="/student/dashboard"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['student']}>
                           <StudentDashboard />
                         </UnifiedProtectedRoute>
                       }
@@ -578,7 +578,7 @@ const App = () => {
                     <Route
                       path="/student/counsellor"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['student']}>
                           <Counsellor />
                         </UnifiedProtectedRoute>
                       }
@@ -586,7 +586,7 @@ const App = () => {
                     <Route
                       path="/student/profile"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['student']}>
                           <StudentProfile />
                         </UnifiedProtectedRoute>
                       }
@@ -594,7 +594,7 @@ const App = () => {
                     <Route
                       path="/student/drive/:driveId"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['student']}>
                           <ViewPlacementDriveStudent />
                         </UnifiedProtectedRoute>
                       }
@@ -602,7 +602,7 @@ const App = () => {
                     <Route
                       path="/student/analytics"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['Student']}>
+                        <UnifiedProtectedRoute allowedRoles={['student']}>
                           <StudentAnalytics />
                         </UnifiedProtectedRoute>
                       }
@@ -636,7 +636,7 @@ const App = () => {
                             'freelancer',
                             'client',
                             'college',
-                            'Student',
+                            'student',
                             'startup',
                           ]}
                         >

@@ -211,10 +211,10 @@ SetRecentPlaced(response)
               <Users className="h-5 w-5 sm:h-6 sm:w-6 opacity-90 flex-shrink-0 ml-2" />
             </CardHeader>
             <CardContent className="relative z-10 px-3 sm:px-4 pb-3 sm:pb-4">
-              <div className="text-lg sm:text-xl md:text-2xl font-bold">
+              {/* <div className="text-lg sm:text-xl md:text-2xl font-bold">
                 {dashboardData?.stats?.totalDrives || 0}
-              </div>
-              <p className="text-xs sm:text-sm opacity-90 mt-1">Total Students</p>
+              </div> */}
+              
             </CardContent>
           </Card>
 

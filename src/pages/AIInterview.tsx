@@ -215,12 +215,13 @@ const AIInterview = () => {
 
               {/* Start Button */}
               <Button 
-                onClick={handleStartInterview}
+                // onClick={handleStartInterview}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg"
                 size="lg"
               >
                 <Bot className="h-5 w-5 mr-2" />
                 Start AI Interview
+                Coming soon...
               </Button>
             </CardContent>
           </Card>

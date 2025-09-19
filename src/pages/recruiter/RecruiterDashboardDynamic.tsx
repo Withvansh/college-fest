@@ -81,7 +81,6 @@ const RecruiterDashboardDynamic = () => {
 
   const loadDashboard = useCallback(async () => {
     if (!user || !dashboardId) {
-      console.log('❌ loadDashboard: Missing user or dashboardId');
       return;
     }
 
@@ -89,14 +88,10 @@ const RecruiterDashboardDynamic = () => {
       setLoading(true);
       setError(null);
 
-      console.log('🔄 Loading dashboard for user:', user._id, 'dashboardId:', dashboardId);
-
       // First get the user's dashboard to verify ownership
       const userDashboard = await recruiterDashboardsApi.getDashboard(user._id);
-      console.log('📊 User dashboard fetched:', userDashboard);
 
       if (!userDashboard) {
-        console.log('❌ No dashboard found for user, redirecting to HRMS');
         toast.error('Dashboard not found. Redirecting to HRMS workspace.');
         navigate('/recruiter/hrms', { replace: true });
         return;
@@ -110,7 +105,6 @@ const RecruiterDashboardDynamic = () => {
 
       try {
         const jobsResponse = await recruiterDashboardsApi.getJobs(user._id, 1, 10);
-        console.log('🏢 Jobs fetched:', jobsResponse);
 
         // Handle the expected response structure
         const jobsArray = jobsResponse?.jobs || [];
@@ -136,7 +130,6 @@ const RecruiterDashboardDynamic = () => {
                   1,
                   1
                 );
-                console.log(`📊 Full response for job ${job.title}:`, applicationsResponse);
 
                 // Handle both possible response structures
                 const total =
@@ -145,8 +138,6 @@ const RecruiterDashboardDynamic = () => {
                   (Array.isArray(applicationsResponse?.applications)
                     ? applicationsResponse.applications.length
                     : 0);
-
-                console.log(`📊 Applications count for job ${job.title}:`, total);
 
                 return {
                   ...job,
@@ -167,7 +158,6 @@ const RecruiterDashboardDynamic = () => {
               if (result.status === 'fulfilled') {
                 return result.value;
               } else {
-                console.warn('Job application count failed:', result.reason);
                 // Find the original job from the failed attempt
                 const failedJob = realJobs.find(job => job._id);
                 return failedJob || realJobs[0];
@@ -183,7 +173,6 @@ const RecruiterDashboardDynamic = () => {
       // Fetch recent applications
       try {
         const applicationsResponse = await recruiterDashboardsApi.getApplications(user._id, 1, 10);
-        console.log('📋 Applications fetched successfully:', applicationsResponse);
 
         // Updated to use the correct response structure
         const applicationsArray = applicationsResponse.applications || [];
@@ -192,11 +181,7 @@ const RecruiterDashboardDynamic = () => {
           : applicationsResponse.total || 0;
 
         if (Array.isArray(applicationsArray)) {
-          console.log('📋 Processing applications data:', applicationsArray);
-
           realApplications = applicationsArray.map((application, index) => {
-            console.log(`📝 Processing application ${index + 1}:`, application);
-
             // Handle the actual API response structure
             const applicantName = application?.applicant_id?.full_name || 'Unknown Applicant';
             const applicantEmail = application?.applicant_id?.email || 'No email';
@@ -234,7 +219,6 @@ const RecruiterDashboardDynamic = () => {
                               : 'Applied',
             };
 
-            console.log(`✅ Processed application:`, processedApplication);
             return processedApplication;
           });
 
@@ -242,11 +226,6 @@ const RecruiterDashboardDynamic = () => {
           pendingApplicationsCount = applicationsArray.filter(app =>
             ['applied', 'reviewed', 'shortlisted', 'interview_scheduled'].includes(app.status)
           ).length;
-
-          console.log('✅ Final processed applications:', realApplications);
-          console.log(
-            `📊 Pending applications: ${pendingApplicationsCount} out of ${totalApplicationsCount} total`
-          );
         }
       } catch (applicationError) {
         console.warn(
@@ -304,7 +283,6 @@ const RecruiterDashboardDynamic = () => {
 
       setDashboard(dashboardData);
     } catch (err) {
-      console.error('💥 Error loading dashboard:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to load dashboard';
       setError(errorMessage);
       toast.error('Failed to load dashboard. Redirecting to HRMS workspace.');
@@ -724,7 +702,7 @@ const RecruiterDashboardDynamic = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboard.mockData.testResults.map(result => (
+                  {/* {dashboard.mockData.testResults.map(result => (
                     <div
                       key={result._id}
                       className="flex items-center justify-between p-4 border rounded-lg"
@@ -748,7 +726,7 @@ const RecruiterDashboardDynamic = () => {
                         </div>
                       </div>
                     </div>
-                  ))}
+                  ))} */}
                 </div>
               </CardContent>
             </Card>
@@ -772,19 +750,19 @@ const RecruiterDashboardDynamic = () => {
                 </Card>
               </Link>
 
-              <Link to="/recruiter/create-test" className="block">
+              {/* <Link to="/recruiter/create-test" className="block"> */}
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-sm">
                       <TestTube className="mr-2 h-4 w-4 text-green-600" />
-                      Create Test
+                      Create Test Coming Soon....
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="text-gray-600 text-xs">Design assessment tests for candidates.</p>
                   </CardContent>
                 </Card>
-              </Link>
+              {/* </Link> */}
 
               <Link to="/recruiter/college/drives" className="block">
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
@@ -799,12 +777,12 @@ const RecruiterDashboardDynamic = () => {
                   </CardContent>
                 </Card>
               </Link>
-              <Link to="/recruiter/hrms" className="block">
+              {/* <Link to="/recruiter/hrms" className="block"> */}
                 <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <CardTitle className="flex items-center text-sm">
                       <Building2 className="mr-2 h-4 w-4 text-purple-600" />
-                      HRMS
+                      HRMS Coming Soon....
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -813,7 +791,7 @@ const RecruiterDashboardDynamic = () => {
                     </p>
                   </CardContent>
                 </Card>
-              </Link>
+              {/* </Link> */}
             </div>
           </div>
         </div>
@@ -834,7 +812,6 @@ const RecruiterDashboardDynamic = () => {
         isOpen={isManageStartupsOpen}
         onClose={() => setIsManageStartupsOpen(false)}
         onStartupSelect={startup => {
-          console.log('Selected startup:', startup);
           toast.success(`Switched to ${startup.startup_name}`);
         }}
       />

@@ -185,21 +185,20 @@ const LandingPage = () => {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 w-full">
       {/* Hero Section - Enhanced */}
       <div className="relative overflow-hidden w-full min-h-screen flex items-center bg-white">
-        {/* Noise Texture (Darker Dots) Background */}
-        {/* <div
-          className="absolute inset-0 z-0"
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-15"
           style={{
-            background: '#ffffff',
-            backgroundImage:
-              'radial-gradient(circle at 1px 1px, rgba(0, 0, 0, 0.35) 1px, transparent 0)',
-            backgroundSize: '15px 15px',
+            backgroundImage: `url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')`
           }}
-        /> */}
-        {/* Enhanced Animated Background Shapes - Responsive */}
-        <div className="absolute top-5 sm:top-10 left-5 sm:left-10 w-48 h-48 sm:w-80 sm:h-80 lg:w-[32rem] lg:h-[32rem] bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse"></div>
-        <div className="absolute top-16 sm:top-32 right-5 sm:right-10 w-44 h-44 sm:w-72 sm:h-72 lg:w-[28rem] lg:h-[28rem] bg-gradient-to-r from-purple-400/40 to-pink-400/40 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse delay-1000"></div>
-        <div className="absolute bottom-5 sm:bottom-10 left-1/2 w-48 h-48 sm:w-80 sm:h-80 lg:w-[30rem] lg:h-[30rem] bg-gradient-to-r from-indigo-400/40 to-blue-400/40 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse delay-2000"></div>
-        <div className="absolute top-1/2 left-1/4 w-40 h-40 sm:w-64 sm:h-64 lg:w-[24rem] lg:h-[24rem] bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full mix-blend-multiply filter blur-xl sm:blur-2xl animate-pulse delay-3000"></div>
+        ></div>
+
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-purple-900/20 to-indigo-900/30"></div>
+        
+        {/* Enhanced Animated Background Shapes */}
+        <div className="absolute top-10 left-10 w-[32rem] h-[32rem] bg-gradient-to-r from-blue-400/40 to-cyan-400/40 rounded-full mix-blend-multiply filter blur-2xl animate-pulse"></div>
+        <div className="absolute top-32 right-10 w-[28rem] h-[28rem] bg-gradient-to-r from-purple-400/40 to-pink-400/40 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-1000"></div>
+        <div className="absolute bottom-10 left-1/2 w-[30rem] h-[30rem] bg-gradient-to-r from-indigo-400/40 to-blue-400/40 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-2000"></div>
+        <div className="absolute top-1/2 left-1/4 w-[24rem] h-[24rem] bg-gradient-to-r from-emerald-400/30 to-teal-400/30 rounded-full mix-blend-multiply filter blur-2xl animate-pulse delay-3000"></div>
 
         <div className="w-full px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20 relative z-10">
           <div className="text-center max-w-7xl mx-auto">
@@ -213,7 +212,7 @@ const LandingPage = () => {
             {/* Enhanced Main Heading */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-4xl xl:text-6xl font-extrabold mb-4 sm:mb-6  animate-fade-in">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-700 bg-clip-text text-transparent 
-               drop-shadow-lg">
+               drop-shadow-lg leading-normal">
                 Find your dream job in Minutes
               </span>
               <br />

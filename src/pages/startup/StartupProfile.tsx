@@ -554,7 +554,7 @@ const StartupProfile = () => {
                 <CardTitle>Profile Settings</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <div>
                     <h4 className="font-medium">Public Profile</h4>
                     <p className="text-sm text-gray-600">
@@ -569,7 +569,7 @@ const StartupProfile = () => {
                     disabled={!isEditing}
                   />
                 </div>
-                
+                 */}
                 {/* Hiring Status Toggle */}
                 <div className="flex items-center justify-between pt-4 border-t">
                   <div>

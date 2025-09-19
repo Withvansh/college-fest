@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { useRoleToggle } from '@/contexts/RoleToggleContext';
 import { toast } from 'sonner';
 import axios from '@/lib/utils/axios';
 import {
@@ -31,8 +30,9 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  ToggleLeft,
-  ToggleRight,
+  Menu,
+  X,
+  Info,
 } from 'lucide-react';
 
 interface StartupData {
@@ -49,6 +49,7 @@ interface StartupData {
   funding_stage?: string;
   employees_count?: number;
   logo_url?: string;
+  hiring?: boolean;
 }
 
 interface JobOpening {
@@ -91,18 +92,12 @@ interface Notification {
 
 const StartupDashboard = () => {
   const { user } = useAuth();
-  const { activeRole, switchToRole, getCurrentRoleDisplay, getRoleColor, isRoleSwitching } =
-    useRoleToggle();
   const navigate = useNavigate();
 
   // State management
   const [startupData, setStartupData] = useState<StartupData | null>(null);
-  const [jobOpenings, setJobOpenings] = useState<JobOpening[]>([]);
-  const [recentApplications, setRecentApplications] = useState<Application[]>([]);
-  const [stats, setStats] = useState<StartupStats | null>(null);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -111,30 +106,10 @@ const StartupDashboard = () => {
       try {
         setLoading(true);
 
-        // Load startup data
-        const startupRes = await axios.get(`/dashboard/${user._id}`);
-        setStartupData(startupRes.data.startup);
-
-        // Load dashboard stats
-        const dashboardRes = await axios.get(`/startup/dashboard/${user._id}`);
-        const dashboardData = dashboardRes.data;
-
-        setStats({
-          total_jobs: dashboardData.total_jobs || 0,
-          active_jobs: dashboardData.active_jobs || 0,
-          total_applications: dashboardData.total_applications || 0,
-          pending_applications: dashboardData.pending_applications || 0,
-          hired_candidates: dashboardData.hired_candidates || 0,
-          interviews_scheduled: dashboardData.interviews_scheduled || 0,
-        });
-
-        // Load job openings
-        const jobsRes = await axios.get(`/startup/${user._id}/jobs`);
-        setJobOpenings(jobsRes.data.jobs || []);
-
-        // Load notifications
-        const notificationsRes = await axios.get(`/startup/${user._id}/notifications`);
-        setNotifications(notificationsRes.data.notifications || []);
+        // Load startup data only
+        const startupRes = await axios.get(`/startups/dashboard/${user._id}`);
+        console.log(startupRes.data.data.startup)
+        setStartupData(startupRes.data.data.startup);
       } catch (error) {
         console.error('Error loading dashboard data:', error);
         toast.error('Failed to load dashboard data');
@@ -161,143 +136,180 @@ const StartupDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-pink-50">
-      {/* Header */}
+      {/* Responsive Header */}
       <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Link to="/" className="flex items-center space-x-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo and Brand */}
+            <div className="flex items-center space-x-3">
+              <Link to="/" className="flex items-center space-x-2">
                 <img
                   src="/lovable-uploads/0f6e5659-1efd-46cc-a890-d5abc0f69f2b.png"
                   alt="MinuteHire Logo"
                   className="h-8 w-auto"
                 />
-                <span className="text-lg font-bold text-gray-800">MinuteHire</span>
+                <span className="hidden sm:block text-lg font-bold text-gray-800">MinuteHire</span>
               </Link>
-              <Badge
-                variant="secondary"
-                className={`bg-${getRoleColor()}-100 text-${getRoleColor()}-700`}
-              >
-                {getCurrentRoleDisplay()} Dashboard
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700 hidden sm:inline-flex">
+                Startup Dashboard
               </Badge>
             </div>
-            <div className="flex items-center space-x-4">
-              {/* Role Toggle */}
-              <div className="flex items-center space-x-3 bg-gray-100 rounded-lg p-1">
-                <Button
-                  variant={activeRole === 'startup' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => switchToRole('startup')}
-                  disabled={isRoleSwitching}
-                  className={`px-3 py-1 text-xs ${
-                    activeRole === 'startup'
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : 'text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Building2 className="h-3 w-3 mr-1" />
-                  Startup
-                </Button>
-                <Button
-                  variant={activeRole === 'recruiter' ? 'default' : 'ghost'}
-                  size="sm"
-                  onClick={() => switchToRole('recruiter')}
-                  disabled={isRoleSwitching}
-                  className={`px-3 py-1 text-xs ${
-                    activeRole === 'recruiter'
-                      ? 'bg-blue-600 text-white hover:bg-blue-700'
-                      : 'text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  <Users className="h-3 w-3 mr-1" />
-                  Recruiter
-                </Button>
-              </div>
 
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-3">
               <Button variant="outline" size="sm" asChild>
                 <Link to="/startup/profile">
                   <User className="h-4 w-4 mr-2" />
                   Profile
                 </Link>
               </Button>
-              <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
-                <Plus className="h-4 w-4 mr-2" />
-                Post Job
+            <Button
+  variant="outline"
+  size="sm"
+  onClick={() => {
+    localStorage.clear();
+    navigate("/auth?tab=login");
+  }}
+>
+  <Users className="h-4 w-4 mr-2" />
+  Login as Recruiter
+</Button>
+
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </Button>
             </div>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t border-gray-200 py-4 space-y-2">
+              <Badge variant="secondary" className="bg-purple-100 text-purple-700 mb-3">
+                Startup Dashboard
+              </Badge>
+              <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
+                <Link to="/startup/profile" onClick={() => setMobileMenuOpen(false)}>
+                  <User className="h-4 w-4 mr-2" />
+                  Profile
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        {/* Feature Access Notice */}
+        <div className="mb-6">
+          <Card className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-start space-x-3">
+                <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                    Limited Access - Startup Account
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-2">
+                    Only recruiters can access all features including job posting, job management, and HRMS. 
+                    As a startup, you can update your company details and hiring status.
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    Want full access? Login as Recruiter
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Welcome Section */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-2">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
             {startupData?.logo_url ? (
               <img
                 src={startupData.logo_url}
                 alt="Startup Logo"
-                className="h-16 w-16 rounded-full border-4 border-white shadow-lg"
+                className="h-16 w-16 rounded-full border-4 border-white shadow-lg flex-shrink-0"
               />
             ) : (
-              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                 <Building2 className="h-8 w-8 text-white" />
               </div>
             )}
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 truncate">
                 Welcome back, {startupData?.startup_name || 'Startup'}! 👋
               </h1>
-              <p className="text-gray-600 text-lg">
-                {startupData?.founder_name && `Founded by ${startupData.founder_name} • `}
-                {startupData?.industry && `${startupData.industry} • `}
-                {startupData?.funding_stage && `${startupData.funding_stage}`}
-              </p>
+              <div className="text-sm sm:text-lg text-gray-600 space-y-1 sm:space-y-0">
+                <p className="truncate">
+                  {startupData?.founder_name && `Founded by ${startupData.founder_name}`}
+                </p>
+                <p className="flex flex-wrap items-center gap-2 text-sm">
+                  {startupData?.industry && (
+                    <Badge variant="outline" className="text-xs">{startupData.industry}</Badge>
+                  )}
+                  {startupData?.funding_stage && (
+                    <Badge variant="outline" className="text-xs">{startupData.funding_stage}</Badge>
+                  )}
+                  {startupData?.hiring !== undefined && (
+                    <Badge 
+                      variant={startupData.hiring ? "default" : "secondary"}
+                      className={`text-xs ${startupData.hiring ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+                    >
+                      {startupData.hiring ? '🟢 Hiring' : '🔴 Not Hiring'}
+                    </Badge>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards - Disabled for Startup */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8 opacity-50">
           <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-blue-600">Total Jobs</CardTitle>
-                <Briefcase className="h-4 w-4 text-blue-500" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-blue-600">Total Jobs</CardTitle>
+                <Briefcase className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-700">{stats?.total_jobs || 0}</div>
-              <p className="text-xs text-blue-600">{stats?.active_jobs || 0} active</p>
+              <div className="text-lg sm:text-2xl font-bold text-blue-700">0</div>
+              <p className="text-xs text-blue-600">0 active</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-green-600">Applications</CardTitle>
-                <FileText className="h-4 w-4 text-green-500" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-green-600">Applications</CardTitle>
+                <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-700">
-                {stats?.total_applications || 0}
-              </div>
-              <p className="text-xs text-green-600">{stats?.pending_applications || 0} pending</p>
+              <div className="text-lg sm:text-2xl font-bold text-green-700">0</div>
+              <p className="text-xs text-green-600">0 pending</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-orange-600">Interviews</CardTitle>
-                <Calendar className="h-4 w-4 text-orange-500" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-orange-600">Interviews</CardTitle>
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-orange-700">
-                {stats?.interviews_scheduled || 0}
-              </div>
+              <div className="text-lg sm:text-2xl font-bold text-orange-700">0</div>
               <p className="text-xs text-orange-600">scheduled</p>
             </CardContent>
           </Card>
@@ -305,69 +317,49 @@ const StartupDashboard = () => {
           <Card className="bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium text-purple-600">Hired</CardTitle>
-                <Award className="h-4 w-4 text-purple-500" />
+                <CardTitle className="text-xs sm:text-sm font-medium text-purple-600">Hired</CardTitle>
+                <Award className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500" />
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-purple-700">
-                {stats?.hired_candidates || 0}
-              </div>
+              <div className="text-lg sm:text-2xl font-bold text-purple-700">0</div>
               <p className="text-xs text-purple-600">candidates</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Main Content Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="jobs">Job Openings</TabsTrigger>
-            <TabsTrigger value="applications">Applications</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
+            <TabsTrigger value="profile" className="text-xs sm:text-sm">Update Profile</TabsTrigger>
           </TabsList>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Recent Job Openings */}
-              <Card>
+              {/* Recent Job Openings - Disabled */}
+              <Card className="opacity-50">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle>Recent Job Openings</CardTitle>
-                    <Button variant="outline" size="sm">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post New Job
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <CardTitle className="text-base sm:text-lg">Recent Job Openings</CardTitle>
+                    <Button variant="outline" size="sm" className="bg-slate-50 text-xs sm:text-sm" disabled>
+                      <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      <span className="hidden sm:inline">Only Recruiter can Post Jobs</span>
+                      <span className="sm:hidden">Recruiter Only</span>
                     </Button>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-64">
+                  <ScrollArea className="h-48 sm:h-64">
                     <div className="space-y-3">
-                      {jobOpenings.slice(0, 5).map(job => (
-                        <div
-                          key={job._id}
-                          className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{job.title}</h4>
-                            <div className="flex items-center space-x-4 mt-1 text-sm text-gray-600">
-                              <span className="flex items-center">
-                                <MapPin className="h-3 w-3 mr-1" />
-                                {job.location}
-                              </span>
-                              <span className="flex items-center">
-                                <Users className="h-3 w-3 mr-1" />
-                                {job.applications_count} applications
-                              </span>
-                            </div>
-                          </div>
-                          <Badge variant={job.status === 'active' ? 'default' : 'secondary'}>
-                            {job.status}
-                          </Badge>
-                        </div>
-                      ))}
+                      <div className="text-center py-8">
+                        <Briefcase className="mx-auto h-8 sm:h-12 w-8 sm:w-12 text-gray-400" />
+                        <h3 className="mt-2 text-sm font-semibold text-gray-900">No job openings</h3>
+                        <p className="mt-1 text-xs sm:text-sm text-gray-500 px-4">
+                          Switch to recruiter role to post jobs and manage applications.
+                        </p>
+                      </div>
                     </div>
                   </ScrollArea>
                 </CardContent>
@@ -376,181 +368,109 @@ const StartupDashboard = () => {
               {/* Company Info */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Company Information</CardTitle>
+                  <CardTitle className="text-base sm:text-lg">Company Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Building2 className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Company Name</p>
-                      <p className="font-medium">{startupData?.startup_name || 'Not specified'}</p>
+                  <div className="flex items-start space-x-3">
+                    <Building2 className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Company Name</p>
+                      <p className="font-medium text-sm sm:text-base truncate">{startupData?.startup_name || 'Not specified'}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <User className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Founder</p>
-                      <p className="font-medium">{startupData?.founder_name || 'Not specified'}</p>
+                  <div className="flex items-start space-x-3">
+                    <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Founder</p>
+                      <p className="font-medium text-sm sm:text-base truncate">{startupData?.founder_name || 'Not specified'}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Briefcase className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Industry</p>
-                      <p className="font-medium">{startupData?.industry || 'Not specified'}</p>
+                  <div className="flex items-start space-x-3">
+                    <Briefcase className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Industry</p>
+                      <p className="font-medium text-sm sm:text-base truncate">{startupData?.industry || 'Not specified'}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <TrendingUp className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Funding Stage</p>
-                      <p className="font-medium">{startupData?.funding_stage || 'Not specified'}</p>
+                  <div className="flex items-start space-x-3">
+                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Funding Stage</p>
+                      <p className="font-medium text-sm sm:text-base truncate">{startupData?.funding_stage || 'Not specified'}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center space-x-3">
-                    <Users className="h-5 w-5 text-gray-400" />
-                    <div>
-                      <p className="text-sm text-gray-500">Team Size</p>
-                      <p className="font-medium">
+                  <div className="flex items-start space-x-3">
+                    <Users className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Team Size</p>
+                      <p className="font-medium text-sm sm:text-base">
                         {startupData?.employees_count || 'Not specified'}
                       </p>
                     </div>
                   </div>
 
+                  <div className="flex items-start space-x-3">
+                    <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm text-gray-500">Hiring Status</p>
+                      <Badge 
+                        variant={startupData?.hiring ? "default" : "secondary"}
+                        className={`text-xs mt-1 ${startupData?.hiring ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}
+                      >
+                        {startupData?.hiring ? '🟢 Currently Hiring' : '🔴 Not Hiring'}
+                      </Badge>
+                    </div>
+                  </div>
+
                   <Button
                     variant="outline"
-                    className="w-full mt-4"
+                    className="w-full mt-4 text-xs sm:text-sm"
                     onClick={() => navigate('/startup/profile')}
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Update Profile
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Update Profile & Hiring Status
                   </Button>
                 </CardContent>
               </Card>
             </div>
           </TabsContent>
 
-          {/* Jobs Tab */}
-          <TabsContent value="jobs">
+          {/* Profile Tab */}
+          <TabsContent value="profile">
             <Card>
               <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle>Job Openings Management</CardTitle>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Post New Job
+                <CardTitle className="text-base sm:text-lg">Update Your Profile</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">
+                  Manage your company information, profile details, and hiring status
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Use this section to update your company profile information and hiring status. 
+                    All changes will be reflected across the platform.
+                  </p>
+                  <div className="space-y-2">
+                    <h4 className="text-sm font-medium text-gray-700">What you can update:</h4>
+                    <ul className="text-xs sm:text-sm text-gray-600 list-disc list-inside space-y-1 ml-4">
+                      <li>Company information and details</li>
+                      <li>Hiring status (Currently Hiring / Not Hiring)</li>
+                      <li>Contact information and website</li>
+                      <li>Company logo and description</li>
+                    </ul>
+                  </div>
+                  <Button
+                    onClick={() => navigate('/startup/profile')}
+                    className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm"
+                  >
+                    <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    Edit Profile & Hiring Status
                   </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Briefcase className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-semibold text-gray-900">No job openings</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Get started by posting your first job opening.
-                  </p>
-                  <div className="mt-6">
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Post Job
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Applications Tab */}
-          <TabsContent value="applications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Applications</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <FileText className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-semibold text-gray-900">No applications yet</h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Applications will appear here once candidates start applying to your jobs.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analytics Dashboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <BarChart3 className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-semibold text-gray-900">
-                    Analytics Coming Soon
-                  </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Track your hiring performance with detailed analytics and insights.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* Notifications Tab */}
-          <TabsContent value="notifications">
-            <Card>
-              <CardHeader>
-                <CardTitle>Notifications</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {notifications.length > 0 ? (
-                  <ScrollArea className="h-64">
-                    <div className="space-y-3">
-                      {notifications.map(notification => (
-                        <div
-                          key={notification._id}
-                          className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg"
-                        >
-                          <div className="flex-shrink-0">
-                            {notification.type === 'success' && (
-                              <CheckCircle className="h-5 w-5 text-green-500" />
-                            )}
-                            {notification.type === 'warning' && (
-                              <AlertCircle className="h-5 w-5 text-yellow-500" />
-                            )}
-                            {notification.type === 'error' && (
-                              <AlertCircle className="h-5 w-5 text-red-500" />
-                            )}
-                            {notification.type === 'info' && (
-                              <AlertCircle className="h-5 w-5 text-blue-500" />
-                            )}
-                          </div>
-                          <div className="flex-1">
-                            <h4 className="font-medium text-gray-900">{notification.title}</h4>
-                            <p className="text-sm text-gray-600">{notification.message}</p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              {new Date(notification.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </ScrollArea>
-                ) : (
-                  <div className="text-center py-8">
-                    <AlertCircle className="mx-auto h-12 w-12 text-gray-400" />
-                    <h3 className="mt-2 text-sm font-semibold text-gray-900">No notifications</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      You're all caught up! Notifications will appear here.
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </TabsContent>

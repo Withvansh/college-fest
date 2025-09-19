@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -31,7 +34,24 @@ import {
   Shield,
   GraduationCap,
   Rocket,
+  Check,
+  X,
 } from 'lucide-react';
+import {
+  loginSchema,
+  signupSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  getPasswordStrength,
+  type LoginFormData,
+  type SignupFormData,
+  type ForgotPasswordFormData,
+  type ResetPasswordFormData,
+} from '@/lib/validation/authValidation';
+
+// Central toggle to enable/disable signup per role. Remove from set to enable later.
+const DISABLED_SIGNUP_ROLES = new Set<UserRole>(['freelancer', 'client']);
+const isRoleEnabled = (role: UserRole) => !DISABLED_SIGNUP_ROLES.has(role);
 
 // Now includes student and startup roles for direct registration
 const userTypes = [
@@ -55,6 +75,7 @@ const userTypes = [
     icon: Code,
     color: 'from-purple-500 to-pink-600',
     description: 'Showcase your skills',
+    comingSoon: !isRoleEnabled('freelancer' as UserRole),
   },
   {
     id: 'client' as UserRole,
@@ -62,6 +83,7 @@ const userTypes = [
     icon: Building2,
     color: 'from-blue-500 to-green-600',
     description: 'Hire freelancers',
+    comingSoon: !isRoleEnabled('client' as UserRole),
   },
   {
     id: 'college' as UserRole,
@@ -71,7 +93,7 @@ const userTypes = [
     description: 'Manage placements',
   },
   {
-    id: 'Student' as UserRole,
+    id: 'student' as UserRole, // Fixed: Changed from 'Student' to 'student' to match discriminator key
     label: 'Student',
     icon: GraduationCap,
     color: 'from-indigo-500 to-purple-600',
@@ -93,12 +115,76 @@ const userTypes = [
   },
 ];
 
+// Password Strength Indicator Component
+const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+  const { strength, checks, score } = getPasswordStrength(password);
+
+  const getStrengthColor = () => {
+    switch (strength) {
+      case 'weak':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'strong':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-300';
+    }
+  };
+
+  const getStrengthText = () => {
+    switch (strength) {
+      case 'weak':
+        return 'Weak';
+      case 'medium':
+        return 'Medium';
+      case 'strong':
+        return 'Strong';
+      default:
+        return 'Very Weak';
+    }
+  };
+
+  return (
+    <div className="mt-2 space-y-2">
+      <div className="flex items-center space-x-2">
+        <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor()}`}
+            style={{ width: `${score * 100}%` }}
+          />
+        </div>
+        <span
+          className={`text-xs font-medium ${
+            strength === 'weak'
+              ? 'text-red-600'
+              : strength === 'medium'
+                ? 'text-yellow-600'
+                : 'text-green-600'
+          }`}
+        >
+          {getStrengthText()}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {checks.map((check, index) => (
+          <div key={index} className="flex items-center space-x-2 text-xs">
+            {check.test ? (
+              <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+            ) : (
+              <X className="h-3 w-3 text-red-600 flex-shrink-0" />
+            )}
+            <span className={check.test ? 'text-green-700' : 'text-red-700'}>{check.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const UnifiedAuth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
@@ -117,12 +203,46 @@ const UnifiedAuth = () => {
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: email input, 2: OTP verification, 3: new password
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordOtp, setForgotPasswordOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isForgotPasswordOtpSent, setIsForgotPasswordOtpSent] = useState(false);
   const [isForgotPasswordVerifyingOtp, setIsForgotPasswordVerifyingOtp] = useState(false);
   const [isForgotPasswordSendingOtp, setIsForgotPasswordSendingOtp] = useState(false);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+
+  // Forgot password modal state
+  const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
+
+  // Form hooks
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const signupForm = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const resetPasswordForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
   const { login, signup, isAuthenticated } = useAuth();
 
@@ -137,29 +257,34 @@ const UnifiedAuth = () => {
   useEffect(() => {
     const tabFromUrl = searchParams.get('tab');
     if (tabFromUrl && ['login', 'signup', 'forgot-password'].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
-      // Reset signup steps when switching tabs
-      if (tabFromUrl === 'signup') {
-        setSignupStep(1);
-        setSelectedSignupRole(null);
-        setSignupEmail('');
-        setIsEmailVerified(false);
-        setOtpValue('');
-        setIsOtpSent(false);
-      }
-      // Reset forgot password steps when switching tabs
       if (tabFromUrl === 'forgot-password') {
+        setIsForgotPasswordModalOpen(true);
         setForgotPasswordStep(1);
-        setForgotPasswordEmail('');
+        forgotPasswordForm.reset();
+        resetPasswordForm.reset();
         setForgotPasswordOtp('');
-        setNewPassword('');
-        setConfirmPassword('');
         setIsForgotPasswordOtpSent(false);
+      } else {
+        setActiveTab(tabFromUrl);
+        // Reset signup steps when switching tabs
+        if (tabFromUrl === 'signup') {
+          setSignupStep(1);
+          setSelectedSignupRole(null);
+          setSignupEmail('');
+          setIsEmailVerified(false);
+          setOtpValue('');
+          setIsOtpSent(false);
+        }
       }
     }
   }, [searchParams]);
 
   const handleSignupRoleSelect = (role: UserRole) => {
+    if (!isRoleEnabled(role)) {
+      const roleLabel = userTypes.find(t => t.id === role)?.label || 'This role';
+      toast.info(`${roleLabel} signup is coming soon.`);
+      return;
+    }
     setSelectedSignupRole(role);
     setSignupStep(2);
   };
@@ -168,9 +293,7 @@ const UnifiedAuth = () => {
     setSignupStep(1);
     setSelectedSignupRole(null);
     // Clear form data
-    setName('');
-    setEmail('');
-    setPassword('');
+    signupForm.reset();
     setSignupEmail('');
     setIsEmailVerified(false);
     setOtpValue('');
@@ -180,8 +303,8 @@ const UnifiedAuth = () => {
   const goBackToEmailVerification = () => {
     setSignupStep(2);
     // Clear form data but keep email verification
-    setName('');
-    setPassword('');
+    signupForm.setValue('name', '');
+    signupForm.setValue('password', '');
   };
 
   const handleSendOtp = async () => {
@@ -213,7 +336,7 @@ const UnifiedAuth = () => {
       await otpService.verifyEmailOTP(signupEmail.trim(), otpValue.trim());
       setIsEmailVerified(true);
       setSignupStep(3);
-      setEmail(signupEmail); // Set the verified email in the main form
+      signupForm.setValue('email', signupEmail); // Set the verified email in the signup form
       toast.success('Email verified successfully!');
     } catch (error: any) {
       toast.error(error.message || 'Invalid OTP');
@@ -222,39 +345,30 @@ const UnifiedAuth = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      toast.error('Please enter both email and password');
-      return;
-    }
-
+  const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      await login(email.trim(), password.trim());
+      await login(data.email.trim(), data.password);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim() || !name.trim() || !selectedSignupRole) {
-      toast.error('Please fill in all required fields');
+  const handleSignup = async (data: SignupFormData) => {
+    if (!selectedSignupRole) {
+      toast.error('Please select a role');
       return;
     }
 
     setIsLoading(true);
     try {
-      await signup(email.trim(), password.trim(), name.trim(), selectedSignupRole);
+      await signup(data.email.trim(), data.password, data.name.trim(), selectedSignupRole);
       toast.success('Signup successful! Please login with your credentials.');
       // Reset form and go to login
       setActiveTab('login');
       setSignupStep(1);
       setSelectedSignupRole(null);
-      setName('');
-      setEmail('');
-      setPassword('');
+      signupForm.reset();
       setSignupEmail('');
       setIsEmailVerified(false);
       setOtpValue('');
@@ -263,8 +377,6 @@ const UnifiedAuth = () => {
       setForgotPasswordStep(1);
       setForgotPasswordEmail('');
       setForgotPasswordOtp('');
-      setNewPassword('');
-      setConfirmPassword('');
       setIsForgotPasswordOtpSent(false);
     } finally {
       setIsLoading(false);
@@ -313,42 +425,26 @@ const UnifiedAuth = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPassword.trim() || !confirmPassword.trim()) {
-      toast.error('Please fill in all password fields');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-
+  const handleResetPassword = async (data: ResetPasswordFormData) => {
     setIsResettingPassword(true);
     try {
       const response = await otpService.resetPasswordWithOTP(
         forgotPasswordEmail.trim(),
         forgotPasswordOtp.trim(),
-        newPassword.trim()
+        data.password
       );
 
       if (response.success) {
         toast.success('Password reset successfully! Please login with your new password.');
-        // Reset form and go to login
-        setActiveTab('login');
+        // Reset form and close modal
+        setIsForgotPasswordModalOpen(false);
         setForgotPasswordStep(1);
         setForgotPasswordEmail('');
         setForgotPasswordOtp('');
-        setNewPassword('');
-        setConfirmPassword('');
         setIsForgotPasswordOtpSent(false);
-        setEmail(forgotPasswordEmail); // Pre-fill email in login form
+        resetPasswordForm.reset();
+        // Pre-fill email in login form
+        loginForm.setValue('email', forgotPasswordEmail);
       } else {
         toast.error(response.message || 'Failed to reset password');
       }
@@ -360,26 +456,23 @@ const UnifiedAuth = () => {
   };
 
   const goBackToLoginFromForgotPassword = () => {
-    setActiveTab('login');
+    setIsForgotPasswordModalOpen(false);
     setForgotPasswordStep(1);
-    setForgotPasswordEmail('');
+    forgotPasswordForm.reset();
+    resetPasswordForm.reset();
     setForgotPasswordOtp('');
-    setNewPassword('');
-    setConfirmPassword('');
     setIsForgotPasswordOtpSent(false);
   };
 
   const goBackToForgotPasswordEmail = () => {
     setForgotPasswordStep(1);
     setForgotPasswordOtp('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   const goBackToForgotPasswordOtp = () => {
     setForgotPasswordStep(2);
-    setNewPassword('');
-    setConfirmPassword('');
+    resetPasswordForm.setValue('password', '');
+    resetPasswordForm.setValue('confirmPassword', '');
   };
 
   return (
@@ -402,15 +495,12 @@ const UnifiedAuth = () => {
 
             <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6 lg:p-8">
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="login" className="text-sm">
                     Login
                   </TabsTrigger>
                   <TabsTrigger value="signup" className="text-sm">
                     Sign Up
-                  </TabsTrigger>
-                  <TabsTrigger value="forgot-password" className="text-sm">
-                    Reset Password
                   </TabsTrigger>
                 </TabsList>
 
@@ -425,34 +515,35 @@ const UnifiedAuth = () => {
                     </p>
                   </div>
 
-                  <form onSubmit={handleLogin} className="space-y-4">
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                     <div>
-                      <Label htmlFor="email" className="text-sm">
+                      <Label htmlFor="login-email" className="text-sm">
                         Email
                       </Label>
                       <Input
-                        id="email"
+                        id="login-email"
                         type="email"
                         placeholder="Enter your email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        {...loginForm.register('email')}
                         className="h-10 sm:h-11 text-sm"
-                        required
                       />
+                      {loginForm.formState.errors.email && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {loginForm.formState.errors.email.message}
+                        </p>
+                      )}
                     </div>
                     <div>
-                      <Label htmlFor="password" className="text-sm">
+                      <Label htmlFor="login-password" className="text-sm">
                         Password
                       </Label>
                       <div className="relative">
                         <Input
-                          id="password"
+                          id="login-password"
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Enter your password"
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
+                          {...loginForm.register('password')}
                           className="h-10 sm:h-11 pr-10 text-sm"
-                          required
                         />
                         <button
                           type="button"
@@ -466,6 +557,11 @@ const UnifiedAuth = () => {
                           )}
                         </button>
                       </div>
+                      {loginForm.formState.errors.password && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {loginForm.formState.errors.password.message}
+                        </p>
+                      )}
                     </div>
                     <Button
                       type="submit"
@@ -479,7 +575,14 @@ const UnifiedAuth = () => {
                   <div className="text-center mt-4">
                     <button
                       type="button"
-                      onClick={() => setActiveTab('forgot-password')}
+                      onClick={() => {
+                        setIsForgotPasswordModalOpen(true);
+                        setForgotPasswordStep(1);
+                        forgotPasswordForm.reset();
+                        resetPasswordForm.reset();
+                        setForgotPasswordOtp('');
+                        setIsForgotPasswordOtpSent(false);
+                      }}
                       className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
                     >
                       Forgot Password?
@@ -506,11 +609,18 @@ const UnifiedAuth = () => {
                           .filter(type => type.id !== 'super_admin') // Exclude super admin from signup
                           .map(type => {
                             const Icon = type.icon;
+                            const disabled = !isRoleEnabled(type.id);
                             return (
                               <button
                                 key={type.id}
                                 onClick={() => handleSignupRoleSelect(type.id)}
-                                className="w-full p-3 sm:p-4 rounded-lg border-2 border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 text-left group"
+                                disabled={disabled}
+                                aria-disabled={disabled}
+                                className={`w-full p-3 sm:p-4 rounded-lg border-2 text-left group transition-all duration-200 ${
+                                  disabled
+                                    ? 'border-gray-200 bg-gray-50 cursor-not-allowed opacity-70'
+                                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                                }`}
                               >
                                 <div className="flex items-center space-x-3">
                                   <div
@@ -526,7 +636,13 @@ const UnifiedAuth = () => {
                                       {type.description}
                                     </div>
                                   </div>
-                                  <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                                  {disabled ? (
+                                    <span className="text-[10px] sm:text-xs px-2 py-1 rounded-full bg-gray-200 text-gray-700 flex-shrink-0">
+                                      Coming soon
+                                    </span>
+                                  ) : (
+                                    <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0" />
+                                  )}
                                 </div>
                               </button>
                             );
@@ -698,20 +814,23 @@ const UnifiedAuth = () => {
                         </div>
                       )}
 
-                      <form onSubmit={handleSignup} className="space-y-4">
+                      <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                         <div>
-                          <Label htmlFor="name" className="text-sm">
+                          <Label htmlFor="signup-name" className="text-sm">
                             Full Name
                           </Label>
                           <Input
-                            id="name"
+                            id="signup-name"
                             type="text"
                             placeholder="Enter your full name"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
+                            {...signupForm.register('name')}
                             className="h-10 sm:h-11 text-sm"
-                            required
                           />
+                          {signupForm.formState.errors.name && (
+                            <p className="text-sm text-red-600 mt-1">
+                              {signupForm.formState.errors.name.message}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="signup-email" className="text-sm">
@@ -720,10 +839,9 @@ const UnifiedAuth = () => {
                           <Input
                             id="signup-email"
                             type="email"
-                            value={email}
+                            {...signupForm.register('email')}
                             className="h-10 sm:h-11 text-sm bg-gray-50"
                             disabled
-                            required
                           />
                         </div>
                         <div>
@@ -734,12 +852,9 @@ const UnifiedAuth = () => {
                             <Input
                               id="signup-password"
                               type={showPassword ? 'text' : 'password'}
-                              placeholder="Create a password (min. 6 characters)"
-                              value={password}
-                              onChange={e => setPassword(e.target.value)}
+                              placeholder="Create a password (min. 8 characters)"
+                              {...signupForm.register('password')}
                               className="h-10 sm:h-11 pr-10 text-sm"
-                              required
-                              minLength={6}
                             />
                             <button
                               type="button"
@@ -753,6 +868,14 @@ const UnifiedAuth = () => {
                               )}
                             </button>
                           </div>
+                          {signupForm.watch('password') && (
+                            <PasswordStrengthIndicator password={signupForm.watch('password')} />
+                          )}
+                          {signupForm.formState.errors.password && (
+                            <p className="text-sm text-red-600 mt-1">
+                              {signupForm.formState.errors.password.message}
+                            </p>
+                          )}
                         </div>
 
                         <Button
@@ -768,235 +891,244 @@ const UnifiedAuth = () => {
                     </div>
                   )}
                 </TabsContent>
-
-                {/* Forgot Password Tab */}
-                <TabsContent value="forgot-password" className="space-y-4 mt-4 sm:mt-6">
-                  {forgotPasswordStep === 1 ? (
-                    // Step 1: Email Input
-                    <div className="space-y-4 sm:space-y-6">
-                      <div className="text-center">
-                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                          Reset Your Password
-                        </h2>
-                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                          Enter your email address to receive a password reset code
-                        </p>
-                      </div>
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="forgot-email" className="text-sm">
-                            Email Address
-                          </Label>
-                          <Input
-                            id="forgot-email"
-                            type="email"
-                            placeholder="Enter your email address"
-                            value={forgotPasswordEmail}
-                            onChange={e => setForgotPasswordEmail(e.target.value)}
-                            className="h-10 sm:h-11 text-sm"
-                            required
-                          />
-                        </div>
-
-                        <Button
-                          onClick={handleSendForgotPasswordOtp}
-                          className="w-full h-10 sm:h-11 text-sm"
-                          disabled={isForgotPasswordSendingOtp || !forgotPasswordEmail.trim()}
-                        >
-                          <Mail className="h-4 w-4 mr-2" />
-                          {isForgotPasswordSendingOtp ? 'Sending...' : 'Send Reset Code'}
-                        </Button>
-
-                        <div className="text-center">
-                          <button
-                            type="button"
-                            onClick={goBackToLoginFromForgotPassword}
-                            className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
-                          >
-                            Back to Login
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ) : forgotPasswordStep === 2 ? (
-                    // Step 2: OTP Verification
-                    <div className="space-y-4 sm:space-y-6">
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={goBackToForgotPasswordEmail}
-                          className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
-                        >
-                          <ArrowLeft className="h-4 w-4 text-gray-600" />
-                        </button>
-                        <div className="min-w-0">
-                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                            Verify Code
-                          </h2>
-                          <p className="text-xs sm:text-sm text-gray-600">
-                            Enter the 6-digit code sent to your email
-                          </p>
-                        </div>
-                      </div>
-
-                      {forgotPasswordEmail && (
-                        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="flex items-center space-x-2">
-                            <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                            <span className="text-xs sm:text-sm font-medium text-blue-800 truncate">
-                              Code sent to: {forgotPasswordEmail}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      <div className="space-y-4">
-                        <div>
-                          <Label htmlFor="forgot-otp" className="text-sm">
-                            Verification Code
-                          </Label>
-                          <Input
-                            id="forgot-otp"
-                            type="text"
-                            placeholder="Enter the 6-digit code"
-                            value={forgotPasswordOtp}
-                            onChange={e =>
-                              setForgotPasswordOtp(
-                                e.target.value.replace(/[^0-9]/g, '').slice(0, 6)
-                              )
-                            }
-                            className="h-10 sm:h-11 text-sm text-center tracking-wider"
-                            maxLength={6}
-                            required
-                          />
-                        </div>
-
-                        <div className="flex space-x-2">
-                          <Button
-                            onClick={handleVerifyForgotPasswordOtp}
-                            className="flex-1 h-10 sm:h-11 text-sm"
-                            disabled={
-                              isForgotPasswordVerifyingOtp || forgotPasswordOtp.length !== 6
-                            }
-                          >
-                            <Shield className="h-4 w-4 mr-2" />
-                            {isForgotPasswordVerifyingOtp ? 'Verifying...' : 'Verify Code'}
-                          </Button>
-                          <Button
-                            variant="outline"
-                            onClick={goBackToForgotPasswordEmail}
-                            className="h-10 sm:h-11 text-sm px-3"
-                            disabled={isForgotPasswordSendingOtp || isForgotPasswordVerifyingOtp}
-                          >
-                            Change Email
-                          </Button>
-                        </div>
-
-                        <Button
-                          variant="ghost"
-                          onClick={handleSendForgotPasswordOtp}
-                          className="w-full h-10 sm:h-11 text-sm"
-                          disabled={isForgotPasswordSendingOtp}
-                        >
-                          {isForgotPasswordSendingOtp ? 'Resending...' : 'Resend Code'}
-                        </Button>
-                      </div>
-                    </div>
-                  ) : (
-                    // Step 3: New Password
-                    <div className="space-y-4 sm:space-y-6">
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={goBackToForgotPasswordOtp}
-                          className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
-                        >
-                          <ArrowLeft className="h-4 w-4 text-gray-600" />
-                        </button>
-                        <div className="min-w-0">
-                          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
-                            Set New Password
-                          </h2>
-                          <p className="text-xs sm:text-sm text-gray-600">
-                            Create a strong password for your account
-                          </p>
-                        </div>
-                      </div>
-
-                      {forgotPasswordEmail && (
-                        <div className="p-3 bg-green-50 rounded-lg border border-green-200">
-                          <div className="flex items-center space-x-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
-                            <span className="text-xs sm:text-sm font-medium text-green-800 truncate">
-                              Email verified: {forgotPasswordEmail}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-
-                      <form onSubmit={handleResetPassword} className="space-y-4">
-                        <div>
-                          <Label htmlFor="new-password" className="text-sm">
-                            New Password
-                          </Label>
-                          <div className="relative">
-                            <Input
-                              id="new-password"
-                              type={showPassword ? 'text' : 'password'}
-                              placeholder="Enter new password (min. 6 characters)"
-                              value={newPassword}
-                              onChange={e => setNewPassword(e.target.value)}
-                              className="h-10 sm:h-11 pr-10 text-sm"
-                              required
-                              minLength={6}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div>
-                          <Label htmlFor="confirm-password" className="text-sm">
-                            Confirm New Password
-                          </Label>
-                          <Input
-                            id="confirm-password"
-                            type="password"
-                            placeholder="Confirm your new password"
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.target.value)}
-                            className="h-10 sm:h-11 text-sm"
-                            required
-                            minLength={6}
-                          />
-                        </div>
-
-                        <Button
-                          type="submit"
-                          className="w-full h-10 sm:h-11 text-sm"
-                          disabled={
-                            isResettingPassword || !newPassword.trim() || !confirmPassword.trim()
-                          }
-                        >
-                          {isResettingPassword ? 'Resetting Password...' : 'Reset Password'}
-                        </Button>
-                      </form>
-                    </div>
-                  )}
-                </TabsContent>
               </Tabs>
             </CardContent>
           </Card>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      <Dialog open={isForgotPasswordModalOpen} onOpenChange={setIsForgotPasswordModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-center">
+              {forgotPasswordStep === 1 && 'Reset Your Password'}
+              {forgotPasswordStep === 2 && 'Verify Code'}
+              {forgotPasswordStep === 3 && 'Set New Password'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {forgotPasswordStep === 1 ? (
+              // Step 1: Email Input
+              <div className="space-y-4">
+                <p className="text-sm text-gray-600 text-center">
+                  Enter your email address to receive a password reset code
+                </p>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="forgot-email-modal" className="text-sm">
+                      Email Address
+                    </Label>
+                    <Input
+                      id="forgot-email-modal"
+                      type="email"
+                      placeholder="Enter your email address"
+                      value={forgotPasswordEmail}
+                      onChange={e => setForgotPasswordEmail(e.target.value)}
+                      className="h-10 sm:h-11 text-sm"
+                      required
+                    />
+                  </div>
+
+                  <Button
+                    onClick={handleSendForgotPasswordOtp}
+                    className="w-full h-10 sm:h-11 text-sm"
+                    disabled={isForgotPasswordSendingOtp || !forgotPasswordEmail.trim()}
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    {isForgotPasswordSendingOtp ? 'Sending...' : 'Send Reset Code'}
+                  </Button>
+
+                  <div className="text-center">
+                    <button
+                      type="button"
+                      onClick={() => setIsForgotPasswordModalOpen(false)}
+                      className="text-sm text-gray-600 hover:text-gray-800 hover:underline"
+                    >
+                      Back to Login
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : forgotPasswordStep === 2 ? (
+              // Step 2: OTP Verification
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={goBackToForgotPasswordEmail}
+                    className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                  >
+                    <ArrowLeft className="h-4 w-4 text-gray-600" />
+                  </button>
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-600">
+                      Enter the 6-digit code sent to your email
+                    </p>
+                  </div>
+                </div>
+
+                {forgotPasswordEmail && (
+                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium text-blue-800 truncate">
+                        Code sent to: {forgotPasswordEmail}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="forgot-otp-modal" className="text-sm">
+                      Verification Code
+                    </Label>
+                    <Input
+                      id="forgot-otp-modal"
+                      type="text"
+                      placeholder="Enter the 6-digit code"
+                      value={forgotPasswordOtp}
+                      onChange={e =>
+                        setForgotPasswordOtp(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))
+                      }
+                      className="h-10 sm:h-11 text-sm text-center tracking-wider"
+                      maxLength={6}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <Button
+                      onClick={handleVerifyForgotPasswordOtp}
+                      className="flex-1 h-10 sm:h-11 text-sm"
+                      disabled={isForgotPasswordVerifyingOtp || forgotPasswordOtp.length !== 6}
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      {isForgotPasswordVerifyingOtp ? 'Verifying...' : 'Verify Code'}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={goBackToForgotPasswordEmail}
+                      className="h-10 sm:h-11 text-sm px-3"
+                      disabled={isForgotPasswordSendingOtp || isForgotPasswordVerifyingOtp}
+                    >
+                      Change Email
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="ghost"
+                    onClick={handleSendForgotPasswordOtp}
+                    className="w-full h-10 sm:h-11 text-sm"
+                    disabled={isForgotPasswordSendingOtp}
+                  >
+                    {isForgotPasswordSendingOtp ? 'Resending...' : 'Resend Code'}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              // Step 3: New Password
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={goBackToForgotPasswordOtp}
+                    className="p-1 hover:bg-gray-100 rounded flex-shrink-0"
+                  >
+                    <ArrowLeft className="h-4 w-4 text-gray-600" />
+                  </button>
+                  <div className="min-w-0">
+                    <p className="text-sm text-gray-600">
+                      Create a strong password for your account
+                    </p>
+                  </div>
+                </div>
+
+                {forgotPasswordEmail && (
+                  <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <span className="text-xs sm:text-sm font-medium text-green-800 truncate">
+                        Email verified: {forgotPasswordEmail}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <form
+                  onSubmit={resetPasswordForm.handleSubmit(handleResetPassword)}
+                  className="space-y-4"
+                >
+                  <div>
+                    <Label htmlFor="reset-password" className="text-sm">
+                      New Password
+                    </Label>
+                    <div className="relative">
+                      <Input
+                        id="reset-password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="Enter new password (min. 8 characters)"
+                        {...resetPasswordForm.register('password')}
+                        className="h-10 sm:h-11 pr-10 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    {resetPasswordForm.watch('password') && (
+                      <PasswordStrengthIndicator password={resetPasswordForm.watch('password')} />
+                    )}
+                    {resetPasswordForm.formState.errors.password && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {resetPasswordForm.formState.errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="reset-confirm-password" className="text-sm">
+                      Confirm New Password
+                    </Label>
+                    <Input
+                      id="reset-confirm-password"
+                      type="password"
+                      placeholder="Confirm your new password"
+                      {...resetPasswordForm.register('confirmPassword')}
+                      className="h-10 sm:h-11 text-sm"
+                    />
+                    {resetPasswordForm.formState.errors.confirmPassword && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {resetPasswordForm.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <Button
+                    type="submit"
+                    className="w-full h-10 sm:h-11 text-sm"
+                    disabled={
+                      isResettingPassword ||
+                      !resetPasswordForm.watch('password') ||
+                      !resetPasswordForm.watch('confirmPassword')
+                    }
+                  >
+                    {isResettingPassword ? 'Resetting Password...' : 'Reset Password'}
+                  </Button>
+                </form>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Right Side - Video Section (40% on desktop, hidden on mobile/tablet) */}
       <div className="hidden lg:block lg:w-[50%] relative overflow-hidden">
@@ -1044,7 +1176,7 @@ const UnifiedAuth = () => {
         <div className="absolute inset-0 bg-black/30"></div>
 
         {/* Branding overlay */}
-        <div className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-4 sm:left-6 lg:left-8 right-4 sm:right-6 lg:right-8 text-white">
+        {/* <div className="absolute bottom-4 sm:bottom-6 lg:bottom-8 left-4 sm:left-6 lg:left-8 right-4 sm:right-6 lg:right-8 text-white">
           <div className="bg-black/40 backdrop-blur-sm rounded-lg p-4 sm:p-6 text-center">
             <h3 className="text-lg sm:text-xl font-semibold mb-2">Experience MinuteHire</h3>
             <p className="text-sm opacity-90 mb-3 sm:mb-4">Connect with opportunities in minutes</p>
@@ -1064,7 +1196,7 @@ const UnifiedAuth = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

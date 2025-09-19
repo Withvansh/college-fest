@@ -38,28 +38,30 @@ class PaymentService {
   /**
    * Create payment for digital product
    */
-  async createDigitalProductPayment(
-    productId: string,
-    redirectUrl?: string
-  ): Promise<PaymentData> {
-    try {
-      const response = await api.post('/payments/digital-product', {
-        productId,
-        redirectUrl: redirectUrl || `${window.location.origin}/products`
-      });
-      
-      if (response.data.success) {
-        return response.data.data;
-      }
-      throw new Error(response.data.message || 'Payment creation failed');
-    } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Failed to create payment'
-      );
+async createDigitalProductPayment(
+  productId: string,
+  redirectUrl?: string,
+  email?: string
+): Promise<PaymentData> {
+  try {
+    const response = await api.post('/payments/digital-product', {
+      productId,
+      redirectUrl: redirectUrl || `${window.location.origin}/products`,
+      email: email
+    });
+    
+    if (response.data.success) {
+      return response.data.data;
     }
+    throw new Error(response.data.message || 'Payment creation failed');
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || 
+      error.message || 
+      'Failed to create payment'
+    );
   }
+}
 
   /**
    * Create payment for subscription plan
@@ -70,10 +72,12 @@ class PaymentService {
     redirectUrl?: string
   ): Promise<PaymentData> {
     try {
+      const userId = localStorage.getItem('user_id');
       const response = await api.post('/payments/subscription', {
         planName,
         amount,
-        redirectUrl: redirectUrl || `${window.location.origin}/products`
+        userId,
+        redirectUrl: redirectUrl || `${window.location.origin}/payment-success?type=subscription`
       });
       
       if (response.data.success) {
