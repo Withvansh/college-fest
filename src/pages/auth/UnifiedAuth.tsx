@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -32,7 +34,20 @@ import {
   Shield,
   GraduationCap,
   Rocket,
+  Check,
+  X,
 } from 'lucide-react';
+import {
+  loginSchema,
+  signupSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  getPasswordStrength,
+  type LoginFormData,
+  type SignupFormData,
+  type ForgotPasswordFormData,
+  type ResetPasswordFormData,
+} from '@/lib/validation/authValidation';
 
 // Central toggle to enable/disable signup per role. Remove from set to enable later.
 const DISABLED_SIGNUP_ROLES = new Set<UserRole>(['freelancer', 'client']);
@@ -100,12 +115,76 @@ const userTypes = [
   },
 ];
 
+// Password Strength Indicator Component
+const PasswordStrengthIndicator = ({ password }: { password: string }) => {
+  const { strength, checks, score } = getPasswordStrength(password);
+
+  const getStrengthColor = () => {
+    switch (strength) {
+      case 'weak':
+        return 'bg-red-500';
+      case 'medium':
+        return 'bg-yellow-500';
+      case 'strong':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-300';
+    }
+  };
+
+  const getStrengthText = () => {
+    switch (strength) {
+      case 'weak':
+        return 'Weak';
+      case 'medium':
+        return 'Medium';
+      case 'strong':
+        return 'Strong';
+      default:
+        return 'Very Weak';
+    }
+  };
+
+  return (
+    <div className="mt-2 space-y-2">
+      <div className="flex items-center space-x-2">
+        <div className="flex-1 bg-gray-200 rounded-full h-2">
+          <div
+            className={`h-2 rounded-full transition-all duration-300 ${getStrengthColor()}`}
+            style={{ width: `${score * 100}%` }}
+          />
+        </div>
+        <span
+          className={`text-xs font-medium ${
+            strength === 'weak'
+              ? 'text-red-600'
+              : strength === 'medium'
+                ? 'text-yellow-600'
+                : 'text-green-600'
+          }`}
+        >
+          {getStrengthText()}
+        </span>
+      </div>
+      <div className="space-y-1">
+        {checks.map((check, index) => (
+          <div key={index} className="flex items-center space-x-2 text-xs">
+            {check.test ? (
+              <Check className="h-3 w-3 text-green-600 flex-shrink-0" />
+            ) : (
+              <X className="h-3 w-3 text-red-600 flex-shrink-0" />
+            )}
+            <span className={check.test ? 'text-green-700' : 'text-red-700'}>{check.label}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const UnifiedAuth = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('login');
@@ -124,8 +203,6 @@ const UnifiedAuth = () => {
   const [forgotPasswordStep, setForgotPasswordStep] = useState(1); // 1: email input, 2: OTP verification, 3: new password
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordOtp, setForgotPasswordOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isForgotPasswordOtpSent, setIsForgotPasswordOtpSent] = useState(false);
   const [isForgotPasswordVerifyingOtp, setIsForgotPasswordVerifyingOtp] = useState(false);
   const [isForgotPasswordSendingOtp, setIsForgotPasswordSendingOtp] = useState(false);
@@ -133,6 +210,39 @@ const UnifiedAuth = () => {
 
   // Forgot password modal state
   const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
+
+  // Form hooks
+  const loginForm = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+
+  const signupForm = useForm<SignupFormData>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  });
+
+  const forgotPasswordForm = useForm<ForgotPasswordFormData>({
+    resolver: zodResolver(forgotPasswordSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  const resetPasswordForm = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+    defaultValues: {
+      password: '',
+      confirmPassword: '',
+    },
+  });
 
   const { login, signup, isAuthenticated } = useAuth();
 
@@ -150,10 +260,9 @@ const UnifiedAuth = () => {
       if (tabFromUrl === 'forgot-password') {
         setIsForgotPasswordModalOpen(true);
         setForgotPasswordStep(1);
-        setForgotPasswordEmail('');
+        forgotPasswordForm.reset();
+        resetPasswordForm.reset();
         setForgotPasswordOtp('');
-        setNewPassword('');
-        setConfirmPassword('');
         setIsForgotPasswordOtpSent(false);
       } else {
         setActiveTab(tabFromUrl);
@@ -184,9 +293,7 @@ const UnifiedAuth = () => {
     setSignupStep(1);
     setSelectedSignupRole(null);
     // Clear form data
-    setName('');
-    setEmail('');
-    setPassword('');
+    signupForm.reset();
     setSignupEmail('');
     setIsEmailVerified(false);
     setOtpValue('');
@@ -196,8 +303,8 @@ const UnifiedAuth = () => {
   const goBackToEmailVerification = () => {
     setSignupStep(2);
     // Clear form data but keep email verification
-    setName('');
-    setPassword('');
+    signupForm.setValue('name', '');
+    signupForm.setValue('password', '');
   };
 
   const handleSendOtp = async () => {
@@ -229,7 +336,7 @@ const UnifiedAuth = () => {
       await otpService.verifyEmailOTP(signupEmail.trim(), otpValue.trim());
       setIsEmailVerified(true);
       setSignupStep(3);
-      setEmail(signupEmail); // Set the verified email in the main form
+      signupForm.setValue('email', signupEmail); // Set the verified email in the signup form
       toast.success('Email verified successfully!');
     } catch (error: any) {
       toast.error(error.message || 'Invalid OTP');
@@ -238,39 +345,30 @@ const UnifiedAuth = () => {
     }
   };
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim()) {
-      toast.error('Please enter both email and password');
-      return;
-    }
-
+  const handleLogin = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      await login(email.trim(), password.trim());
+      await login(data.email.trim(), data.password);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim() || !password.trim() || !name.trim() || !selectedSignupRole) {
-      toast.error('Please fill in all required fields');
+  const handleSignup = async (data: SignupFormData) => {
+    if (!selectedSignupRole) {
+      toast.error('Please select a role');
       return;
     }
 
     setIsLoading(true);
     try {
-      await signup(email.trim(), password.trim(), name.trim(), selectedSignupRole);
+      await signup(data.email.trim(), data.password, data.name.trim(), selectedSignupRole);
       toast.success('Signup successful! Please login with your credentials.');
       // Reset form and go to login
       setActiveTab('login');
       setSignupStep(1);
       setSelectedSignupRole(null);
-      setName('');
-      setEmail('');
-      setPassword('');
+      signupForm.reset();
       setSignupEmail('');
       setIsEmailVerified(false);
       setOtpValue('');
@@ -279,8 +377,6 @@ const UnifiedAuth = () => {
       setForgotPasswordStep(1);
       setForgotPasswordEmail('');
       setForgotPasswordOtp('');
-      setNewPassword('');
-      setConfirmPassword('');
       setIsForgotPasswordOtpSent(false);
     } finally {
       setIsLoading(false);
@@ -329,29 +425,13 @@ const UnifiedAuth = () => {
     }
   };
 
-  const handleResetPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newPassword.trim() || !confirmPassword.trim()) {
-      toast.error('Please fill in all password fields');
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      toast.error('Password must be at least 6 characters long');
-      return;
-    }
-
+  const handleResetPassword = async (data: ResetPasswordFormData) => {
     setIsResettingPassword(true);
     try {
       const response = await otpService.resetPasswordWithOTP(
         forgotPasswordEmail.trim(),
         forgotPasswordOtp.trim(),
-        newPassword.trim()
+        data.password
       );
 
       if (response.success) {
@@ -361,10 +441,10 @@ const UnifiedAuth = () => {
         setForgotPasswordStep(1);
         setForgotPasswordEmail('');
         setForgotPasswordOtp('');
-        setNewPassword('');
-        setConfirmPassword('');
         setIsForgotPasswordOtpSent(false);
-        setEmail(forgotPasswordEmail); // Pre-fill email in login form
+        resetPasswordForm.reset();
+        // Pre-fill email in login form
+        loginForm.setValue('email', forgotPasswordEmail);
       } else {
         toast.error(response.message || 'Failed to reset password');
       }
@@ -378,24 +458,21 @@ const UnifiedAuth = () => {
   const goBackToLoginFromForgotPassword = () => {
     setIsForgotPasswordModalOpen(false);
     setForgotPasswordStep(1);
-    setForgotPasswordEmail('');
+    forgotPasswordForm.reset();
+    resetPasswordForm.reset();
     setForgotPasswordOtp('');
-    setNewPassword('');
-    setConfirmPassword('');
     setIsForgotPasswordOtpSent(false);
   };
 
   const goBackToForgotPasswordEmail = () => {
     setForgotPasswordStep(1);
     setForgotPasswordOtp('');
-    setNewPassword('');
-    setConfirmPassword('');
   };
 
   const goBackToForgotPasswordOtp = () => {
     setForgotPasswordStep(2);
-    setNewPassword('');
-    setConfirmPassword('');
+    resetPasswordForm.setValue('password', '');
+    resetPasswordForm.setValue('confirmPassword', '');
   };
 
   return (
@@ -438,34 +515,35 @@ const UnifiedAuth = () => {
                     </p>
                   </div>
 
-                  <form onSubmit={handleLogin} className="space-y-4">
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
                     <div>
-                      <Label htmlFor="email" className="text-sm">
+                      <Label htmlFor="login-email" className="text-sm">
                         Email
                       </Label>
                       <Input
-                        id="email"
+                        id="login-email"
                         type="email"
                         placeholder="Enter your email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
+                        {...loginForm.register('email')}
                         className="h-10 sm:h-11 text-sm"
-                        required
                       />
+                      {loginForm.formState.errors.email && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {loginForm.formState.errors.email.message}
+                        </p>
+                      )}
                     </div>
                     <div>
-                      <Label htmlFor="password" className="text-sm">
+                      <Label htmlFor="login-password" className="text-sm">
                         Password
                       </Label>
                       <div className="relative">
                         <Input
-                          id="password"
+                          id="login-password"
                           type={showPassword ? 'text' : 'password'}
                           placeholder="Enter your password"
-                          value={password}
-                          onChange={e => setPassword(e.target.value)}
+                          {...loginForm.register('password')}
                           className="h-10 sm:h-11 pr-10 text-sm"
-                          required
                         />
                         <button
                           type="button"
@@ -479,6 +557,11 @@ const UnifiedAuth = () => {
                           )}
                         </button>
                       </div>
+                      {loginForm.formState.errors.password && (
+                        <p className="text-sm text-red-600 mt-1">
+                          {loginForm.formState.errors.password.message}
+                        </p>
+                      )}
                     </div>
                     <Button
                       type="submit"
@@ -495,10 +578,9 @@ const UnifiedAuth = () => {
                       onClick={() => {
                         setIsForgotPasswordModalOpen(true);
                         setForgotPasswordStep(1);
-                        setForgotPasswordEmail('');
+                        forgotPasswordForm.reset();
+                        resetPasswordForm.reset();
                         setForgotPasswordOtp('');
-                        setNewPassword('');
-                        setConfirmPassword('');
                         setIsForgotPasswordOtpSent(false);
                       }}
                       className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
@@ -732,20 +814,23 @@ const UnifiedAuth = () => {
                         </div>
                       )}
 
-                      <form onSubmit={handleSignup} className="space-y-4">
+                      <form onSubmit={signupForm.handleSubmit(handleSignup)} className="space-y-4">
                         <div>
-                          <Label htmlFor="name" className="text-sm">
+                          <Label htmlFor="signup-name" className="text-sm">
                             Full Name
                           </Label>
                           <Input
-                            id="name"
+                            id="signup-name"
                             type="text"
                             placeholder="Enter your full name"
-                            value={name}
-                            onChange={e => setName(e.target.value)}
+                            {...signupForm.register('name')}
                             className="h-10 sm:h-11 text-sm"
-                            required
                           />
+                          {signupForm.formState.errors.name && (
+                            <p className="text-sm text-red-600 mt-1">
+                              {signupForm.formState.errors.name.message}
+                            </p>
+                          )}
                         </div>
                         <div>
                           <Label htmlFor="signup-email" className="text-sm">
@@ -754,10 +839,9 @@ const UnifiedAuth = () => {
                           <Input
                             id="signup-email"
                             type="email"
-                            value={email}
+                            {...signupForm.register('email')}
                             className="h-10 sm:h-11 text-sm bg-gray-50"
                             disabled
-                            required
                           />
                         </div>
                         <div>
@@ -768,12 +852,9 @@ const UnifiedAuth = () => {
                             <Input
                               id="signup-password"
                               type={showPassword ? 'text' : 'password'}
-                              placeholder="Create a password (min. 6 characters)"
-                              value={password}
-                              onChange={e => setPassword(e.target.value)}
+                              placeholder="Create a password (min. 8 characters)"
+                              {...signupForm.register('password')}
                               className="h-10 sm:h-11 pr-10 text-sm"
-                              required
-                              minLength={6}
                             />
                             <button
                               type="button"
@@ -787,6 +868,14 @@ const UnifiedAuth = () => {
                               )}
                             </button>
                           </div>
+                          {signupForm.watch('password') && (
+                            <PasswordStrengthIndicator password={signupForm.watch('password')} />
+                          )}
+                          {signupForm.formState.errors.password && (
+                            <p className="text-sm text-red-600 mt-1">
+                              {signupForm.formState.errors.password.message}
+                            </p>
+                          )}
                         </div>
 
                         <Button
@@ -967,21 +1056,21 @@ const UnifiedAuth = () => {
                   </div>
                 )}
 
-                <form onSubmit={handleResetPassword} className="space-y-4">
+                <form
+                  onSubmit={resetPasswordForm.handleSubmit(handleResetPassword)}
+                  className="space-y-4"
+                >
                   <div>
-                    <Label htmlFor="new-password-modal" className="text-sm">
+                    <Label htmlFor="reset-password" className="text-sm">
                       New Password
                     </Label>
                     <div className="relative">
                       <Input
-                        id="new-password-modal"
+                        id="reset-password"
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="Enter new password (min. 6 characters)"
-                        value={newPassword}
-                        onChange={e => setNewPassword(e.target.value)}
+                        placeholder="Enter new password (min. 8 characters)"
+                        {...resetPasswordForm.register('password')}
                         className="h-10 sm:h-11 pr-10 text-sm"
-                        required
-                        minLength={6}
                       />
                       <button
                         type="button"
@@ -995,28 +1084,42 @@ const UnifiedAuth = () => {
                         )}
                       </button>
                     </div>
+                    {resetPasswordForm.watch('password') && (
+                      <PasswordStrengthIndicator password={resetPasswordForm.watch('password')} />
+                    )}
+                    {resetPasswordForm.formState.errors.password && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {resetPasswordForm.formState.errors.password.message}
+                      </p>
+                    )}
                   </div>
 
                   <div>
-                    <Label htmlFor="confirm-password-modal" className="text-sm">
+                    <Label htmlFor="reset-confirm-password" className="text-sm">
                       Confirm New Password
                     </Label>
                     <Input
-                      id="confirm-password-modal"
+                      id="reset-confirm-password"
                       type="password"
                       placeholder="Confirm your new password"
-                      value={confirmPassword}
-                      onChange={e => setConfirmPassword(e.target.value)}
+                      {...resetPasswordForm.register('confirmPassword')}
                       className="h-10 sm:h-11 text-sm"
-                      required
-                      minLength={6}
                     />
+                    {resetPasswordForm.formState.errors.confirmPassword && (
+                      <p className="text-sm text-red-600 mt-1">
+                        {resetPasswordForm.formState.errors.confirmPassword.message}
+                      </p>
+                    )}
                   </div>
 
                   <Button
                     type="submit"
                     className="w-full h-10 sm:h-11 text-sm"
-                    disabled={isResettingPassword || !newPassword.trim() || !confirmPassword.trim()}
+                    disabled={
+                      isResettingPassword ||
+                      !resetPasswordForm.watch('password') ||
+                      !resetPasswordForm.watch('confirmPassword')
+                    }
                   >
                     {isResettingPassword ? 'Resetting Password...' : 'Reset Password'}
                   </Button>
