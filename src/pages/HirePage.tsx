@@ -239,7 +239,7 @@ const HirePage = () => {
                   onClick={() => setShowListYourselfModal(true)}
                 >
                   <PlusCircle size={20} className="mr-2" />
-                  List Yourself to Get Hired
+                  List Yourself by Minute Hire
                 </Button>
               </Link>
             </div>
