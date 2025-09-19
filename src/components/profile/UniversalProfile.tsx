@@ -163,6 +163,156 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newSkill, setNewSkill] = useState('');
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
+  // Validation functions
+  const validatePhone = (phone: string): string => {
+    if (!phone) return '';
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone)) {
+      return 'Phone number must be 10 digits starting with 6-9';
+    }
+    return '';
+  };
+
+  const validateEmail = (email: string): string => {
+    if (!email) return '';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return 'Please enter a valid email address';
+    }
+    return '';
+  };
+
+  const validateURL = (url: string): string => {
+    if (!url) return '';
+    try {
+      new URL(url);
+      return '';
+    } catch {
+      return 'Please enter a valid URL';
+    }
+  };
+
+  const validatePAN = (pan: string): string => {
+    if (!pan) return '';
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    if (!panRegex.test(pan.toUpperCase())) {
+      return 'PAN must be in format: ABCTY1234D';
+    }
+    return '';
+  };
+
+  const validateAadhaar = (aadhaar: string): string => {
+    if (!aadhaar) return '';
+    const cleanAadhaar = aadhaar.replace(/\s/g, '');
+    const aadhaarRegex = /^\d{12}$/;
+    if (!aadhaarRegex.test(cleanAadhaar)) {
+      return 'Aadhaar must be 12 digits';
+    }
+    return '';
+  };
+
+  const validatePincode = (pincode: string): string => {
+    if (!pincode) return '';
+    const pincodeRegex = /^\d{6}$/;
+    if (!pincodeRegex.test(pincode)) {
+      return 'Pincode must be 6 digits';
+    }
+    return '';
+  };
+
+  const validateNumericRange = (
+    value: number,
+    min: number,
+    max: number,
+    fieldName: string
+  ): string => {
+    if (value < min || value > max) {
+      return `${fieldName} must be between ${min} and ${max}`;
+    }
+    return '';
+  };
+
+  const validateYear = (year: number): string => {
+    return validateNumericRange(year, 1, 4, 'Year');
+  };
+
+  const validateCGPA = (cgpa: number): string => {
+    return validateNumericRange(cgpa, 0, 10, 'CGPA');
+  };
+
+  const validatePercentage = (percentage: number, fieldName: string): string => {
+    return validateNumericRange(percentage, 0, 100, `${fieldName} percentage`);
+  };
+
+  const validateDateOfBirth = (date: Date): string => {
+    if (!date) return '';
+    const today = new Date();
+    const age = today.getFullYear() - date.getFullYear();
+    if (age < 16 || age > 100) {
+      return 'Age must be between 16 and 100 years';
+    }
+    return '';
+  };
+
+  const validateField = (fieldName: string, value: any): void => {
+    let error = '';
+
+    switch (fieldName) {
+      case 'phone':
+      case 'tpo_mobile':
+      case 'emergency_contact':
+        error = validatePhone(value);
+        break;
+      case 'email':
+      case 'tpo_email':
+        error = validateEmail(value);
+        break;
+      case 'linkedin_url':
+      case 'github_url':
+      case 'portfolio_url':
+      case 'company_website':
+      case 'website':
+      case 'logo_url':
+        error = validateURL(value);
+        break;
+      case 'panNumber':
+        error = validatePAN(value);
+        break;
+      case 'aadhaarNumber':
+        error = validateAadhaar(value);
+        break;
+      case 'pincode':
+        error = validatePincode(value);
+        break;
+      case 'year':
+        error = validateYear(value);
+        break;
+      case 'cgpa':
+        error = validateCGPA(value);
+        break;
+      case 'tenth_percentage':
+        error = validatePercentage(value, '10th');
+        break;
+      case 'twelfth_percentage':
+        error = validatePercentage(value, '12th');
+        break;
+      case 'graduation_percentage':
+        error = validatePercentage(value, 'Graduation');
+        break;
+      case 'date_of_birth':
+        error = validateDateOfBirth(value);
+        break;
+      default:
+        break;
+    }
+
+    setValidationErrors(prev => ({
+      ...prev,
+      [fieldName]: error,
+    }));
+  };
 
   const loadProfile = useCallback(async () => {
     if (!user?._id) return;
@@ -206,7 +356,7 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         course: data.course || '',
         year: data.year || 0,
         department: data.department || '',
-        college_id: data.college_id || '',
+        college_id: data.college_id && data.college_id !== '' ? data.college_id : undefined,
         cgpa: data.cgpa || 0,
         linkedin_url: data.linkedin_url || '',
         github_url: data.github_url || '',
@@ -287,6 +437,14 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
 
   const handleSaveProfile = async () => {
     if (!profile || !user?._id) return;
+
+    // Check for validation errors
+    const hasErrors = Object.values(validationErrors).some(error => error !== '');
+    if (hasErrors) {
+      toast.error('Please fix the validation errors before saving');
+      return;
+    }
+
     setSaving(true);
     try {
       const payload = {
@@ -352,9 +510,20 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
         logo_url: profile.logo_url,
       };
 
-      // 2. Clean the payload by removing any keys with 'undefined' values
+      // 2. Clean the payload by removing any keys with 'undefined' values or empty strings for ObjectId fields
       Object.keys(payload).forEach(key => {
         if (payload[key] === undefined) {
+          delete payload[key];
+        }
+        // Remove empty strings for ObjectId fields to prevent casting errors
+        if (
+          payload[key] === '' &&
+          (key === 'college_id' ||
+            key === 'drive_id' ||
+            (key === 'package_purchased' &&
+              Array.isArray(payload[key]) &&
+              payload[key].length === 0))
+        ) {
           delete payload[key];
         }
       });
@@ -682,14 +851,27 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 id="hourly_rate"
                 type="number"
                 value={profile?.hourly_rate || 0}
-                onChange={e =>
-                  setProfile(prev =>
-                    prev ? { ...prev, hourly_rate: parseInt(e.target.value) || 0 } : null
-                  )
-                }
-                className="h-9 sm:h-10 text-sm sm:text-base"
+                onChange={e => {
+                  const value = parseInt(e.target.value) || 0;
+                  setProfile(prev => (prev ? { ...prev, hourly_rate: value } : null));
+                  if (value > 0 && (value < 50 || value > 10000)) {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      hourly_rate: 'Hourly rate must be between ₹50 and ₹10,000',
+                    }));
+                  } else {
+                    setValidationErrors(prev => ({
+                      ...prev,
+                      hourly_rate: '',
+                    }));
+                  }
+                }}
+                className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.hourly_rate ? 'border-red-500' : ''}`}
                 placeholder="500"
               />
+              {validationErrors.hourly_rate && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.hourly_rate}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="portfolio_url" className="text-sm sm:text-base">
@@ -698,12 +880,17 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               <Input
                 id="portfolio_url"
                 value={profile?.portfolio_url || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, portfolio_url: e.target.value } : null))
-                }
-                className="h-9 sm:h-10 text-sm sm:text-base"
+                onChange={e => {
+                  const value = e.target.value;
+                  setProfile(prev => (prev ? { ...prev, portfolio_url: value } : null));
+                  validateField('portfolio_url', value);
+                }}
+                className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.portfolio_url ? 'border-red-500' : ''}`}
                 placeholder="https://portfolio.com"
               />
+              {validationErrors.portfolio_url && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.portfolio_url}</p>
+              )}
             </div>
           </>
         );
@@ -732,12 +919,17 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
               <Input
                 id="company_website"
                 value={profile?.company_website || ''}
-                onChange={e =>
-                  setProfile(prev => (prev ? { ...prev, company_website: e.target.value } : null))
-                }
-                className="h-9 sm:h-10 text-sm sm:text-base"
+                onChange={e => {
+                  const value = e.target.value;
+                  setProfile(prev => (prev ? { ...prev, company_website: value } : null));
+                  validateField('company_website', value);
+                }}
+                className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.company_website ? 'border-red-500' : ''}`}
                 placeholder="https://company.com"
               />
+              {validationErrors.company_website && (
+                <p className="text-red-500 text-xs mt-1">{validationErrors.company_website}</p>
+              )}
             </div>
           </>
         );
@@ -883,11 +1075,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="tpo_email"
                   type="email"
                   value={profile?.tpo_email || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, tpo_email: e.target.value } : null))
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, tpo_email: value } : null));
+                    validateField('tpo_email', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.tpo_email ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.tpo_email && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.tpo_email}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="total_students" className="text-sm sm:text-base">
@@ -897,13 +1094,26 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="total_students"
                   type="number"
                   value={profile?.total_students || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, total_students: parseInt(e.target.value) || 0 } : null
-                    )
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = parseInt(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, total_students: value } : null));
+                    if (value > 0 && value > 50000) {
+                      setValidationErrors(prev => ({
+                        ...prev,
+                        total_students: 'Total students must be less than 50,000',
+                      }));
+                    } else {
+                      setValidationErrors(prev => ({
+                        ...prev,
+                        total_students: '',
+                      }));
+                    }
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.total_students ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.total_students && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.total_students}</p>
+                )}
               </div>
             </div>
           </>
@@ -1001,13 +1211,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   min="1"
                   max="4"
                   value={profile?.year || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, year: parseInt(e.target.value) || 0 } : null
-                    )
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = parseInt(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, year: value } : null));
+                    validateField('year', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.year ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.year && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.year}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="department" className="text-sm sm:text-base">
@@ -1033,13 +1246,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   min="0"
                   max="10"
                   value={profile?.cgpa || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, cgpa: parseFloat(e.target.value) || 0 } : null
-                    )
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, cgpa: value } : null));
+                    validateField('cgpa', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.cgpa ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.cgpa && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.cgpa}</p>
+                )}
               </div>
 
               {/* Identity Documents */}
@@ -1049,12 +1265,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="panNumber"
                   value={profile?.panNumber || ''}
                   placeholder="ABCTY1234D"
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, panNumber: e.target.value.toUpperCase() } : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = e.target.value.toUpperCase();
+                    setProfile(prev => (prev ? { ...prev, panNumber: value } : null));
+                    validateField('panNumber', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.panNumber ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.panNumber && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.panNumber}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="aadhaarNumber">Aadhaar Number</Label>
@@ -1063,10 +1283,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   value={profile?.aadhaarNumber || ''}
                   placeholder="1234 5678 9012"
                   maxLength={14}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, aadhaarNumber: e.target.value } : null))
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, aadhaarNumber: value } : null));
+                    validateField('aadhaarNumber', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.aadhaarNumber ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.aadhaarNumber && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.aadhaarNumber}</p>
+                )}
               </div>
 
               <div>
@@ -1075,10 +1301,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="linkedin_url"
                   type="url"
                   value={profile?.linkedin_url || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, linkedin_url: e.target.value } : null))
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, linkedin_url: value } : null));
+                    validateField('linkedin_url', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.linkedin_url ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.linkedin_url && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.linkedin_url}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="github_url">GitHub URL</Label>
@@ -1086,10 +1318,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="github_url"
                   type="url"
                   value={profile?.github_url || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, github_url: e.target.value } : null))
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, github_url: value } : null));
+                    validateField('github_url', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.github_url ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.github_url && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.github_url}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="portfolio_url">Portfolio URL</Label>
@@ -1097,10 +1335,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="portfolio_url"
                   type="url"
                   value={profile?.portfolio_url || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, portfolio_url: e.target.value } : null))
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, portfolio_url: value } : null));
+                    validateField('portfolio_url', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.portfolio_url ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.portfolio_url && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.portfolio_url}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="date_of_birth">Date of Birth</Label>
@@ -1110,17 +1354,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   value={
                     profile?.date_of_birth ? profile.date_of_birth.toISOString().split('T')[0] : ''
                   }
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev
-                        ? {
-                            ...prev,
-                            date_of_birth: e.target.value ? new Date(e.target.value) : undefined,
-                          }
-                        : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = e.target.value ? new Date(e.target.value) : undefined;
+                    setProfile(prev => (prev ? { ...prev, date_of_birth: value } : null));
+                    if (value) validateField('date_of_birth', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.date_of_birth ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.date_of_birth && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.date_of_birth}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="father_name">Father's Name</Label>
@@ -1147,12 +1390,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                 <Input
                   id="emergency_contact"
                   value={profile?.emergency_contact || ''}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, emergency_contact: e.target.value } : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, emergency_contact: value } : null));
+                    if (value) validateField('phone', value); // Reuse phone validation for emergency contact
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.emergency_contact ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.emergency_contact && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.emergency_contact}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="blood_group">Blood Group</Label>
@@ -1174,12 +1421,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   min="0"
                   max="100"
                   value={profile?.tenth_percentage || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, tenth_percentage: parseFloat(e.target.value) || 0 } : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, tenth_percentage: value } : null));
+                    validateField('tenth_percentage', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.tenth_percentage ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.tenth_percentage && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.tenth_percentage}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="twelfth_percentage">12th Percentage</Label>
@@ -1190,12 +1441,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   min="0"
                   max="100"
                   value={profile?.twelfth_percentage || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, twelfth_percentage: parseFloat(e.target.value) || 0 } : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, twelfth_percentage: value } : null));
+                    validateField('twelfth_percentage', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.twelfth_percentage ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.twelfth_percentage && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.twelfth_percentage}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="graduation_percentage">Graduation Percentage</Label>
@@ -1206,24 +1461,34 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   min="0"
                   max="100"
                   value={profile?.graduation_percentage || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev
-                        ? { ...prev, graduation_percentage: parseFloat(e.target.value) || 0 }
-                        : null
-                    )
-                  }
+                  onChange={e => {
+                    const value = parseFloat(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, graduation_percentage: value } : null));
+                    validateField('graduation_percentage', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.graduation_percentage ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.graduation_percentage && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {validationErrors.graduation_percentage}
+                  </p>
+                )}
               </div>
               <div>
                 <Label htmlFor="pincode">Pincode</Label>
                 <Input
                   id="pincode"
                   value={profile?.pincode || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, pincode: e.target.value } : null))
-                  }
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, pincode: value } : null));
+                    validateField('pincode', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.pincode ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.pincode && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.pincode}</p>
+                )}
               </div>
             </div>
             <div className="mt-4">
@@ -1387,11 +1652,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   id="website"
                   type="url"
                   value={profile?.website || ''}
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, website: e.target.value } : null))
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, website: value } : null));
+                    validateField('website', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.website ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.website && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.website}</p>
+                )}
               </div>
               <div>
                 <Label htmlFor="funding_stage" className="text-sm sm:text-base">
@@ -1416,13 +1686,26 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   type="number"
                   min="1"
                   value={profile?.employees_count || 0}
-                  onChange={e =>
-                    setProfile(prev =>
-                      prev ? { ...prev, employees_count: parseInt(e.target.value) || 0 } : null
-                    )
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = parseInt(e.target.value) || 0;
+                    setProfile(prev => (prev ? { ...prev, employees_count: value } : null));
+                    if (value > 0 && value > 10000) {
+                      setValidationErrors(prev => ({
+                        ...prev,
+                        employees_count: 'Employee count must be less than 10,000',
+                      }));
+                    } else {
+                      setValidationErrors(prev => ({
+                        ...prev,
+                        employees_count: '',
+                      }));
+                    }
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.employees_count ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.employees_count && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.employees_count}</p>
+                )}
               </div>
               <div className="sm:col-span-2">
                 <Label htmlFor="logo_url" className="text-sm sm:text-base">
@@ -1433,11 +1716,16 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                   type="url"
                   value={profile?.logo_url || ''}
                   placeholder="Link to your startup logo"
-                  onChange={e =>
-                    setProfile(prev => (prev ? { ...prev, logo_url: e.target.value } : null))
-                  }
-                  className="h-9 sm:h-10 text-sm sm:text-base"
+                  onChange={e => {
+                    const value = e.target.value;
+                    setProfile(prev => (prev ? { ...prev, logo_url: value } : null));
+                    validateField('logo_url', value);
+                  }}
+                  className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.logo_url ? 'border-red-500' : ''}`}
                 />
+                {validationErrors.logo_url && (
+                  <p className="text-red-500 text-xs mt-1">{validationErrors.logo_url}</p>
+                )}
               </div>
             </div>
             <div className="mt-4">
@@ -1981,6 +2269,11 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                       id="email"
                       type="email"
                       value={profile.email}
+                      onChange={e => {
+                        const value = e.target.value;
+                        setProfile(prev => (prev ? { ...prev, email: value } : null));
+                        validateField('email', value);
+                      }}
                       disabled={true} // Always disabled since email is verified
                       className="bg-gray-50 cursor-not-allowed h-9 sm:h-10 text-sm sm:text-base"
                     />
@@ -1994,12 +2287,17 @@ const UniversalProfile = ({ userRole }: UniversalProfileProps) => {
                     <Input
                       id="phone"
                       value={profile.phone}
-                      onChange={e =>
-                        setProfile(prev => (prev ? { ...prev, phone: e.target.value } : null))
-                      }
+                      onChange={e => {
+                        const value = e.target.value;
+                        setProfile(prev => (prev ? { ...prev, phone: value } : null));
+                        validateField('phone', value);
+                      }}
                       disabled={!isEditing}
-                      className="h-9 sm:h-10 text-sm sm:text-base"
+                      className={`h-9 sm:h-10 text-sm sm:text-base ${validationErrors.phone ? 'border-red-500' : ''}`}
                     />
+                    {validationErrors.phone && (
+                      <p className="text-red-500 text-xs mt-1">{validationErrors.phone}</p>
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="location" className="text-sm sm:text-base">
