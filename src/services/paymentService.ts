@@ -72,10 +72,12 @@ async createDigitalProductPayment(
     redirectUrl?: string
   ): Promise<PaymentData> {
     try {
+      const userId = localStorage.getItem('user_id');
       const response = await api.post('/payments/subscription', {
         planName,
         amount,
-        redirectUrl: redirectUrl || `${window.location.origin}/products`
+        userId,
+        redirectUrl: redirectUrl || `${window.location.origin}/payment-success?type=subscription`
       });
       
       if (response.data.success) {
