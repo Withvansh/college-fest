@@ -73,7 +73,7 @@ const PhonePePayment: React.FC<PhonePePaymentProps> = ({
         );
         toast.success('Payment initiated for product!');
       } else if (planName && planAmount) {
-        // Subscription payment with email
+        // Subscription payment; backend will update user, no email flow here
         paymentData = await paymentService.createSubscriptionPayment(
           planName,
           planAmount,
