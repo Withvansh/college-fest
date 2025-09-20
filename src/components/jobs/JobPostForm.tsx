@@ -63,9 +63,18 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const watchedBenefits = watch('benefits') || [];
 
   const addSkill = () => {
-    if (currentSkill.trim() && !watchedSkills.includes(currentSkill.trim())) {
-      setValue('skills_required', [...watchedSkills, currentSkill.trim()]);
+    const trimmedSkill = currentSkill.trim();
+    if (trimmedSkill && !watchedSkills.includes(trimmedSkill)) {
+      if (trimmedSkill.length > 30) {
+        toast.error('Skill name is too long (max 30 characters)');
+        return;
+      }
+      setValue('skills_required', [...watchedSkills, trimmedSkill]);
       setCurrentSkill('');
+    } else if (!trimmedSkill) {
+      toast.error('Skill cannot be empty');
+    } else {
+      toast.error('Skill already exists');
     }
   };
 
@@ -77,9 +86,18 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   };
 
   const addBenefit = () => {
-    if (currentBenefit.trim() && !watchedBenefits.includes(currentBenefit.trim())) {
-      setValue('benefits', [...watchedBenefits, currentBenefit.trim()]);
+    const trimmedBenefit = currentBenefit.trim();
+    if (trimmedBenefit && !watchedBenefits.includes(trimmedBenefit)) {
+      if (trimmedBenefit.length > 50) {
+        toast.error('Benefit description is too long (max 50 characters)');
+        return;
+      }
+      setValue('benefits', [...watchedBenefits, trimmedBenefit]);
       setCurrentBenefit('');
+    } else if (!trimmedBenefit) {
+      toast.error('Benefit cannot be empty');
+    } else {
+      toast.error('Benefit already exists');
     }
   };
 
@@ -93,6 +111,17 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const onSubmit = async (data: JobFormData) => {
     if (!user) {
       toast.error('You must be logged in to post a job');
+      return;
+    }
+
+    // Additional validation for salary fields
+    if ((data.salary_min && !data.salary_max) || (!data.salary_min && data.salary_max)) {
+      toast.error('Both minimum and maximum salary must be provided together');
+      return;
+    }
+
+    if (data.salary_min && data.salary_max && data.salary_max < data.salary_min) {
+      toast.error('Maximum salary must be greater than or equal to minimum salary');
       return;
     }
 
@@ -200,6 +229,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">Job Title *</Label>
+              <p className="text-xs text-muted-foreground">Enter a clear, concise job title</p>
               <Input
                 id="title"
                 {...register('title')}
@@ -210,6 +240,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="company_name">Company Name *</Label>
+              <p className="text-xs text-muted-foreground">
+                Enter the company or organization name
+              </p>
               <Input
                 id="company_name"
                 {...register('company_name')}
@@ -222,6 +255,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="location">Location *</Label>
+              <p className="text-xs text-muted-foreground">Specify the job location or 'Remote'</p>
               <Input
                 id="location"
                 {...register('location')}
@@ -234,6 +268,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="job_type">Job Type *</Label>
+              <p className="text-xs text-muted-foreground">Select the type of employment</p>
               <Controller
                 name="job_type"
                 control={control}
@@ -259,6 +294,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="salary_min">Minimum Salary</Label>
+              <p className="text-xs text-muted-foreground">Optional: Enter salary range in INR</p>
               <Input
                 id="salary_min"
                 type="number"
@@ -272,6 +308,7 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="salary_max">Maximum Salary</Label>
+              <p className="text-xs text-muted-foreground">Optional: Enter salary range in INR</p>
               <Input
                 id="salary_max"
                 type="number"
@@ -285,6 +322,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="experience_required">Years of Experience Required</Label>
+              <p className="text-xs text-muted-foreground">
+                Enter years of experience required (0 for entry-level)
+              </p>
               <Input
                 id="experience_required"
                 type="number"
@@ -298,6 +338,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
             <div className="space-y-2">
               <Label htmlFor="application_deadline">Application Deadline</Label>
+              <p className="text-xs text-muted-foreground">
+                Optional: Set a deadline for applications
+              </p>
               <Input
                 id="application_deadline"
                 type="date"
@@ -312,6 +355,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
           <div className="space-y-2">
             <Label htmlFor="description">Job Description *</Label>
+            <p className="text-xs text-muted-foreground">
+              Provide a detailed description of the role and responsibilities (minimum 10
+              characters)
+            </p>
             <Textarea
               id="description"
               {...register('description')}
@@ -325,6 +372,9 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
 
           <div className="space-y-2">
             <Label htmlFor="requirements">Requirements *</Label>
+            <p className="text-xs text-muted-foreground">
+              List the qualifications and skills needed for this position (minimum 10 characters)
+            </p>
             <Textarea
               id="requirements"
               {...register('requirements')}
@@ -337,7 +387,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Required Skills</Label>
+            <Label>Required Skills *</Label>
+            <p className="text-xs text-muted-foreground">
+              Add at least one required skill for this position (press Enter or click Add)
+            </p>
             <div className="flex gap-2">
               <Input
                 value={currentSkill}
@@ -363,7 +416,10 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
           </div>
 
           <div className="space-y-2">
-            <Label>Benefits</Label>
+            <Label>Benefits *</Label>
+            <p className="text-xs text-muted-foreground">
+              Add at least one benefit or perk offered (press Enter or click Add)
+            </p>
             <div className="flex gap-2">
               <Input
                 value={currentBenefit}
@@ -400,7 +456,12 @@ const JobPostForm = ({ onSuccess }: { onSuccess?: () => void }) => {
                 />
               )}
             />
-            <Label htmlFor="remote_allowed">Remote work allowed</Label>
+            <div className="flex flex-col">
+              <Label htmlFor="remote_allowed">Remote work allowed</Label>
+              <p className="text-xs text-muted-foreground">
+                Check if this position allows remote or hybrid work arrangements
+              </p>
+            </div>
           </div>
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
