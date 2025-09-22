@@ -124,6 +124,7 @@ import { useState } from 'react';
 import ManageDrives from './pages/recruiter/ManageDrives';
 import ViewDriveRequest from './pages/recruiter/ViewDriveRequest';
 import ManageCollegeInvite from './pages/college/ManageCollegeInvite';
+import ContactFormPopup from './components/ContactFormPopup';
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -135,6 +136,15 @@ const queryClient = new QueryClient({
 
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const [isContactFormSubmitted, setIsContactFormSubmitted] = useState(() => {
+    // Check if form was already submitted in this session
+    return localStorage.getItem('contactFormSubmitted') === 'true';
+  });
+
+  const handleContactFormSubmit = () => {
+    setIsContactFormSubmitted(true);
+    localStorage.setItem('contactFormSubmitted', 'true');
+  };
   return (
     <div className="App">
       <QueryClientProvider client={queryClient}>
@@ -209,7 +219,16 @@ const App = () => {
                     <Route
                       path="/jobseeker/applications"
                       element={
-                        <UnifiedProtectedRoute allowedRoles={['jobseeker', 'student',"startup","client","freelancer","college"]}>
+                        <UnifiedProtectedRoute
+                          allowedRoles={[
+                            'jobseeker',
+                            'student',
+                            'startup',
+                            'client',
+                            'freelancer',
+                            'college',
+                          ]}
+                        >
                           <JobSeekerApplications />
                         </UnifiedProtectedRoute>
                       }
@@ -687,6 +706,7 @@ const App = () => {
         </TooltipProvider>
       </QueryClientProvider>
       {/* {isLoading && <Preloader onLoadComplete={() => setIsLoading(false)} />} */}
+      {!isContactFormSubmitted && <ContactFormPopup onSubmit={handleContactFormSubmit} />}
     </div>
   );
 };
