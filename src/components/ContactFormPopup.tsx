@@ -62,7 +62,7 @@ const ContactFormPopup = ({ onSubmit }: ContactFormPopupProps) => {
       if (onSubmit) {
         onSubmit();
       }
-      toast.success('Thank you for joining our community!');
+      toast.success("Thankyou for joining the community Early access to the platform is already shared to 1 lakh users Soon We will revert you with an email when we open it for all.");
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Failed to submit form. Please try again.');
