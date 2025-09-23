@@ -137,8 +137,8 @@ const queryClient = new QueryClient({
 const App = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isContactFormSubmitted, setIsContactFormSubmitted] = useState(() => {
-    // Check if form was already submitted in this session
-    return localStorage.getItem('contactFormSubmitted') === 'true';
+    // Don't check localStorage here - let ContactFormPopup handle its own state
+    return false;
   });
 
   const handleContactFormSubmit = () => {
@@ -706,7 +706,8 @@ const App = () => {
         </TooltipProvider>
       </QueryClientProvider>
       {/* {isLoading && <Preloader onLoadComplete={() => setIsLoading(false)} />} */}
-      {!isContactFormSubmitted && <ContactFormPopup onSubmit={handleContactFormSubmit} />}
+      {/* Always render ContactFormPopup - it handles its own state */}
+      <ContactFormPopup onSubmit={handleContactFormSubmit} />
     </div>
   );
 };

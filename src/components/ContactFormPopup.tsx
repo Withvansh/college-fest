@@ -45,6 +45,28 @@ const ContactFormPopup = ({ onSubmit }: ContactFormPopupProps) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Check localStorage on mount (client-side only)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('contactFormSubmitted');
+      console.log('localStorage contactFormSubmitted on mount:', stored);
+      if (stored === 'true') {
+        setIsSubmitted(true);
+        console.log('Setting isSubmitted to true from localStorage');
+      }
+    }
+  }, []);
+
+  // Prevent any external resets of isSubmitted
+  const showSuccessCard = isSubmitted;
+
+  console.log(
+    'ContactFormPopup render - isSubmitted:',
+    isSubmitted,
+    'showSuccessCard:',
+    showSuccessCard
+  );
+
   const {
     register,
     handleSubmit,
@@ -55,14 +77,20 @@ const ContactFormPopup = ({ onSubmit }: ContactFormPopupProps) => {
   });
 
   const onFormSubmit = async (data: ContactFormData) => {
+    console.log('Form submitted, setting isSubmitted to true');
     setIsSubmitting(true);
+    setIsSubmitted(true); // Show success card immediately
+
+    // Save to localStorage to persist across page refreshes
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('contactFormSubmitted', 'true');
+      console.log('Saved to localStorage:', localStorage.getItem('contactFormSubmitted'));
+    }
+
     try {
       await contactApi.submitContactForm(data as any);
-      setIsSubmitted(true);
-      if (onSubmit) {
-        onSubmit();
-      }
-      toast.success("Thankyou for joining the community Early access to the platform is already shared to 1 lakh users Soon We will revert you with an email when we open it for all.");
+      // Don't call onSubmit callback to prevent external interference
+      // Success card stays open permanently
     } catch (error) {
       console.error('Error submitting form:', error);
       toast.error('Failed to submit form. Please try again.');
@@ -71,7 +99,9 @@ const ContactFormPopup = ({ onSubmit }: ContactFormPopupProps) => {
     }
   };
 
-  if (isSubmitted) {
+  if (showSuccessCard) {
+    // SUCCESS CARD - PERMANENTLY VISIBLE ONCE SUBMITTED
+    // DO NOT ADD ANY CLOSE FUNCTIONALITY HERE
     return (
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <Card className="w-full max-w-md mx-auto">
@@ -80,11 +110,11 @@ const ContactFormPopup = ({ onSubmit }: ContactFormPopupProps) => {
               <CheckCircle className="w-16 h-16 text-green-500 mx-auto" />
               <div className="space-y-2">
                 <h2 className="text-xl font-semibold text-gray-900">
-                  Thank you for joining the community
+                  Thankyou for joining the community
                 </h2>
                 <p className="text-sm text-gray-600 leading-relaxed">
-                  Early access to the platform is already shared to 1 lakh users. Soon, we will
-                  revert you with an email when we open it for all.
+                  Early access to the platform is already shared to 1 lakh users Soon We will revert
+                  you with an email when we open it for all.
                 </p>
               </div>
             </div>
