@@ -135,16 +135,16 @@ const queryClient = new QueryClient({
 });
 
 const App = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isContactFormSubmitted, setIsContactFormSubmitted] = useState(() => {
-    // Don't check localStorage here - let ContactFormPopup handle its own state
-    return false;
-  });
+  // const [isLoading, setIsLoading] = useState(true);
+  // const [isContactFormSubmitted, setIsContactFormSubmitted] = useState(() => {
+  //   // Don't check localStorage here - let ContactFormPopup handle its own state
+  //   return false;
+  // });
 
-  const handleContactFormSubmit = () => {
-    setIsContactFormSubmitted(true);
-    localStorage.setItem('contactFormSubmitted', 'true');
-  };
+  // const handleContactFormSubmit = () => {
+  //   setIsContactFormSubmitted(true);
+  //   localStorage.setItem('contactFormSubmitted', 'true');
+  // };
   return (
     <div className="App">
       <QueryClientProvider client={queryClient}>
@@ -707,7 +707,7 @@ const App = () => {
       </QueryClientProvider>
       {/* {isLoading && <Preloader onLoadComplete={() => setIsLoading(false)} />} */}
       {/* Always render ContactFormPopup - it handles its own state */}
-      <ContactFormPopup onSubmit={handleContactFormSubmit} />
+      {/* <ContactFormPopup onSubmit={handleContactFormSubmit} /> */}
     </div>
   );
 };
